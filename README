@@ -1,0 +1,18 @@
+Andreas van Cranenburgh <andreas@unstable.nl>
+
+Data-Oriented Parsing implementation for NLTK applied to Esperanto morphology
+and syntax.
+
+https://unstable.nl/proj/eodop
+
+
+Requirements:
+- python 2.6
+- nltk
+- bitpar
+
+Provides:
+- bitpar.py: shell interface for using bitpar with NLTK
+- dopg.py: implementation of Goodman reduction for NLTK
+- morph.py: builds DOP model for syntax and morphology
+
