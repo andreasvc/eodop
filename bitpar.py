@@ -11,7 +11,7 @@ from uuid import uuid1
 from nltk import Tree, FreqDist, InsideChartParser
 
 class BitParChartParser:
-	def __init__(self, weightedrules, lexicon, rootsymbol=None, unknownwords=None, cleanup=True):
+	def __init__(self, weightedrules, lexicon, rootsymbol=None, unknownwords=None, openclassdfsa=None, cleanup=True):
 		""" Interface to bitpar chart parser. Expects a list of weighted
 		productions with frequencies (not probabilities).
 		
@@ -24,6 +24,10 @@ class BitParChartParser:
 		@param lexicon: set of strings belonging to the lexicon
 			(ie., the set of terminals)
 		@param rootsymbol: starting symbol for the grammar
+		@param unknownwords: a file with a list of open class POS tags 
+			with frequencies
+		@param openclassdfsa: a deterministic finite state automaton,
+			refer to the bitpar manpage.
 		@param cleanup: boolean, when set to true the grammar will be
 			removed when the BitParChartParser object is deleted.
 		>>> wrules = (	("S\\tNP\\tVP", 1), \
@@ -57,6 +61,7 @@ class BitParChartParser:
 		self.id = uuid1()
 		self.cleanup = cleanup
 		self.unknownwords = unknownwords
+		self.openclassdfsa = openclassdfsa
 		self.writegrammar('/tmp/g%s.pcfg' % self.id, '/tmp/g%s.lex' % self.id)
 		self.start()
 
@@ -72,6 +77,7 @@ class BitParChartParser:
 		# bitpar defaults to the first nonterminal in the rules
 		if self.rootsymbol: options += "-s %s " % self.rootsymbol
 		if self.unknownwords: options += "-u %s " % self.unknownwords
+		if self.openclassdfsa: options += "-w %s " % self.openclassdfsa
 		options += "/tmp/g%s.pcfg /tmp/g%s.lex" % (self.id, self.id)
 		#if self.debug: print options.split()
 		self.bitpar = Popen(options.split(), stdin=PIPE, stdout=PIPE, stderr=PIPE)

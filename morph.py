@@ -1,6 +1,6 @@
 #!/bin/sh
 from dopg import *
-from bitpar import BitParChartParseR
+from bitpar import BitParChartParser
 
 def cnf(tree):
 	""" make sure all terminals have POS tags; 
@@ -37,11 +37,11 @@ def monato():
 def morphology():
 	from corpus import corpus
 	#corpus = ["(S (NP (NN amiko)) (VP (VB venis)))"]
-	d = GoodmanDOP((Tree(a) for a in corpus), rootsymbol='S', parser=BitParChartParser)
+	d = GoodmanDOP((Tree(a) for a in corpus), rootsymbol='S', parser=BitParChartParser, unknownwords='unknownwords', openclassdfsa='postoy.dfsa')
 	print "built syntax model"
 
 	mcorpus = open("morph.corp.txt").readlines()
-	md = GoodmanDOP((cnf(Tree(a)) for a in mcorpus), rootsymbol='W', wrap=True, parser=BitParChartParser)
+	md = GoodmanDOP((cnf(Tree(a)) for a in mcorpus), rootsymbol='W', wrap=True, parser=BitParChartParser, unknownwords='unknownmorph')
 	print "built morphology model"
 
 	segmentd = dict(("".join(a), tuple(a)) for a in (Tree(a).leaves() for a in mcorpus))
@@ -102,7 +102,7 @@ def morphology():
 		copy = tree.copy(True)
 		for a in tree.treepositions('leaves'):
 			try:
-				print tree[a[:-1]][0],
+				#print tree[a[:-1]][0],
 				copy[a[:-1]] = removeids(md.parse(segment(tree[a[:-1]][0]))[0])
 			except Exception as e:
 				print "word:", tree[a[:-1]][0],
@@ -118,7 +118,7 @@ def morphology():
 
 	#mtreebank = [m(Tree(a)) for a in corpus]
 	#for a in mtreebank: print a
-	msd = GoodmanDOP(mtreebank, rootsymbol='S', parser=BitParChartParser)
+	msd = GoodmanDOP(mtreebank, rootsymbol='S', parser=BitParChartParser, unknownwords='unknownmorph')
 	print "built combined morphology-syntax model"
 
 	#d.writegrammar('/tmp/syntax.pcfg', '/tmp/syntax.lex')
@@ -141,25 +141,25 @@ def morphology():
 			except Exception as e:
 				print "error:", e
 			
+		print "morphology + syntax combined:"
+		try:
+			sent = list(reduce(chain, (segment(a) for a in w)))
+			print sent
+			print removeids(msd.parse(sent))
+			#for tree in d.parser.nbest_parse(w):
+			#	print tree
+		except Exception as e:
+			print "error", e
+
 		print "syntax & morphology separate:"
 		try:
 			#TODO: d.parse(w) should backoff to POS supplied by morphology for unknown words
-			print morphmerge(d.parse(w))
+			print morphmerge(removeids(d.parse(w)))
 			#sent = ["".join(a.split('|')) for a in w]
 			#for tree in d.parser.nbest_parse(w):
 			#	print tree
 		except Exception as e:
 			print "error:", e
-
-		print "morphology + syntax combined:"
-		try:
-			sent = list(reduce(chain, (segment(a) for a in w)))
-			print sent
-			print msd.parse(sent)
-			#for tree in d.parser.nbest_parse(w):
-			#	print tree
-		except Exception as e:
-			print "error", e
 
 if __name__ == '__main__':
 	import doctest
@@ -169,5 +169,5 @@ if __name__ == '__main__':
 	optionflags=doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS)
 	if attempted and not fail:
 		print "%d doctests succeeded!" % attempted
-	#morphology()   #interactive demo with toy corpus
-	monato()        #get monato DOP reduction
+	morphology()   #interactive demo with toy corpus
+	#monato()        #get monato DOP reduction

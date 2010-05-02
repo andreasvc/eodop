@@ -45,7 +45,7 @@ def productions(tree):
 	return prods
 
 class GoodmanDOP:
-	def __init__(self, treebank, rootsymbol='S', wrap=False, parser=InsideChartParser, cleanup=True):
+	def __init__(self, treebank, rootsymbol='S', wrap=False, cleanup=True, parser=InsideChartParser, **parseroptions):
 		""" initialize a DOP model given a treebank. uses the Goodman
 		reduction of a STSG to a PCFG.  after initialization,
 		self.parser will contain an InsideChartParser.
@@ -103,7 +103,7 @@ class GoodmanDOP:
 			# annotate rules with frequencies
 			self.fcfg = self.frequencies(cfg, nonterminalfd)
 			print "writing grammar"
-			self.parser = BitParChartParser(self.fcfg, lexicon, rootsymbol, cleanup=False)
+			self.parser = BitParChartParser(self.fcfg, lexicon, rootsymbol, cleanup=False, **parseroptions)
 		else:
 			cfg = FreqDist(reduce(chain, (self.goodman(tree, utree, False) for tree, utree in utreebank)))
 			self.grammar = WeightedGrammar(Nonterminal(rootsymbol),

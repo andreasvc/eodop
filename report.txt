@@ -617,13 +617,11 @@ morphology + syntax combined:
 }}}
 
 However, it is perhaps unfair not to assign categories to unknown words. 
-In the following results I let unknown words be assigned any open class 
-POS tag (uniform probability for now). This is not an elegant solution 
-because POS tags are transparently marked in Esperanto, so perfect tagging
-can be performed with a rule-based approach; the problem is that this 
-should be integrated into the parsing algorithm, because the alternative of
-parsing sequences of POS tags instead of words is a cop out I do not want to
-make.
+In the following results I let a deterministic finite state automaton
+assign the right POS tags to unknown words, and use a list of possible
+morpheme tags with uniform probabilities to tag unknown morphemes (for words
+with a single root the morpheme tagging will default to the POS tag marked
+by the ending, which will usually be correct).
 
 Here is a large sentence from later in the "Dua Libro" (which is, fittingly,
 about word formation in Esperanto):
@@ -705,6 +703,35 @@ the preposition "per" appears oddly at the end of an NP, instead of
 introducing a PP (in the previous tree it ended up prefixing an NP because the
 model cannot distinguish the difference between word and morpheme boundary).
 
+That the deterministic finite state automaton is working can be seen from
+the following non-sense input:
+
+{{{
+sentence: tiadelaradon teluro didelas
+morphology:
+tiadelaradon (NN (NN (N tiadelarad) (NN_o o)) (NN_n n))
+teluro (NN (N telur) (NN_o o))
+didelas (VB (V didel) (VB_as as))
+morphology + syntax combined:
+['tiadelarad', 'o', 'n', 'telur', 'o', 'didel', 'as']
+(S
+  (NP (NN (NN (N tiadelarad) (NN_o o)) (NN_n n)))
+  (VP (NP (NN (N telur) (NN_o o))) (VP (VB (V didel) (VB_as as)))))
+syntax & morphology separate:
+(S
+  (NP
+    (NN (NN (N tiadelarad) (NN_o o)) (NN_n n))
+    (NN (N telur) (NN_o o)))
+  (VP (VB (V didel) (VB_as as))))
+}}}
+
+As can be seen, the words and roots receive the correct POS tags, which
+additionally is not derived from the default SVO order.
+The DOP model where morphology is opaque to syntax considers the two nouns
+to be a single noun phrase, which could have been trivially excluded by
+attending to the morphology (but perhaps an accusative category label would
+have been enough).
+
 @ Todo
 
 * parse bitpar chart output into NLTK (currently only most probable derivation; 
@@ -715,7 +742,7 @@ model cannot distinguish the difference between word and morpheme boundary).
 * distinguish between morpheme and word boundaries (how?).
   possibly by having a trailing space as part of a morphological analysis 
   (but: this should not block inflection for plurality and accusative (+j and +n respectively).
-* write report (convert wiki to latex?). evaluation & conclusion.
+* finish report (convert wiki to latex?). evaluation & conclusion.
   write about Dasgupta (2008) & is there work on DOP + dependencies? 
   mention DLT as older exemplar model.
 * look at DOP* / U-DOP
@@ -724,9 +751,28 @@ model cannot distinguish the difference between word and morpheme boundary).
 
 TBD. Tenfold testing of Monato treebank, with and without regard for morphology.
 
-@ Tentative conclusion
+@ Conclusion
 
-Esperanto & DOP are awesome.
+We have described a regular grammar that enumerates the word forms of
+Esperanto's lexicon, which can be used to automatically segment word strings.
+Using a DOP model the resulting sequence of morphemes and tags can be analysed
+and assigned a hierarchical structure. The resulting DOP model can either be
+merged with a syntactic DOP model or applied to the parse trees produced by a
+syntactic model to obtain tree structures with both phrasal and morphological
+constituents.
+
+We described an implementation using NLTK of the Goodman reduction that is
+generalized to arbitrary trees, which outputs a grammar that can be parsed by
+the efficient chart parser Bitpar. Using a list of open class tags and a
+deterministic finite state automaton we can assign tags to unknown words and
+morphemes.
+
+The resulting system has been applied to a toy corpus of morphology and
+syntax, showing the advantage of merging morphology and syntax treebanks
+before constructing a DOP model. Evaluation with a larger syntactic treebank,
+as well as the induction of morphology tags from dictionaries remains to be
+done.
+
 
 @ References
 
