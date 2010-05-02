@@ -15,7 +15,7 @@ both syntax and morphology.
 
 Since there is no gold standard treebank with phrase structures for Esperanto,
 I will construct a small toy corpus for testing. Furthermore, experiments with
-U-Dop for both morphology and phrase structure are possible.
+U-DOP for both morphology and phrase structure are possible.
 
 Lastly, previous work with Esperanto has resulted in a highly successful (&gt;95%
 precision on a small test corpus) constraint grammar (Bick 2007), and a formal
@@ -75,7 +75,7 @@ a form of syntactocentrism, a term coined in Generative Linguistics
 excursions into semantics have been made. In this project I will go in the
 other direction and turn to the stratum of morphology. Most accounts of
 morphology in Computational Linguistics seem to present the structure of words
-as a sequence of morpheme-feature pairs (e.g., Jurafsky &amp; Martin 19XX),
+as a sequence of morpheme-feature pairs (e.g., Jurafsky & Martin 19XX),
 as parsed by a (Stochastic) Finite State Transducer (cf., Schmid et al. 2004).
 
 However, due to the complexity and potentially unlimited productivity of
@@ -102,7 +102,7 @@ second language used by a diverse and scattered speech community.
 
 Typologically Esperanto has the unique character of being a morphologically
 agglutinative and synthetic language with a vocabulary largely based on
-Romance languages (apart from some German &amp; Russian words, and schematic
+Romance languages (apart from some German & Russian words, and schematic
 function words as well). Its word formation is extremely compositional (ie., its
 word formation is fully transparent); I go as far as to contend that it is the
 most compositional spoken language in use today. Its syntax is schematic
@@ -183,7 +183,7 @@ The grammar for function words:
 function_word := adverb | preposition | numeral
 adverb := prefix adverb
 preposition := prefix preposition
-numeral := numeral numeral{U+42}
+numeral := numeral numeralB
 prefix := mal | ne | ...
 suffix := il | et | ...
 }}}
@@ -191,9 +191,9 @@ suffix := il | et | ...
 Content words are a little more involved (ibid):
 
 {{{
-word := prefix{U+42} left{U+42} right ending (&epsilon; | declension)
+word := prefixB leftB right ending (&epsilon; | declension)
 left := right (&epsilon; | ending)
-right := prefix{U+42} root suffix{U+42}
+right := prefixB root suffixB
 ending := o | a | e 
 declension := j | n
 verb-ending := as | is | os | us | u
@@ -267,7 +267,7 @@ unchangeable part of the language.
 
 @ About Data-Oriented Parsing
 
-Data-Oriented Parsing (Scha 1990; Bod &amp; Scha 1996, henceforth DOP) is a
+Data-Oriented Parsing (Scha 1990; Bod & Scha 1996, henceforth DOP) is a
 computational framework for modeling natural language processing (NLP) and
 other hierarchical cognitive phenomena. Its basic assumptions are:
 
@@ -457,7 +457,7 @@ Annotated example sentences:
 
 {i(/phpsyntaxtree/pngtree.php?data=[S [NP [NN amiko]] [VP [VB venis]]])}
 
-{i(/phpsyntaxtree/pngtree.php?data=[S [S [NP [DT la] [N' [JJ venontajn] [N' [JJ apartajn] [NN pecojn]]]] [VP [NP [PRP mi]] [VP [VBP donas]]]] [S' [IN ke] [S [NP [DT la] [NN lernantoj]] [VP [VB povu] [VP [VP [VP [VB ripeti] [RB praktike]] [NP [NP [DT la] [NN regulojn]] [PP [IN de] [NP [DT l'] [N' [NN gramatiko] [JJ internacia]]]]]] [VPC [CC kaj] [VP [VP [VB kompreni] [RB bone]] [NP [NP [NP [DT la] [NN signifon]] [NPC [CC kaj] [NP [DT la] [NN uzon]]]] [PP [IN de] [NP [DT l'] [N' [NN sufiksoj] [NC [CC kaj] [NN prefiksoj]]]]]]]]]]]]])}
+{i(/phpsyntaxtree/pngtree.php?fontsize=6&data=[S [S [NP [DT la] [N' [JJ venontajn] [N' [JJ apartajn] [NN pecojn]]]] [VP [NP [PRP mi]] [VP [VBP donas]]]] [S' [IN ke] [S [NP [DT la] [NN lernantoj]] [VP [VB povu] [VP [VP [VP [VB ripeti] [RB praktike]] [NP [NP [DT la] [NN regulojn]] [PP [IN de] [NP [DT l'] [N' [NN gramatiko] [JJ internacia]]]]]] [VPC [CC kaj] [VP [VP [VB kompreni] [RB bone]] [NP [NP [NP [DT la] [NN signifon]] [NPC [CC kaj] [NP [DT la] [NN uzon]]]] [PP [IN de] [NP [DT l'] [N' [NN sufiksoj] [NC [CC kaj] [NN prefiksoj]]]]]]]]]]]]])97}
 
 Some annotated example words:
 
@@ -479,16 +479,7 @@ maybe add backoff DOP or DOP*; fast PCFG parsing using
 {http://www.ims.uni-stuttgart.de/tcl/SOFTWARE/BitPar.html bitpar} 
 (Schmid 2004), a bit vector based chart parser.
 
-Implementation details: low memory usage (248 MB), grammar is written directly
-to disk (although a ramdisk is preferable, like /tmp in most systems); this is
-made possible by deriving the rules using a generator object (a form of
-explicit lazy evaluation). Applying the Goodman reduction to a 2000 sentence
-treebank takes about 15 minutes and produces a grammar of about 850 MB. The
-process is fully CPU-bound, further speedup is possible through an optimizing
-compiler (psyco), or re-implementing key parts in C (eg. using Cython).  A
-trade-off of speed for memory is possible by building up the grammar in memory
-instead of directly to disk; this requires 1.7 GB of memory, which will quickly
-become unmanageable with larger treebanks.
+In order to apply the Goodman reduction to an arbitrary treebank, the reduction has been generalized to deal with arbitrary trees (not just trees in Chomsky normal form). This is done by translating subtrees of the form (A B_1 ... B_n) to rules of the form A - > B_1 ... B_n with relative frequency Prod(freq(x) if x has id else 1) / freq(A). In order to fully separate terminals from non-terminals, all terminals are assigned an unique tag if they don't yet have one.
 
 Previously considered possibilities:
 
@@ -651,7 +642,8 @@ de (IN de)
 simplaj (JJ (J (V simpl) (J_a@28 a)) (JJ_j@29 j))
 vortoj (NN (NN (N@420 vort) (NN_o@421 o)) (NN_j@825 j))
 morphology + syntax combined:
-['Vort', 'o', 'j', 'kunmetit', 'a', 'j', 'est', 'as', 'kreat', 'a', 'j', 'per', 'simpl', 'a', 'kunligad', 'o', 'de', 'simpl', 'a', 'j', 'vort', 'o', 'j']
+['Vort', 'o', 'j', 'kunmetit', 'a', 'j', 'est', 'as', 'kreat', 'a', 'j', 
+ 'per', 'simpl', 'a', 'kunligad', 'o', 'de', 'simpl', 'a', 'j', 'vort', 'o', 'j']
 (S
   (NP@128 (NN (NN (N@320 Vort) (NN_o@321 o)) (NN_j@27 j)))
   (VP
@@ -686,7 +678,7 @@ produced at all.
 The modularist approach yields the following parse tree:
 
 {{{
-syntax &amp; morphology separate:
+syntax & morphology separate:
 Vortoj kunmetitaj estas kreataj per simpla kunligado de simplaj vortoj 
 (S
   (NP
@@ -715,16 +707,17 @@ model cannot distinguish the difference between word and morpheme boundary).
 
 @ Todo
 
-* parse bitpar chart output into NLTK (currently only most probable derivation; we need n most probable parses and maybe shortest derivation, SL-DOP etc.)
+* parse bitpar chart output into NLTK (currently only most probable derivation; 
+  we need n most probable parses and maybe shortest derivation, SL-DOP etc.)
 * use Reta Vortaro / ergane Esperanto dictionary and root lists 
   to induce segmentation / morphology model in a semi-supervised fashion.
 * check morphology coverage against vocabulary of Monato treebank
 * distinguish between morpheme and word boundaries (how?).
- possibly by having a trailing space as part of a morphological analysis 
-(but: this should not block inflection for plurality and accusative (+j and +n respectively).
-* write report (convert wiki to latex?). evaluation &amp; conclusion.
-write about Dasgupta (2008) &amp; is there work on DOP + dependencies? 
-mention DLT as older exemplar model.
+  possibly by having a trailing space as part of a morphological analysis 
+  (but: this should not block inflection for plurality and accusative (+j and +n respectively).
+* write report (convert wiki to latex?). evaluation & conclusion.
+  write about Dasgupta (2008) & is there work on DOP + dependencies? 
+  mention DLT as older exemplar model.
 * look at DOP* / U-DOP
 
 @ Evaluation
@@ -733,7 +726,7 @@ TBD. Tenfold testing of Monato treebank, with and without regard for morphology.
 
 @ Tentative conclusion
 
-Esperanto &amp; DOP are awesome.
+Esperanto & DOP are awesome.
 
 @ References
 
@@ -764,14 +757,14 @@ Jansen, W. (2007). ``Woordvolgorde in het Esperanto: normen, taalgebruik en
 universalia" (Word-order in Esperanto: norms, usage and universals). PhD
 thesis, LOT Utrecht.
 
-Jurafsky, D. &amp; Martin, J.H. (2000), ``Speech &amp; Language Processing An
+Jurafsky, D. & Martin, J.H. (2000), ``Speech & Language Processing An
 introduction to natural language processing, computational linguistics, and
 speech recognition,'' Pearson Education.
 
 Haitao, Liu (2001), ``Creoles, Pidgins, and Planned Languages.'' Interface.
 Journal of Applied Linguistics / Tijdschrift voor Toegepaste Linguïstiek 15 [2]. pp. 121--177.
 
-Kalocsay, Kálmán &amp; Waringhien, Gaston (1980), Plena Analiza Gramatiko de
+Kalocsay, Kálmán & Waringhien, Gaston (1980), Plena Analiza Gramatiko de
 Esperanto (Complete, analyzed Grammar of Esperanto), Rotterdam, Universala
 Esperanto-Asocio.
 
@@ -836,7 +829,7 @@ Zamenhof, Dr. L. L. (1905/1963), ``Fundamento de Esperanto.'' Ninth edition
 with Introduction, Notes and Linguistics comments, edited by Dr. A. Albault
 (Esperantaj Francaj Eldonoj: Marmande, 1963).
 
-Zollmann, Andreas &amp; Sima'an, Khalil (2005), ``A Consistent and Efficient
+Zollmann, Andreas & Sima'an, Khalil (2005), ``A Consistent and Efficient
 Estimator for DOP.''  _Journal of Automota Languages and Combinatorics_ vol.
 10, pp. 367.  http://staff.science.uva.nl/~simaan/D-Papers/JALCsubmit.pdf
 
