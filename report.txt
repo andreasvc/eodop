@@ -101,18 +101,40 @@ communicative and expressive functions of Ethnic languages, albeit mostly as a
 second language used by a diverse and scattered speech community. 
 
 Typologically Esperanto has the unique character of being a morphologically
-agglutinative and synthetic language with a vocabulary largely based on Romance
-languages (apart from some German &amp; Russian words, and schematic function words
-as well). Its word formation is highly compositional (ie., its word formation
-is fully transparent). Its syntax is schematic (designed) and allows for a
-relatively free word-order through obligatory case marking, though in practice
-a default word-order of SVO has emerged, with systematic deviations, triggered
-by complex constituents and by pragmatics to express focus; these findings
-accord with relatively universal features found in natural languages (Jansen
-2007). Cases are marked  either through inflection in case of the accusative or
-through a set of prepositions intended to be unambiguous (e.g., the English
-preposition "with" translates in two ways in Esperanto, through the
-instrumentalis "per" and "kun", with as in together. 
+agglutinative and synthetic language with a vocabulary largely based on
+Romance languages (apart from some German &amp; Russian words, and schematic
+function words as well). Its word formation is extremely compositional (ie., its
+word formation is fully transparent); I go as far as to contend that it is the
+most compositional spoken language in use today. Its syntax is schematic
+(designed) and allows for a relatively free word-order through obligatory case
+marking, although in practice a default word-order of SVO has emerged, with
+systematic deviations, triggered by complex (heavy) constituents and by
+pragmatics to express focus; these findings accord with relatively universal
+features found in natural languages (Jansen 2007). Cases are marked, viz.
+through a null-marking for the nominative and direct object, an inflection in
+case of the accusative, and through a set of prepositions initially intended
+to be unambiguous (e.g., the English preposition "with" translates in two ways
+in Esperanto, through the instrumentalis "per" or with "kun," meaning
+together. 
+
+The qualification ``relatively'' is a commonly made one for the freeness of
+word-order. To be specific, it refers here to the fact that within
+constituents word-order is fixed for determiners and prepositions and negation
+and degree particles, while being free for adjectives and nouns. The order of
+constituents has a higher amount of freedom, but the order of prepositional
+phrases does reflect their argument structure. Lastly wh-question formation
+co-occurs with a word-order transformation, ie., if the wh-constituent is in
+the accusative it is moved to sentence initial position.  Strangely enough
+this does not happen for polar questions, which are marked with a
+polar-forming morpheme. This leaves Esperanto in the perhaps uncommon position
+of marking one type of question with word-order (since the wh-words also
+denote relative pronouns), and the other with a morpheme. We should also
+consider the ambiguities introduced by relaxing word-order. Since the
+accusative is marked through a declension with obligatory agreement, it is
+trivial to distinguish subjects and objects. However, boundaries between other
+constituents such as the nominative and the direct object or the end of
+prepositional phrases are unmarked, and can result in ambiguity due to
+the aforementioned underspecification.
 
 Concerning prepositions, the initial intention was to express some rather vague
 relations such as "believing _in_ God" (which is neither spatial nor temporal,
@@ -131,7 +153,8 @@ agglutination of 1,0 and an average synthesis index (word-morphemo ratio) of
 1.8-2, reported by Wells 1989), it is not poly-synthetic such as Inuit
 languages; single words cannot express what is denoted by a whole phrase
 in other languages, and grammatical roles are not marked, nor is the nature of
-the relation between elements that make up a word specified. Concerning the
+the relation between elements that make up a word specified. It also does not
+feature incorporation such as in Catalan. Concerning the underspecification of
 relations between morphemes, consider the Dutch word "zoektechnieken", which
 could translated as "techniques for search," though "for" is not specified in
 the Dutch word. In an agglutinative language invariant morphemes that express
@@ -140,26 +163,27 @@ identifying the elements that make up a word is relatively easy (although
 ambiguities may arise through overlap; ie., when concatenating two smaller
 morphemes results in a string of characters that coincides with a larger
 morpheme). The process of word formation is completely productive and without
-exceptions; the only proviso is that a formation should make sense semantically
-when considering the meaning of its constituent elements. 
+exceptions; the only proviso is that a formation should make sense
+semantically when considering the meaning of its constituent elements (ie.,
+the principle of compositionality modulo the Gricean maxim of manner). 
 
-There is obligatory agreement in number and case within noun phrases. Verb
-paradigms are simple: tense is marked with the ending, person and number
-through the personal pronoun.
+There is obligatory agreement in number and declension within noun phrases.
+Verb paradigms are simple: tense is marked with the ending, person and number
+solely through the subject.
 
 Esperanto's productive morphology can be summarized using a regular
 grammar. The following is adapted from Schubert (1993; caveat lector: Schubert
 incorrectly characterizes this grammar as recursive), which in turn is based
 on Kalocsay's (1980) account. I have translated it into a regular grammar,
-proving that Esperanto's lexicon of word forms can be enumerated by a regular
-language; to my knowledge this is the first such description to date. The
-grammar for function words: 
+proving that the word forms in the lexicon of Esperanto can be enumerated by a
+regular language; to my knowledge this is the first such description to date.
+The grammar for function words: 
 
 {{{
 function_word := adverb | preposition | numeral
 adverb := prefix adverb
 preposition := prefix preposition
-numeral := numeral numeral*
+numeral := numeral numeral{U+42}
 prefix := mal | ne | ...
 suffix := il | et | ...
 }}}
@@ -167,9 +191,9 @@ suffix := il | et | ...
 Content words are a little more involved (ibid):
 
 {{{
-word := prefix* left* right ending (epsilon | declension)
-left := right (epsilon | ending)
-right := prefix* root suffix*
+word := prefix{U+42} left{U+42} right ending (&epsilon; | declension)
+left := right (&epsilon; | ending)
+right := prefix{U+42} root suffix{U+42}
 ending := o | a | e 
 declension := j | n
 verb-ending := as | is | os | us | u
@@ -269,7 +293,7 @@ It should be noted that Esperanto, as a free word-order language, is more
 suitably described using depedency structures. However, given extent of
 previous work on DOP with phrase-structure trees, I have opted to assume such
 hierarchical representantions instead. This is merely a pragmatically motivated
-assumption. Work on combining DOP and dependency structures is forthcoming.
+assumption. 
 
 What makes DOP so promising is that if any computational approach to language
 can be said to successfully learn a language given enough data (ie., without
@@ -298,7 +322,7 @@ not make any independence assumptions at all.
 A fascinating parallel could be said to exist between DOP and the human immune
 system:
 
-[[[{{{
+[[[
 	"Edelman received the Nobel prize in 1972 for his model of the
 	recognition processes of the immune system. Recognition of bacteria is
 	based on competitive selection in a population of antibodies. This
@@ -318,8 +342,6 @@ system:
 	transfer between the environment and organisms that causes the
 	population to change and increase its fitness. (p. 74)" 
 	-- Clancey (1991)
-}}}
-
 ]]]
 
 This general theory that is hinted at here is Edelman's Neural Darwinism,
@@ -362,24 +384,20 @@ provided that it follows its orthography. Concerning morphology in particular,
 Schubert (1993) notes, after referring to Zamenhof instruction of consulting
 the supplied dictionary of roots and affixes:
 
-[[[{{{
+[[[
 	"Apart from this recipe for deciphering Esperanto texts,
 	Zamenhof did not tell the users of his language exactly HOW to
 	build complex words. He relied on providing a vast number of models and
 	examples" (emphasis in the original)
-}}}
-
 ]]]
 
 Further on, Schubert notes:
 
-[[[{{{
+[[[
 	"Zamenhof may have intuitively felt the impossibility of describing a
 	language exhaustively by means of rules. Such an insight would make his
 	thinking very modern indeed. In any case he preferred to give examples
 	rather than working out a detailed word grammar."
-}}}
-
 ]]]
 
 This clearly justifies our intention of analyzing Esperanto using an
@@ -441,7 +459,7 @@ Annotated example sentences:
 
 {i(/phpsyntaxtree/pngtree.php?data=[S [S [NP [DT la] [N' [JJ venontajn] [N' [JJ apartajn] [NN pecojn]]]] [VP [NP [PRP mi]] [VP [VBP donas]]]] [S' [IN ke] [S [NP [DT la] [NN lernantoj]] [VP [VB povu] [VP [VP [VP [VB ripeti] [RB praktike]] [NP [NP [DT la] [NN regulojn]] [PP [IN de] [NP [DT l'] [N' [NN gramatiko] [JJ internacia]]]]]] [VPC [CC kaj] [VP [VP [VB kompreni] [RB bone]] [NP [NP [NP [DT la] [NN signifon]] [NPC [CC kaj] [NP [DT la] [NN uzon]]]] [PP [IN de] [NP [DT l'] [N' [NN sufiksoj] [NC [CC kaj] [NN prefiksoj]]]]]]]]]]]]])}
 
-Annotated example words:
+Some annotated example words:
 
 {{{
 (JJ (JJ (V (V (P en) (V konduk)) (V it)) a) j)
@@ -553,24 +571,28 @@ S o M = {i(/phpsyntaxtree/pngtree.php?data=[S [NP [NN [N amik] o]] [VP [VB [V ve
 
 Toy corpora:
 
-* morphology: hand annotated list of 290 words, containing all closed class words and affixes, 
-and various open class roots and derivations. Compiled from various more or less naturalistic 
-sources (eg. Wennergren 2005, Miner 2006)
-* syntax: hand annotated list of 14 sentences (first paragraph of Zamenhof's Dua Libro). 
-  coverage of morphology is 100% with respect to this corpus.
+* Morphology: hand annotated list of 290 words, containing all closed class
+  words and affixes, and various open class roots and derivations. Compiled
+  from various more or less naturalistic sources (eg. Wennergren 2005, Miner
+  2006).
+* Syntax: hand annotated list of 14 sentences (first paragraph of Zamenhof's 
+  Dua Libro). Coverage of morphology is 100% with respect to this corpus.
 
 Treebanks:
 
 * morphology: semi-supervised corpus generated from dictionaries (TBD)
-* syntax: Monato treebank (Bick, personal communication), a corpus parsed with EspGram (Bick 2007).
-Number of sentences: 1995, tokens: 30,397, types: 9247. Average sentence length: 15.338. Resulting
-grammar is 859 MB. Have not been able to parse with it yet, because it requires too much memory (perhaps
-a packed parse forest chart parser is better?). Treebank requires preprocessing (TBD).
+* syntax: Monato treebank (Bick, personal communication), a corpus parsed with
+  EspGram (Bick 2007).  Number of sentences: 1995, tokens: 30,397, types:
+9247. Average sentence length: 15.338. Resulting grammar is 5 GB. 
+Treebank requires preprocessing, a basic filter was applied to prune parse
+trees whose leaves do not agree with the original input sentence; also,
+unique POS tags are inserted for punctuation.
 
 @ Results on toy corpora
 
-Using a syntax and morphological corpus that do not contain the word "ven'as", 
-but with a morphology model that can derive it from "don'as" and the past tense "ven'is":
+Using a syntax and morphological corpus that do not contain the word "ven'as",
+but with a morphology model that can derive it from "don'as" and the past
+tense "ven'is":
 
 {{{
 sentence: amiko venas
@@ -609,9 +631,11 @@ POS tag (uniform probability for now). This is not an elegant solution
 because POS tags are transparently marked in Esperanto, so perfect tagging
 can be performed with a rule-based approach; the problem is that this 
 should be integrated into the parsing algorithm, because the alternative of
-parsing sequences of POS tags instead of words is a cop out I do not want to make.
+parsing sequences of POS tags instead of words is a cop out I do not want to
+make.
 
-Here is a large sentence from later in the "Dua Libro" (which is, fittingly, about compounding in Esperanto):
+Here is a large sentence from later in the "Dua Libro" (which is, fittingly,
+about word formation in Esperanto):
 
 {{{
 sentence: Vortoj kunmetitaj estas kreataj per simpla kunligado de simplaj vortoj
@@ -647,15 +671,17 @@ morphology + syntax combined:
               (NN (NN (N@320 vort) (NN_o@321 o)) (NN_j@27 j)))))))))
 }}}
 
-{i(https://unstable.nl/phpsyntaxtree/pngtree.php?data=[S [NP@128 [NN [NN [N@320 Vort] [NN_o@321 o]] [NN_j@27 j]]] [VP[NP [JJ [J [V kunmetit]  [J_a@11 a]] [JJ_j@12 j]]][VP [VB [V@255 est] [VB_as@256 as]] [VP[JJ [J [V kreat] [J_a@11 a]] [JJ_j@12 j]][NP [NP[JJ [V [N per] [V simpl]] [JJ_a@171 a]][NN [N kunligad] [NN_o@451 o]]] [PP[IN de][N' [JJ [J [V simpl] [J_a@11 a]] [JJ_j@12 j]] [NN [NN [N@320 vort] [NN_o@321 o]] [NN_j@27 j]]]]]]]]])}
+{i(https://unstable.nl/phpsyntaxtree/pngtree.php?data=[S [NP [NN [NN [N Vort] [NN_o o]] [NN_j j]]] [VP[NP [JJ [J [V kunmetit]  [J_a a]] [JJ_j j]]][VP [VB [V est] [VB_as as]] [VP[JJ [J [V kreat] [J_a a]] [JJ_j j]][NP [NP[JJ [V [N per] [V simpl]] [JJ_a a]][NN [N kunligad] [NN_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J_a a]] [JJ_j j]] [NN [NN [N vort] [NN_o o]] [NN_j j]]]]]]]]])}
 
-(Translation: Compound words are created using simple concatenation of simple words [NB: words means roots here])
+(Translation: Derived words are created using simple concatenation of simple
+words [NB: words means roots here])
 
-There are some mistakes in segmenting (kun-met-it, kre-at, per simpl-a, kun-lig-ad). 
-The phrase structure has mistakes as well, eg. "vortoj kunmetitaj" is a constituent, 
-"per simpla..." should be a PP but this is overlooked because it got an incorrect
- POS tag. But given that the syntax corpus contains only 14 sentences it is perhaps 
-striking that a parse was produced at all.
+There are some mistakes in segmenting (kun-met-it, kre-at, per simpl-a,
+kun-lig-ad).  The phrase structure has mistakes as well, eg. "vortoj
+kunmetitaj" is a constituent, "per simpla..." should be a PP but this is
+overlooked because it got an incorrect POS tag. But given that the syntax
+corpus contains only 14 sentences it is perhaps striking that a parse was
+produced at all.
 
 The modularist approach yields the following parse tree:
 
@@ -681,24 +707,24 @@ Vortoj kunmetitaj estas kreataj per simpla kunligado de simplaj vortoj
 
 {i(https://unstable.nl/phpsyntaxtree/pngtree.php?data=[S [NP[NN [NN [N Vort] [NN_o o]] [NN_j j]][JJ [J [V kunmetit] [J_a a]] [JJ_j j]]] [VP[VP [VB [V est] [VB_as as]] [NP [JJ [J [V kreat] [J_a a]] [JJ_j j]] [IN per]]][NP [NP [JJ [J simpl] [JJ_a a]] [NN [J kunligad] [NN_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J_a a]] [JJ_j j]] [NN [NN [N vort] [NN_o o]] [NN_j j]]]]]]])}
 
-The morphology is identical, but syntactically the results are a little different, 
-eg. the first noun and adjective are together in an NP. However, the preposition 
-"per" appears oddly at the end of an NP, instead of introducing a PP (in the 
-previous tree it ended up prefixing an NP because the model cannot distinguish 
-the difference between word and morpheme boundary).
+The morphology is identical, but syntactically the results are a little
+different, eg. the first noun and adjective are together in an NP. However,
+the preposition "per" appears oddly at the end of an NP, instead of
+introducing a PP (in the previous tree it ended up prefixing an NP because the
+model cannot distinguish the difference between word and morpheme boundary).
 
 @ Todo
 
-* parse bitpar chart output into NLTK (currently only most probable derivation; we need most probable parse and maybe shortest derivation, SL-DOP etc.)
-* automate testing &amp; evaluation, apply to toy corpus
+* parse bitpar chart output into NLTK (currently only most probable derivation; we need n most probable parses and maybe shortest derivation, SL-DOP etc.)
 * use Reta Vortaro / ergane Esperanto dictionary and root lists 
   to induce segmentation / morphology model in a semi-supervised fashion.
 * check morphology coverage against vocabulary of Monato treebank
 * distinguish between morpheme and word boundaries (how?).
  possibly by having a trailing space as part of a morphological analysis 
 (but: this should not block inflection for plurality and accusative (+j and +n respectively).
-* write report (maybe convert wiki to latex?). evaluation &amp; conclusion.
-write about Dasgupta (2008) &amp; pragmatic motivation for assuming hierarchical phrase-structure trees.
+* write report (convert wiki to latex?). evaluation &amp; conclusion.
+write about Dasgupta (2008) &amp; is there work on DOP + dependencies? 
+mention DLT as older exemplar model.
 * look at DOP* / U-DOP
 
 @ Evaluation
@@ -823,6 +849,8 @@ everything seems to be there.
 Dasgputa, Probal (2008), ``Interlexical studies: a cognitive approach,'' talk
 delivered on 18th of April 2008, Amsterdam Centre for Language and
 Communication.
+
+DLT: Distributed Language Translation project.
 
 (from Miner 2006)
 
