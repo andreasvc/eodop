@@ -75,7 +75,7 @@ a form of syntactocentrism, a term coined in Generative Linguistics
 excursions into semantics have been made. In this project I will go in the
 other direction and turn to the stratum of morphology. Most accounts of
 morphology in Computational Linguistics seem to present the structure of words
-as a sequence of morpheme-feature pairs (e.g., Jurafsky & Martin 19XX),
+as a sequence of morpheme-feature pairs (e.g., Jurafsky & Martin 2000),
 as parsed by a (Stochastic) Finite State Transducer (cf., Schmid et al. 2004).
 
 However, due to the complexity and potentially unlimited productivity of
