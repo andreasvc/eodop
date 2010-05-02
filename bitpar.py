@@ -17,7 +17,10 @@ class BitParChartParser:
 		
 		@param weightedrules: sequence of tuples with strings 
 			(lhs and rhs separated by tabs, eg. "S NP VP") and
-			frequencies.
+			frequencies. The reason we use this format is that
+			it is close to bitpar's file format; converting a
+			weighted grammar with probabilities to frequencies
+			would be a detour.
 		@param lexicon: set of strings belonging to the lexicon
 			(ie., the set of terminals)
 		@param rootsymbol: starting symbol for the grammar
