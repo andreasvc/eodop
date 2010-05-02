@@ -1,12 +1,25 @@
-@ Enriching DOP with morphology: 
+\documentclass[10pt,a4paper]{article}
+\usepackage{linguex}
+\usepackage{verbatim}
+\usepackage[pdftex]{graphicx}
+\usepackage[english]{babel}
+\usepackage{hyperref}
+%\usepackage{fullpage}
+\usepackage[utf8x]{inputenc}
 
-@ a pilot using a constructed language
+\begin{document}
 
-0440949 _Andreas van Cranenburgh_ Cognitive Models of Language project,
+\section{Enriching DOP with morphology}
+
+\subsection{a pilot using a constructed language}
+
+\begin{center}
+{\em Andreas van Cranenburgh} 0440949 \\
+Cognitive Models of Language project, April 2010, \\
 Master of Logic, University of Amsterdam 
+\end{center}
 
-@ Abstract
-
+\abstract{
 Esperanto is a constructed language with a rich and regular morphology.  It
 seems likely that taking its morphology into account when parsing syntax will
 improve accuracy. I will investigate the effects of considering morphological
@@ -19,24 +32,25 @@ I will construct a small toy corpus for testing. Furthermore, experiments with
 U-DOP for both morphology and phrase structure are possible.
 
 Lastly, previous work with Esperanto has resulted in a highly successful
-(&gt;95% precision on a small test corpus) constraint grammar (Bick 2007), and
+($>95\%$ precision on a small test corpus) constraint grammar (Bick 2007), and
 a formal model of morphology and syntax in the form of an adpositional grammar
 (Gobbo 2009); an adpositional grammar is a dependency grammar combining
 directed dependencies with the dimension of trajector/landmark from
 construction grammar. These provide a means of comparison and a potential
-treebank.
+treebank.}
+\footnote{{\bf Acknowledgements}: I wish to thank the following people (in
+reverse chronological order): Federico Sangati for practical advice on DOP, Ken
+Miner for advice on morphology and suggesting the application of DOP to
+Esperanto, Eckhard Bick for the Monato treebank, Rens Bod for teaching me
+Data-Oriented Parsing, and last but not least Wim Jansen for teaching me
+Esperanto.}
 
- *Acknowledgements:* I wish to thank the following people (in reverse
-chronological order): Federico Sangati for practical advice on DOP, Ken Miner
-for advice on morphology and suggesting the application of DOP to Esperanto,
-Eckhard Bick for the Monato treebank, Rens Bod for teaching me Data-Oriented
-Parsing, and last but not least Wim Jansen for teaching me Esperanto.
+\subsection{Research questions:}
 
-@ Research questions:
-
-* Does making morphology transparent to syntax improve parsing results for
+\begin{itemize}
+\item Does making morphology transparent to syntax improve parsing results for
 syntax?
-* Are morphology and syntax autonomous? ie., is morphology opaque or
+\item Are morphology and syntax autonomous? ie., is morphology opaque or
 transparent to syntax? These possibilities correspond to a modularist (cf.
 Pinker 1994, Jackendoff 2003) vs. an interactionist approach (cf.  MacWhinney
 1987). Here modularism refers to the functionalist hypothesis of the autonomy
@@ -50,7 +64,8 @@ ignored in the majority of work in (computational) linguistics to date.
 Jackendoff's (2003) parallel architecture suggest a compromise where
 interfaces of different autonomous levels are possible (e.g.,
 phonology-semantics to deal with focus effects).
-* Are words the smallest units of syntax, or is it perhaps morphemes?
+\item Are words the smallest units of syntax, or is it perhaps morphemes?
+\end{itemize}
 
 Because this is a pilot project, only the first question shall be answered,
 but this may provide a hint as to the other questions. In addition the answer
@@ -58,24 +73,26 @@ to the first question shall only concern Esperanto.
 
 Approach:
 
-* Construct a corpus of sentences annotated with phrase structures, and a 
+\begin{itemize}
+\item Construct a corpus of sentences annotated with phrase structures, and a 
 lexicon of words annotated with morphological structures. The assumption is
 that while syntax may use information in morphology, morphology does not need
 information from syntax, hence the possibility of constructing a morphological
 corpus independent of the text corpus; note that this amounts to assuming that
 for the purpose of constructing a corpus the morphology is context-free.
-* Divide the corpus into training and testing, train on the former with DOP1 or 
+\item Divide the corpus into training and testing, train on the former with DOP1 or 
 DOP*; (Zollman 2005) (the latter only given a sufficiently large corpus)
-* Evaluate morphology: evaluate performance of morphology; should be good 
+\item Evaluate morphology: evaluate performance of morphology; should be good 
 enough to continue with syntax
-* Morphology transparent to syntax: take treebank corpus, merge phrase 
+\item Morphology transparent to syntax: take treebank corpus, merge phrase 
 structure trees with morphological analyses, construct a single DOP model
-* Morphology opaque to syntax: construct a DOP model for morphology, taking one 
+\item Morphology opaque to syntax: construct a DOP model for morphology, taking one 
 word at a time, and a DOP model for syntax, producing phrase structure trees
 without morphology.  Morphological structure and phrase structure can be parsed
 in parallel and independent of each other.
+\end{itemize}
 
-@ Morphology
+\subsection{Morphology}
 
 Much work in Computational Linguistics focuses exclusively on syntax; this is
 a form of syntactocentrism, a term coined in Generative Linguistics 
@@ -83,7 +100,7 @@ a form of syntactocentrism, a term coined in Generative Linguistics
 excursions into semantics have been made. In this project I will go in the
 other direction and turn to the stratum of morphology. Most accounts of
 morphology in Computational Linguistics seem to present the structure of words
-as a sequence of morpheme-feature pairs (e.g., Jurafsky & Martin 2000),
+as a sequence of morpheme-feature pairs (e.g., Jurafsky \& Martin 2000),
 as parsed by a (Stochastic) Finite State Transducer (cf., Schmid et al. 2004).
 
 However, due to the complexity and potentially unlimited productivity of
@@ -97,7 +114,7 @@ English which display only a very limited amount of morphological productivity
 and hence exhibit only a subset of the derivational complexity in
 morphologically richer languages.
 
-@ About Esperanto
+\subsection{About Esperanto}
 
 Esperanto is a constructed language (also referred to as a planned language).
 The term ``artificial language" that is sometimes employed is inappropriate, as
@@ -110,7 +127,7 @@ second language used by a diverse and scattered speech community.
 
 Typologically Esperanto has the unique character of being a morphologically
 agglutinative and synthetic language with a vocabulary largely based on
-Romance languages (apart from some German & Russian words, and schematic
+Romance languages (apart from some German \& Russian words, and schematic
 function words as well). Its word formation is extremely compositional (ie., its
 word formation is fully transparent); I go as far as to contend that it is the
 most compositional spoken language in use today. Its syntax is schematic
@@ -187,26 +204,26 @@ proving that the word forms in the lexicon of Esperanto can be enumerated by a
 regular language; to my knowledge this is the first such description to date.
 The grammar for function words: 
 
-{{{
+\begin{verbatim}
 function_word := adverb | preposition | numeral
 adverb := prefix adverb
 preposition := prefix preposition
-numeral := numeral numeralB
+numeral := numeral numeral*
 prefix := mal | ne | ...
 suffix := il | et | ...
-}}}
+\end{verbatim}
 
 Content words are a little more involved (ibid):
 
-{{{
-word := prefixB leftB right ending (&epsilon; | declension)
-left := right (&epsilon; | ending)
-right := prefixB root suffixB
+\begin{verbatim}
+word := prefixB leftB right ending (\epsilon | declension)
+left := right (\epsilon | ending)
+right := prefix* root suffix*
 ending := o | a | e 
 declension := j | n
 verb-ending := as | is | os | us | u
 root := akv | far | ...
-}}}
+\end{verbatim}
 
 In these rules, "prefix" and "suffix" refers to a closed class of affixes;
 "(verb-)ending" refers to a one or two-character ending marking the
@@ -273,18 +290,18 @@ rote. It has also resulted in confusing paronyms such as ``pesi'' (to weigh
 something) and ``pezi'' (to weigh X kilos, to be heavy). It is however an
 unchangeable part of the language.
 
-@ About Data-Oriented Parsing
+\subsection{About Data-Oriented Parsing}
 
-Data-Oriented Parsing (Scha 1990; Bod & Scha 1996, henceforth DOP) is a
+Data-Oriented Parsing (Scha 1990; Bod \& Scha 1996, henceforth DOP) is a
 computational framework for modeling natural language processing (NLP) and
 other hierarchical cognitive phenomena. Its basic assumptions are:
 
-* knowledge of language is made up of a corpus of concrete experiences
+\item knowledge of language is made up of a corpus of concrete experiences
 rather than abstract rules; this concrete experience is stored in
 exemplars, pairings of surface forms and their structure.
-* when faced with a new sentence, all fragments of past experiences can be
+\item when faced with a new sentence, all fragments of past experiences can be
 consulted to analyze the given sentence
-* fragments can be combined using one or more operations which obtain with a
+\item fragments can be combined using one or more operations which obtain with a
 certain (estimated) probability
 
 Two crucial aspects are the representation used to describe the concrete
@@ -330,27 +347,29 @@ not make any independence assumptions at all.
 A fascinating parallel could be said to exist between DOP and the human immune
 system:
 
-[[[
+\begin{quote}
 	"Edelman received the Nobel prize in 1972 for his model of the
 	recognition processes of the immune system. Recognition of bacteria is
 	based on competitive selection in a population of antibodies. This
 	process has several intriguing properties (p. 78): 
-
-	1) There is more than one way to recognize successfully any particular shape;
-	2) No two people have identical antibodies;
-	3) The system exhibits a form of memory at the cellular level (prior to
+	
+	\begin{enumerate} % enumerate with 1) style
+	\item There is more than one way to recognize successfully any particular shape;
+	\item No two people have identical antibodies;
+	\item The system exhibits a form of memory at the cellular level (prior to
 	antibody reproduction).
+	\end{enumerate}
 
 	Edelman extends this theory to a more general "science of recognition": 
 
-	By "recognition," I mean the continual adaptive matching or fitting of
+	By ``recognition," I mean the continual adaptive matching or fitting of
 	elements in one physical domain to novelty occurring in elements of
 	another, more or less independent physical domain, a matching that
 	occurs without prior instruction. [T]here is no explicit information
 	transfer between the environment and organisms that causes the
 	population to change and increase its fitness. (p. 74)" 
 	-- Clancey (1991)
-]]]
+\end{quote}
 
 This general theory that is hinted at here is Edelman's Neural Darwinism,
 a theory of competition describing the development of the human brain and
@@ -367,13 +386,13 @@ unsure exactly how to interpret 3), but reliance on memory is certainly the
 defining trait of DOP (as opposed to other formalisms which are typically
 biased to computation over memory).
 
-@ DOP and Esperanto
+\subsection{DOP and Esperanto}
 
 I attribute the idea of applying Data-Oriented Parsing to Esperanto to
 Ken Miner (2006a):
 
-[[[
-	``Ech se ni disvolvus stokastajn alirojn bazitajn sur Datum-Orientita
+\begin{quote}
+	``E\^c se ni disvolvus stokastajn alirojn bazitajn sur Datum-Orientita
 	Pritraktado (DOP), ankorau necesus denaskaj parolantoj por validumi
 	tiajn modelojn. Kiam temas pri la normala lingvistiko, ne eblas eskapi
 	la neceson de denaskaj parolantoj kiel fina kontrolo.''
@@ -382,7 +401,7 @@ Ken Miner (2006a):
 	Parsing (DOP), native speakers would still be necessary for evaluating
 	such models. When we speak of normal linguistics, it is impossible
 	to escape the necessity of native speakers as the ultimate arbiters.
-]]] -- http://www.sunflower.com/~miner/NEGATIVA_package/negativa.html
+\end{quote}
 
 The quote is from a rather gloomy article on the lack of negative evidence
 for Esperanto, and the resulting impossibility of doing real linguistics (as
@@ -437,21 +456,21 @@ as needed, provided that it follows its orthography. Concerning morphology in
 particular, Schubert (1993) notes, after referring to Zamenhof instruction of
 consulting the supplied dictionary of roots and affixes:
 
-[[[
+\begin{quote}
 	"Apart from this recipe for deciphering Esperanto texts,
 	Zamenhof did not tell the users of his language exactly HOW to
 	build complex words. He relied on providing a vast number of models and
 	examples" (emphasis in the original)
-]]]
+\end{quote}
 
 Further on, Schubert notes:
 
-[[[
+\begin{quote}
 	"Zamenhof may have intuitively felt the impossibility of describing a
 	language exhaustively by means of rules. Such an insight would make his
 	thinking very modern indeed. In any case he preferred to give examples
 	rather than working out a detailed word grammar."
-]]]
+\end{quote}
 
 This clearly justifies our intention of analyzing Esperanto using an
 exemplar-based model, not only pragmatically because of DOP's success, but
@@ -477,26 +496,28 @@ this clearly belies his ignorance of Esperanto, as well as being an obvious
 non-sequitur (perhaps Chomsky implicitly believes that _real_ languages
 develop _de novo_ without any interlinguistic interaction to speak of).
 
-@ Tag set
+\subsection{Tag set}
 
 The tag set for the hand-annotated corpora, inspired by the Penn-treebank is as follows:
 
-* Constituents: VP, PP, NP, N' (constituents that behave like a noun), 
+\begin{itemize}
+\item Constituents: VP, PP, NP, N' (constituents that behave like a noun), 
 NC (conjunction + NN/N'), NPC (conjunction + NP), VPC (conjunction + VP), 
 SC (conjuction + S), S' (if/that + S). 
-* Part-of-speech (simplified version of Penn tagset): NN, VB, PR, JJ, DT, RB, PRP, CC
-* Morphology, open class: N (noun), V (verb), J (adjectival), 
+\item Part-of-speech (simplified version of Penn tagset): NN, VB, PR, JJ, DT, RB, PRP, CC
+\item Morphology, open class: N (noun), V (verb), J (adjectival), 
 closed class: P (prepositional), A (affix), and auto-generated unique tags for
 all grammatical endings and declensions (o, j, n, etc.).
+\end{itemize}
 
 The Monato treebank uses a different tag set, based on the 
-{http://beta.visl.sdu.dk/visl/eo/index.php EspGram} constraint 
+\url\url{http://beta.visl.sdu.dk/visl/eo/index.php EspGram} constraint 
 grammar. The POS tags of the morphology corpus should be adapted 
 to fit those of the Monato treebank.
 
 Annotated example sentences:
 
-{{{
+\begin{verbatim}
 (S (S (NP (DT la) (N' (JJ venontajn) (N' (JJ apartajn) (NN pecojn)))) 
 (VP (NP (PRP mi)) (VP (VBP donas)))) (S' (IN ke) (S (NP (DT la) (NN lernantoj)) 
 (VP (VB povu) (VP (VP (VP (VB ripeti) (RB praktike)) (NP (NP (DT la) (NN regulojn)) 
@@ -506,41 +527,45 @@ Annotated example sentences:
 (NP (DT l') (N' (NN sufiksoj) (NC (CC kaj) (NN prefiksoj)))))))))))))
 
 (S (NP (NN amiko)) (VP (VB venis)))
-}}}
+\end{verbatim}
 
-{i(/phpsyntaxtree/pngtree.php?data=[S [NP [NN amiko]] [VP [VB venis]]])}
+%{i(/phpsyntaxtree/pngtree.php?data=[S [NP [NN amiko]] [VP [VB venis]]])}
 
-{i(/phpsyntaxtree/pngtree.php?fontsize=6&data=[S [S [NP [DT la] [N' [JJ venontajn] [N' [JJ apartajn] [NN pecojn]]]] [VP [NP [PRP mi]] [VP [VBP donas]]]] [S' [IN ke] [S [NP [DT la] [NN lernantoj]] [VP [VB povu] [VP [VP [VP [VB ripeti] [RB praktike]] [NP [NP [DT la] [NN regulojn]] [PP [IN de] [NP [DT l'] [N' [NN gramatiko] [JJ internacia]]]]]] [VPC [CC kaj] [VP [VP [VB kompreni] [RB bone]] [NP [NP [NP [DT la] [NN signifon]] [NPC [CC kaj] [NP [DT la] [NN uzon]]]] [PP [IN de] [NP [DT l'] [N' [NN sufiksoj] [NC [CC kaj] [NN prefiksoj]]]]]]]]]]]]])97}
+%{i(/phpsyntaxtree/pngtree.php?fontsize=6\&data=[S [S [NP [DT la] [N' [JJ venontajn] [N' [JJ apartajn] [NN pecojn]]]] [VP [NP [PRP mi]] [VP [VBP donas]]]] [S' [IN ke] [S [NP [DT la] [NN lernantoj]] [VP [VB povu] [VP [VP [VP [VB ripeti] [RB praktike]] [NP [NP [DT la] [NN regulojn]] [PP [IN de] [NP [DT l'] [N' [NN gramatiko] [JJ internacia]]]]]] [VPC [CC kaj] [VP [VP [VB kompreni] [RB bone]] [NP [NP [NP [DT la] [NN signifon]] [NPC [CC kaj] [NP [DT la] [NN uzon]]]] [PP [IN de] [NP [DT l'] [N' [NN sufiksoj] [NC [CC kaj] [NN prefiksoj]]]]]]]]]]]]])97}
 
 Some annotated example words:
 
-{{{
+\begin{verbatim}
 (JJ (JJ (V (V (P en) (V konduk)) (V it)) a) j)
 
 (NN (N (J (J (A mal) (J riĉ)) (A eg)) (A ul)) o)
 
 (VB (P al) (VB (V glu) i))
-}}}
+\end{verbatim}
 
-{i(/phpsyntaxtree/pngtree.php?data=[JJ [JJ [V [V [P en] [V konduk]] [V it]] a] j])} {i(/phpsyntaxtree/pngtree.php?data=[NN [N [J [J [A mal] [J rich]] [A eg]] [A ul]] o])} {i(/phpsyntaxtree/pngtree.php?data=[VB [P al] [VB [V glu] i]])}
+%{i(/phpsyntaxtree/pngtree.php?data=[JJ [JJ [V [V [P en] [V konduk]] [V it]] a] j])} {i(/phpsyntaxtree/pngtree.php?data=[NN [N [J [J [A mal] [J rich]] [A eg]] [A ul]] o])} {i(/phpsyntaxtree/pngtree.php?data=[VB [P al] [VB [V glu] i]])}
 
-@ Implementation
+\subsection{Implementation}
 
-* Goodman reduction: {https://unstable.nl/andreas/dopg.py own implementation}, using 
-{http://groups.google.com/group/nltk-dev/browse_thread/thread/86ca038723195978/c112b8d171b33d25 NLTK}. 
+\begin{itemize}
+\item Goodman reduction: \url{https://unstable.nl/andreas/dopg.py own implementation}, using 
+\url{http://groups.google.com/group/nltk-dev/browse_thread/thread/86ca038723195978/c112b8d171b33d25 NLTK}. 
 maybe add backoff DOP or DOP*; fast PCFG parsing using 
-{http://www.ims.uni-stuttgart.de/tcl/SOFTWARE/BitPar.html bitpar} 
+\url{http://www.ims.uni-stuttgart.de/tcl/SOFTWARE/BitPar.html bitpar} 
 (Schmid 2004), a bit vector based chart parser.
+\end{itemize}
 
 In order to apply the Goodman reduction to an arbitrary treebank, the reduction has been generalized to deal with arbitrary trees (not just trees in Chomsky normal form). This is done by translating subtrees of the form (A B_1 ... B_n) to rules of the form A - > B_1 ... B_n with relative frequency Prod(freq(x) if x has id else 1) / freq(A). In order to fully separate terminals from non-terminals, all terminals are assigned an unique tag if they don't yet have one.
 
 Previously considered possibilities:
 
-* {http://staff.science.uva.nl/~simaan/dopdis/ dopdis} (C): already has Goodman reduction and DOP*;
-* {http://sourceforge.net/projects/lilian/ lilian} (Java): has Goodman reduction, no DOP*; also has U-DOP.
-* Gideon Borensztajn's {http://staff.science.uva.nl/~gideon/sourcecode/DOPParser.tar.gz DOPParser} (Java): has Goodman reduction
+\begin{itemize}
+\item \url{http://staff.science.uva.nl/~simaan/dopdis/ dopdis} (C): already has Goodman reduction and DOP*;
+\item \url{http://sourceforge.net/projects/lilian/ lilian} (Java): has Goodman reduction, no DOP*; also has U-DOP.
+\item Gideon Borensztajn's \url{http://staff.science.uva.nl/~gideon/sourcecode/DOPParser.tar.gz DOPParser} (Java): has Goodman reduction
+\end{itemize}
 
-@ Segmentation
+\subsection{Segmentation}
 
 Before a morphological structure can be assigned to a word, it must be
 segmented into morphemes (similar to tokenization before parsing syntax). While
@@ -554,23 +579,27 @@ I have devised a form of "Data-Oriented Segmentation" to expand the
 coverage of segmentation beyond that of the words in the morphology corpus. The
 algorithm works as follows:
 
-* take the set of segmented words in the corpus by reading off the leaves of their trees
-* construct a dictionary from positions to the set of morphemes occurring at that position
-* generate possible words by taking the cartesian product of all morphemes occurring
+\begin{itemize}
+\item take the set of segmented words in the corpus by reading off the leaves of their trees
+\item construct a dictionary from positions to the set of morphemes occurring at that position
+\item generate possible words by taking the cartesian product of all morphemes occurring
  at position 0 and 1, corresponding to all possible 2-morpheme words using the available
  vocabulary of roots.
-* repeat until position n where n is highest number of morphemes in the treebank to
+\item repeat until position n where n is highest number of morphemes in the treebank to
  generate all possible words with n+1 morphemes.
+\end{itemize}
 
 Unfortunately this algorithm suffers from overgeneration. This should be remedied by 
 discarding any segmentations contradicting the initial set of (supervised) segmentations. 
 
 An alternative method of generating segmentations:
 
-* take the set of segmented words in the corpus by reading off the leaves of their trees
-* construct a dictionary from number of morphemes to words with that number of morphemes
-* generate possible words with n morphemes by taking the pointwise cartesian product of
+\begin{itemize}
+\item take the set of segmented words in the corpus by reading off the leaves of their trees
+\item construct a dictionary from number of morphemes to words with that number of morphemes
+\item generate possible words with n morphemes by taking the pointwise cartesian product of
  all words with n morphemes (ie., cartpi(zip(words[n])) )
+\end{itemize}
 
 This still overgenerates, though less so (eg., word class, plural and
 accusative endings in the wrong order; it may be necessary to treat endings
@@ -580,20 +609,22 @@ way would be to employ the context-free grammar described above to generate all
 valid words up to a certain length given a collection of roots along with their
 categories.
 
-@ DOP model composition
+\subsection{DOP model composition}
 
 In order to produce a combined morphology-syntax model, it is necessary to be
 able to compose a DOP model and a treebank. This is defined in the following
 manner:
 
-* let M be a DOP model and S a treebank, where for example M contains
+\begin{itemize}
+\item let M be a DOP model and S a treebank, where for example M contains
   morphology and S contains phrase structure trees.
-* the composition M o S yields a new DOP model by generating a new treebank S' 
+\item the composition M o S yields a new DOP model by generating a new treebank S' 
   based on the trees in the treebank S annotated with analyses of words parsed
   with M (assuming correct segmentation).
-* treebank S' is generated by iterating over the POS tags of the trees in S 
+\item treebank S' is generated by iterating over the POS tags of the trees in S 
   and substituting each POS tag with a tree from M.
-* the morphology-syntax model is obtained by instantiating a DOP model from S'
+\item the morphology-syntax model is obtained by instantiating a DOP model from S'
+\end{itemize}
 
 Note that this procedure assumes that disambiguation of morphology is
 context-free and perfect, the most probable parse is used for decorating the
@@ -601,45 +632,49 @@ syntax treebank.  This assumption should be empirically verified.
 
 Example:
 
-{{{
+\begin{verbatim}
 S := {{ (S (NP (NN amiko)) (VP (VB venis))) }
 M := {{ (NN (N amik) o) (VB (V ven) is) }
 
 S o M = {{ (S (NP (NN (N amik) o)) (VP (VB (V ven) is))) }
-}}}
+\end{verbatim}
 
-S := {i(/phpsyntaxtree/pngtree.php?data=[S [NP [NN amiko]] [VP [VB venis]]])}
-M := {i(/phpsyntaxtree/pngtree.php?data=[NN [N amik] o])}  {i(/phpsyntaxtree/pngtree.php?data=[VB [V ven] is])}
-S o M = {i(/phpsyntaxtree/pngtree.php?data=[S [NP [NN [N amik] o]] [VP [VB [V ven] is]]])}
+%S := {i(/phpsyntaxtree/pngtree.php?data=[S [NP [NN amiko]] [VP [VB venis]]])}
+%M := {i(/phpsyntaxtree/pngtree.php?data=[NN [N amik] o])}  {i(/phpsyntaxtree/pngtree.php?data=[VB [V ven] is])}
+%S o M = {i(/phpsyntaxtree/pngtree.php?data=[S [NP [NN [N amik] o]] [VP [VB [V ven] is]]])}
 
-@ Corpora
+\subsection{Corpora}
 
 Toy corpora:
 
-* Morphology: hand annotated list of 290 words, containing all closed class
+\begin{itemize}
+\item Morphology: hand annotated list of 290 words, containing all closed class
   words and affixes, and various open class roots and derivations. Compiled
   from various more or less naturalistic sources (eg. Wennergren 2005, Miner
   2006b).
-* Syntax: hand annotated list of 14 sentences (first paragraph of Zamenhof's 
+\item Syntax: hand annotated list of 14 sentences (first paragraph of Zamenhof's 
   Dua Libro). Coverage of morphology is 100% with respect to this corpus.
+\end{itemize}
 
 Treebanks:
 
-* morphology: semi-supervised corpus generated from dictionaries (TBD)
-* syntax: Monato treebank (Bick, personal communication), a corpus parsed with
+\begin{itemize}
+\item morphology: semi-supervised corpus generated from dictionaries (TBD)
+\item syntax: Monato treebank (Bick, personal communication), a corpus parsed with
   EspGram (Bick 2007).  Number of sentences: 1995, tokens: 30,397, types:
 9247. Average sentence length: 15.338. Resulting grammar is 5 GB. 
 Treebank requires preprocessing, a basic filter was applied to prune parse
 trees whose leaves do not agree with the original input sentence; also,
 unique POS tags are inserted for punctuation.
+\end{itemize}
 
-@ Results on toy corpora
+\subsection{Results on toy corpora}
 
 Using a syntax and morphological corpus that do not contain the word "ven'as",
 but with a morphology model that can derive it from "don'as" and the past
 tense "ven'is":
 
-{{{
+\begin{verbatim}
 sentence: amiko venas
 morphology:
 (NN (N amik) o) (p=0.00417101147028)
@@ -649,11 +684,11 @@ error Grammar does not cover some of the input words: "'venas'".
 morphology + syntax combined:
 ['amik', 'o', 'ven', 'as']
 (S (NP (NN (N amik) o)) (VP (VB (V ven) as))) (p=1.12188584593e-28)
-}}}
+\end{verbatim}
 
 The corpus contains the plural "prefiksoj", which is inflected to an accusative here:
 
-{{{
+\begin{verbatim}
 sentence: mi donas prefikson
 morphology:
 (PRP mi) (p=1.0)
@@ -668,7 +703,7 @@ morphology + syntax combined:
   (VP
     (VB (V don) as)
     (NP (NN (NN (N prefiks) o) n)))) (p=9.85999896556e-46)
-}}}
+\end{verbatim}
 
 However, it is perhaps unfair not to assign categories to unknown words. 
 In the following results I let a deterministic finite state automaton
@@ -680,7 +715,7 @@ by the ending, which will usually be correct).
 Here is a large sentence from later in the "Dua Libro" (which is, fittingly,
 about word formation in Esperanto):
 
-{{{
+\begin{verbatim}
 sentence: Vortoj kunmetitaj estas kreataj per simpla kunligado de simplaj vortoj
 morphology:
 Vortoj (NN (NN (N Vort) (NN_o o)) (NN_j j))
@@ -713,9 +748,9 @@ morphology + syntax combined:
             (N\'
               (JJ (J (V simpl) (J_a a)) (JJ_j j))
               (NN (NN (N vort) (NN_o o)) (NN_j j)))))))))
-}}}
+\end{verbatim}
 
-{i(https://unstable.nl/phpsyntaxtree/pngtree.php?data=[S [NP [NN [NN [N Vort] [NN_o o]] [NN_j j]]] [VP[NP [JJ [J [V kunmetit]  [J_a a]] [JJ_j j]]][VP [VB [V est] [VB_as as]] [VP[JJ [J [V kreat] [J_a a]] [JJ_j j]][NP [NP[JJ [V [N per] [V simpl]] [JJ_a a]][NN [N kunligad] [NN_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J_a a]] [JJ_j j]] [NN [NN [N vort] [NN_o o]] [NN_j j]]]]]]]]])}
+%{i(https://unstable.nl/phpsyntaxtree/pngtree.php?data=[S [NP [NN [NN [N Vort] [NN_o o]] [NN_j j]]] [VP[NP [JJ [J [V kunmetit]  [J_a a]] [JJ_j j]]][VP [VB [V est] [VB_as as]] [VP[JJ [J [V kreat] [J_a a]] [JJ_j j]][NP [NP[JJ [V [N per] [V simpl]] [JJ_a a]][NN [N kunligad] [NN_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J_a a]] [JJ_j j]] [NN [NN [N vort] [NN_o o]] [NN_j j]]]]]]]]])}
 
 (Translation: Derived words are created using simple concatenation of simple
 words [NB: words means roots here])
@@ -729,8 +764,8 @@ produced at all.
 
 The modularist approach yields the following parse tree:
 
-{{{
-syntax & morphology separate:
+\begin{verbatim}
+syntax \& morphology separate:
 Vortoj kunmetitaj estas kreataj per simpla kunligado de simplaj vortoj 
 (S
   (NP
@@ -747,9 +782,9 @@ Vortoj kunmetitaj estas kreataj per simpla kunligado de simplaj vortoj
         (N\'
           (JJ (J (V simpl) (J_a a)) (JJ_j j))
           (NN (NN (N vort) (NN_o o)) (NN_j j)))))))
-}}}
+\end{verbatim}
 
-{i(https://unstable.nl/phpsyntaxtree/pngtree.php?data=[S [NP[NN [NN [N Vort] [NN_o o]] [NN_j j]][JJ [J [V kunmetit] [J_a a]] [JJ_j j]]] [VP[VP [VB [V est] [VB_as as]] [NP [JJ [J [V kreat] [J_a a]] [JJ_j j]] [IN per]]][NP [NP [JJ [J simpl] [JJ_a a]] [NN [J kunligad] [NN_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J_a a]] [JJ_j j]] [NN [NN [N vort] [NN_o o]] [NN_j j]]]]]]])}
+%{i(https://unstable.nl/phpsyntaxtree/pngtree.php?data=[S [NP[NN [NN [N Vort] [NN_o o]] [NN_j j]][JJ [J [V kunmetit] [J_a a]] [JJ_j j]]] [VP[VP [VB [V est] [VB_as as]] [NP [JJ [J [V kreat] [J_a a]] [JJ_j j]] [IN per]]][NP [NP [JJ [J simpl] [JJ_a a]] [NN [J kunligad] [NN_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J_a a]] [JJ_j j]] [NN [NN [N vort] [NN_o o]] [NN_j j]]]]]]])}
 
 The morphology is identical, but syntactically the results are a little
 different, eg. the first noun and adjective are together in an NP. However,
@@ -760,7 +795,7 @@ model cannot distinguish the difference between word and morpheme boundary).
 That the deterministic finite state automaton is working can be seen from
 the following non-sense input:
 
-{{{
+\begin{verbatim}
 sentence: tiadelaradon teluro didelas
 morphology:
 tiadelaradon (NN (NN (N tiadelarad) (NN_o o)) (NN_n n))
@@ -771,13 +806,13 @@ morphology + syntax combined:
 (S
   (NP (NN (NN (N tiadelarad) (NN_o o)) (NN_n n)))
   (VP (NP (NN (N telur) (NN_o o))) (VP (VB (V didel) (VB_as as)))))
-syntax & morphology separate:
+syntax \& morphology separate:
 (S
   (NP
     (NN (NN (N tiadelarad) (NN_o o)) (NN_n n))
     (NN (N telur) (NN_o o)))
   (VP (VB (V didel) (VB_as as))))
-}}}
+\end{verbatim}
 
 As can be seen, the words and roots receive the correct POS tags, which
 additionally is not derived from the default SVO order.
@@ -786,31 +821,36 @@ to be a single noun phrase, which could have been trivially excluded by
 attending to the morphology (but perhaps an accusative category label would
 have been enough).
 
-@ Todo
+\begin{comment}
+\subsection{Todo}
 
-* parse bitpar chart output into NLTK (currently only most probable derivation; 
+\item parse bitpar chart output into NLTK (currently only most probable derivation; 
   we need n most probable parses and maybe shortest derivation, SL-DOP etc.)
-* use Reta Vortaro / ergane Esperanto dictionary and root lists 
+\item use Reta Vortaro / ergane Esperanto dictionary and root lists 
   to induce segmentation / morphology model in a semi-supervised fashion.
-* check morphology coverage against vocabulary of Monato treebank
-* distinguish between morpheme and word boundaries (how?).
+\item check morphology coverage against vocabulary of Monato treebank
+\item distinguish between morpheme and word boundaries (how?).
   possibly by having a trailing space as part of a morphological analysis 
   (but: this should not block inflection for plurality and accusative (+j and +n respectively).
-* finish report (convert wiki to latex?). evaluation & conclusion.
-  write about Dasgupta (2008) & is there work on DOP + dependencies? 
+\item finish report (convert wiki to latex?). evaluation \& conclusion.
+  write about Dasgupta (2008) \& is there work on DOP + dependencies? 
   mention DLT as older exemplar model.
-* look at DOP* / U-DOP
+\item look at DOP* / U-DOP
+\end{comment}
 
-@ Evaluation
+
+\subsection{Evaluation}
 
 TBD. 
 
-+ Construct all possible test sets of 2 sentences from the toy corpus of 14
+\begin{enumerate}
+\item Construct all possible test sets of 2 sentences from the toy corpus of 14
 sentences, evaluate with evalb (or extend toy corpus to the complete
 Fundamento).
-+ Tenfold testing of Monato treebank, with and without regard for morphology.
+\item Tenfold testing of Monato treebank, with and without regard for morphology.
+\end{enumerate}
 
-@ Conclusion
+\subsection{Conclusion}
 
 We have described a regular grammar that enumerates the word forms of
 Esperanto's lexicon, which can be used to automatically segment word strings.
@@ -833,13 +873,13 @@ as well as the induction of morphology tags from dictionaries remains to be
 done.
 
 
-@ References
+\subsection{References}
 
 Bick, Eckhard (2007), ``Tagging and Parsing an Artificial Language: an
 annotated web-corpus of Esperanto,'' in: _Proceedings of Corpus Linguistics_ ,
 Birmingham, UK.  http://beta.visl.sdu.dk/pdf/CorpusLinguistics2007_esp.pdf
 
-Bod, Rens &amp; Scha, Remko (1996) ``Data-Oriented Language Processing: an
+Bod, Rens \& Scha, Remko (1996) ``Data-Oriented Language Processing: an
 overview.'' Research reports, Institute for Logic, Language and Computation,
 University of Amsterdam. http://dare.uva.nl/document/1144
 
@@ -862,14 +902,14 @@ Jansen, W. (2007). ``Woordvolgorde in het Esperanto: normen, taalgebruik en
 universalia" (Word-order in Esperanto: norms, usage and universals). PhD
 thesis, LOT Utrecht.
 
-Jurafsky, D. & Martin, J.H. (2000), ``Speech & Language Processing An
+Jurafsky, D. \& Martin, J.H. (2000), ``Speech \& Language Processing An
 introduction to natural language processing, computational linguistics, and
 speech recognition,'' Pearson Education.
 
 Haitao, Liu (2001), ``Creoles, Pidgins, and Planned Languages.'' Interface.
 Journal of Applied Linguistics / Tijdschrift voor Toegepaste Linguïstiek 15 [2]. pp. 121--177.
 
-Kalocsay, Kálmán & Waringhien, Gaston (1980), Plena Analiza Gramatiko de
+Kalocsay, Kálmán \& Waringhien, Gaston (1980), Plena Analiza Gramatiko de
 Esperanto (Complete, analyzed Grammar of Esperanto), Rotterdam, Universala
 Esperanto-Asocio.
 
@@ -938,15 +978,17 @@ Zamenhof, Dr. L. L. (1905/1963), ``Fundamento de Esperanto.'' Ninth edition
 with Introduction, Notes and Linguistics comments, edited by Dr. A. Albault
 (Esperantaj Francaj Eldonoj: Marmande, 1963).
 
-Zollmann, Andreas & Sima'an, Khalil (2005), ``A Consistent and Efficient
+Zollmann, Andreas \& Sima'an, Khalil (2005), ``A Consistent and Efficient
 Estimator for DOP.''  _Journal of Automota Languages and Combinatorics_ vol.
 10, pp. 367.  http://staff.science.uva.nl/~simaan/D-Papers/JALCsubmit.pdf
 
-@ Needed references
+\end{document}
+
+\subsection{Needed references}
 
 everything seems to be there.
 
-@ Possible references 
+\subsection{Possible references }
 
 Dasgputa, Probal (2008), ``Interlexical studies: a cognitive approach,'' talk
 delivered on 18th of April 2008, Amsterdam Centre for Language and
