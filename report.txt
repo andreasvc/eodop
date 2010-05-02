@@ -17,12 +17,13 @@ Since there is no gold standard treebank with phrase structures for Esperanto,
 I will construct a small toy corpus for testing. Furthermore, experiments with
 U-DOP for both morphology and phrase structure are possible.
 
-Lastly, previous work with Esperanto has resulted in a highly successful (&gt;95%
-precision on a small test corpus) constraint grammar (Bick 2007), and a formal
-model of morphology and syntax in the form of an adpositional grammar (Gobbo
-2009); an adpositional grammar is a dependency grammar combining directed
-dependencies with the dimension of trajector/landmark from construction
-grammar. These provide a means of comparison and a potential treebank.
+Lastly, previous work with Esperanto has resulted in a highly successful
+(&gt;95% precision on a small test corpus) constraint grammar (Bick 2007), and
+a formal model of morphology and syntax in the form of an adpositional grammar
+(Gobbo 2009); an adpositional grammar is a dependency grammar combining
+directed dependencies with the dimension of trajector/landmark from
+construction grammar. These provide a means of comparison and a potential
+treebank.
 
 @ Research questions:
 
