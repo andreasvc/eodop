@@ -372,41 +372,69 @@ I attribute the idea of applying Data-Oriented Parsing to Esperanto to
 Ken Miner (2006a):
 
 [[[
-	Ech se ni disvolvus stokastajn alirojn bazitajn sur Datum-Orientita
+	``Ech se ni disvolvus stokastajn alirojn bazitajn sur Datum-Orientita
 	Pritraktado (DOP), ankorau necesus denaskaj parolantoj por validumi
 	tiajn modelojn. Kiam temas pri la normala lingvistiko, ne eblas eskapi
-	la neceson de denaskaj parolantoj kiel fina kontrolo.
+	la neceson de denaskaj parolantoj kiel fina kontrolo.''
+
+	Even if we develop stochastic approaches based on Data-Oriented
+	Parsing (DOP), native speakers would still be necessary for evaluating
+	such models. When we speak of normal linguistics, it is impossible
+	to escape the necessity of native speakers as the ultimate arbiters.
 ]]] -- http://www.sunflower.com/~miner/NEGATIVA_package/negativa.html
 
 The quote is from a rather gloomy article on the lack of negative evidence
 for Esperanto, and the resulting impossibility of doing real linguistics (as
-opposed to the parochial ``Esperantology''). I personally do not think this
-lack of evidence makes linguistics on Esperanto problematic, because
-gramaticality judgements and semantic intuitions are philosophically
-problematic no matter how many native speakers are available.
+opposed to the parochial ``Esperantology''). Note that ``native speakers''
+refers here specifically to speakers who use Esperanto in their day-to-day
+life with their peers, not in the more narrow sense of a language taught by
+parents. Nnative speakers in the latter sense exist but play a marginal role in
+the Esperanto movement, native speakers in the former sense do not exist and
+would violate the relative neutrality of Esperanto as an international
+language. I personally do not think this lack of evidence makes linguistics on
+Esperanto problematic, because gramaticality judgements and semantic
+intuitions are philosophically problematic no matter how many native speakers
+are available to supply them. While it is correct that there can be no
+negative evidence about the grammaticality or felicity of an Esperanto
+construction, the same goes for writing a poem in English: as long as the poem
+is required to be novel and original it needs to be composed with recourse to
+some creative ``estimator'' which judges whether a novel combination of words
+makes sense; positive evidence from corpora is of little value to this task,
+because it is biased to rehashing previously learned constructions, although
+it is undoubtedly a precondition.  Such a creative estimator must prune the
+potentially infinite space of low probability events according to a subjective
+aesthetic ranking and threshold. Incidentally, it should be noted that
+Esperanto has a startingly rich tradition of translated and original poetry,
+ranging from its very inception up to the present day.  Poetry has been one
+of the driving forces in coining neologisms, because of their affective
+connotations. It may be desired to express an antonymic meaning without
+evoking its opposite through the presence of its morpheme, compare ``malgaja''
+(un-cheerful, sad) and ``trista''; similarly it may be dangerous to refer to
+``maldekstra'' (left) in a noisy environment, as opposed to its proposed
+neologism ``live.''
 
-The appropriateness of DOP for Esperanto should be noted. In
-contrast with the earlier a priori, philosophical languages published as
-completed projects (Maat 1999), Esperanto was presented in a modest brochure
-(Zamenhof 1887) purporting to fully describe its grammar in 16 rules, along
-with examples of original and translated prose and poetry, inviting the reader
-to start building and using the language by following its examples. That
-Zamenhof summarized his language in 16 rules may well have been a nod to the
-rival constructed language Volapük (Schleyer 1884), a popular but highly
-complex language of bygone days purportedly communicated to its author by God.
-The complexity of Volapük is demonstrated by the fact that its verb paradigm
+The appropriateness of DOP for Esperanto should be noted. In contrast with the
+earlier a priori, philosophical languages published as completed projects
+(Maat 1999), Esperanto was presented in a modest brochure (Zamenhof 1887)
+purporting to fully describe its grammar in 16 rules, along with examples of
+original and translated prose and poetry, inviting the reader to start
+building and using the language by following its examples. That Zamenhof
+summarized his language in 16 rules may well have been a nod to the rival
+constructed language Volapük (Schleyer 1884), a popular but highly complex
+language of bygone days purportedly communicated to its author by God.  The
+complexity of Volapük is demonstrated by the fact that its verb paradigm
 contains 1584 conjugations, by combining tense, aspect, voice, person, number
 and gender, among others. Such features made Volapük difficult to learn and
 use, just as the philosophical languages. During the first Esperanto congress
 the _Fundamento_ (Zamenhof 1905) was ratified as the untouchable foundation of
-the language, containing the 16 grammar rules, a dictionary with 2600 words and
-translations in six languages, and a collection of exercises; all of these had
-been published at least a decade earlier and where already sanctioned through
-practice. In effect, the _Fundamento_ can be considered as the authoritative
-corpus on Esperanto, to which only new vocabulary is to be added as needed,
-provided that it follows its orthography. Concerning morphology in particular,
-Schubert (1993) notes, after referring to Zamenhof instruction of consulting
-the supplied dictionary of roots and affixes:
+the language, containing the 16 grammar rules, a dictionary with 2600 words
+and translations in six languages, and a collection of exercises; all of these
+had been published at least a decade earlier and where already sanctioned
+through practice. In effect, the _Fundamento_ can be considered as the
+authoritative corpus on Esperanto, to which only new vocabulary is to be added
+as needed, provided that it follows its orthography. Concerning morphology in
+particular, Schubert (1993) notes, after referring to Zamenhof instruction of
+consulting the supplied dictionary of roots and affixes:
 
 [[[
 	"Apart from this recipe for deciphering Esperanto texts,
