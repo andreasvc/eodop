@@ -569,7 +569,8 @@ Annotated example sentences:
 \end{verbatim}
 
 %{i(/phpsyntaxtree/pngtree.php?data=[S [NP [NN amiko]] [VP [VB venis]]])}
-\includegraphics[scale=0.5]{eoimg/tree1}
+\synttree [S [NP [NN amiko]] [VP [VB venis]]]
+%\includegraphics[scale=0.5]{eoimg/tree1}
 
 
 \begin{verbatim}
@@ -583,7 +584,8 @@ Annotated example sentences:
 \end{verbatim}
 
 %{i(/phpsyntaxtree/pngtree.php?fontsize=6\&data=[S [S [NP [DT la] [N' [JJ venontajn] [N' [JJ apartajn] [NN pecojn]]]] [VP [NP [PRP mi]] [VP [VBP donas]]]] [S' [IN ke] [S [NP [DT la] [NN lernantoj]] [VP [VB povu] [VP [VP [VP [VB ripeti] [RB praktike]] [NP [NP [DT la] [NN regulojn]] [PP [IN de] [NP [DT l'] [N' [NN gramatiko] [JJ internacia]]]]]] [VPC [CC kaj] [VP [VP [VB kompreni] [RB bone]] [NP [NP [NP [DT la] [NN signifon]] [NPC [CC kaj] [NP [DT la] [NN uzon]]]] [PP [IN de] [NP [DT l'] [N' [NN sufiksoj] [NC [CC kaj] [NN prefiksoj]]]]]]]]]]]]])97}
-\includegraphics[scale=0.4, angle=90]{eoimg/tree2}
+\synttree [S [S [NP [DT la] [N' [JJ venontajn] [N' [JJ apartajn] [NN pecojn]]]] [VP [NP [PRP mi]] [VP [VBP donas]]]] [S' [IN ke] [S [NP [DT la] [NN lernantoj]] [VP [VB povu] [VP [VP [VP [VB ripeti] [RB praktike]] [NP [NP [DT la] [NN regulojn]] [PP [IN de] [NP [DT l'] [N' [NN gramatiko] [JJ internacia]]]]]] [VPC [CC kaj] [VP [VP [VB kompreni] [RB bone]] [NP [NP [NP [DT la] [NN signifon]] [NPC [CC kaj] [NP [DT la] [NN uzon]]]] [PP [IN de] [NP [DT l'] [N' [NN sufiksoj] [NC [CC kaj] [NN prefiksoj]]]]]]]]]]]]]
+%\includegraphics[scale=0.4, angle=90]{eoimg/tree2}
 %\includegraphics[width=17cm]{eoimg/tree2}
 
 Some annotated example words:
@@ -597,9 +599,12 @@ Some annotated example words:
 \end{verbatim}
 
 %{i(/phpsyntaxtree/pngtree.php?data=[JJ [JJ [V [V [P en] [V konduk]] [V it]] a] j])} {i(/phpsyntaxtree/pngtree.php?data=[NN [N [J [J [A mal] [J rich]] [A eg]] [A ul]] o])} {i(/phpsyntaxtree/pngtree.php?data=[VB [P al] [VB [V glu] i]])}
-\includegraphics[scale=0.5]{eoimg/tree3}
-\includegraphics[scale=0.5]{eoimg/tree4}
-\includegraphics[scale=0.5]{eoimg/tree5}
+\synttree [JJ [JJ [V [V [P en] [V konduk]] [V it]] a] j]
+\synttree [NN [N [J [J [A mal] [J rich]] [A eg]] [A ul]] o]
+\synttree [VB [P al] [VB [V glu] i]]
+%\includegraphics[scale=0.5]{eoimg/tree3}
+%\includegraphics[scale=0.5]{eoimg/tree4}
+%\includegraphics[scale=0.5]{eoimg/tree5}
 
 \subsection{Implementation}
 
@@ -706,19 +711,23 @@ syntax treebank.  This assumption should be empirically verified.
 Example:
 
 \begin{verbatim}
-S := {{ (S (NP (NN amiko)) (VP (VB venis))) }
-M := {{ (NN (N amik) o) (VB (V ven) is) }
+S := \{ (S (NP (NN amiko)) (VP (VB venis))) \}
+M := \{ (NN (N amik) o) (VB (V ven) is) \}
 
-S o M = {{ (S (NP (NN (N amik) o)) (VP (VB (V ven) is))) }
+S o M = \{ (S (NP (NN (N amik) o)) (VP (VB (V ven) is))) \}
 \end{verbatim}
 
 S := %{i(/phpsyntaxtree/pngtree.php?data=[S [NP [NN amiko]] [VP [VB venis]]])}
-\includegraphics[scale=0.5]{eoimg/tree6}
+\synttree[S [NP [NN amiko]] [VP [VB venis]]]
+%\includegraphics[scale=0.5]{eoimg/tree6}
 M := %{i(/phpsyntaxtree/pngtree.php?data=[NN [N amik] o])}  {i(/phpsyntaxtree/pngtree.php?data=[VB [V ven] is])}
-\includegraphics[scale=0.5]{eoimg/tree7}
-\includegraphics[scale=0.5]{eoimg/tree8}
+\synttree [NN [N amik] o]
+\synttree [VB [V ven] is]
+%\includegraphics[scale=0.5]{eoimg/tree7}
+%\includegraphics[scale=0.5]{eoimg/tree8}
 S o M = %{i(/phpsyntaxtree/pngtree.php?data=[S [NP [NN [N amik] o]] [VP [VB [V ven] is]]])}
-\includegraphics[scale=0.5]{eoimg/tree9}
+\synttree [S [NP [NN [N amik] o]] [VP [VB [V ven] is]]]
+%\includegraphics[scale=0.5]{eoimg/tree9}
 
 \subsection{Corpora}
 
@@ -830,7 +839,9 @@ morphology + syntax combined:
 \end{verbatim}
 
 %{i(https://unstable.nl/phpsyntaxtree/pngtree.php?data=[S [NP [NN [NN [N Vort] [NN_o o]] [NN_j j]]] [VP[NP [JJ [J [V kunmetit]  [J_a a]] [JJ_j j]]][VP [VB [V est] [VB_as as]] [VP[JJ [J [V kreat] [J_a a]] [JJ_j j]][NP [NP[JJ [V [N per] [V simpl]] [JJ_a a]][NN [N kunligad] [NN_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J_a a]] [JJ_j j]] [NN [NN [N vort] [NN_o o]] [NN_j j]]]]]]]]])}
-\includegraphics[scale=0.5,angle=90]{eoimg/tree10}
+%{i(https://unstable.nl/phpsyntaxtree/pngtree.php?data=
+\synttree [S [NP [NN [NN [N Vort] [NN_o o]] [NN_j j]]] [VP[NP [JJ [J [V kunmetit]  [J_a a]] [JJ_j j]]][VP [VB [V est] [VB_as as]] [VP[JJ [J [V kreat] [J_a a]] [JJ_j j]][NP [NP[JJ [V [N per] [V simpl]] [JJ_a a]][NN [N kunligad] [NN_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J_a a]] [JJ_j j]] [NN [NN [N vort] [NN_o o]] [NN_j j]]]]]]]]]
+%\includegraphics[scale=0.5,angle=90]{eoimg/tree10}
 
 (Translation: Derived words are created using simple concatenation of simple
 words [NB: words means roots here])
@@ -865,7 +876,8 @@ Vortoj kunmetitaj estas kreataj per simpla kunligado de simplaj vortoj
 \end{verbatim}
 
 %{i(https://unstable.nl/phpsyntaxtree/pngtree.php?data=[S [NP[NN [NN [N Vort] [NN_o o]] [NN_j j]][JJ [J [V kunmetit] [J_a a]] [JJ_j j]]] [VP[VP [VB [V est] [VB_as as]] [NP [JJ [J [V kreat] [J_a a]] [JJ_j j]] [IN per]]][NP [NP [JJ [J simpl] [JJ_a a]] [NN [J kunligad] [NN_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J_a a]] [JJ_j j]] [NN [NN [N vort] [NN_o o]] [NN_j j]]]]]]])}
-\includegraphics[scale=0.5,angle=90]{eoimg/tree11}
+\synttree [S [NP[NN [NN [N Vort] [NN_o o]] [NN_j j]][JJ [J [V kunmetit] [J_a a]] [JJ_j j]]] [VP[VP [VB [V est] [VB_as as]] [NP [JJ [J [V kreat] [J_a a]] [JJ_j j]] [IN per]]][NP [NP [JJ [J simpl] [JJ_a a]] [NN [J kunligad] [NN_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J_a a]] [JJ_j j]] [NN [NN [N vort] [NN_o o]] [NN_j j]]]]]]]
+%\includegraphics[scale=0.5,angle=90]{eoimg/tree11}
 
 The morphology is identical, but syntactically the results are a little
 different, eg. the first noun and adjective are together in an NP. However,
