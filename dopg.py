@@ -64,7 +64,14 @@ class GoodmanDOP:
 				S -> NP@1 VP@2 [0.444444444444]	
 		>>> print d.parser.parse("mary walks".split())
 		(S (NP@1 mary) (VP@2 walks)) (p=0.444444444444)		
-
+		
+		@param treebank: a list of Tree objects. Caveat lector:
+			terminals may not have (non-terminals as) siblings.
+		@param wrap: boolean specifying whether to add the start symbol
+			to each tree
+		@param parser: a class which will be instantiated with the DOP 
+			model as its grammar. Support BitParChartParser.
+		
 		instance variables:
 		- self.grammar a WeightedGrammar containing the PCFG reduction
 		- self.fcfg a list of strings containing the PCFG reduction 
@@ -286,13 +293,11 @@ def main():
 	""" a basic REPL for testing """
 	corpus = """(S (NP John) (VP (V likes) (NP Mary)))
 (S (NP Peter) (VP (V hates) (NP Susan)))
-(S (NP Harry) (VP eats (NP pizza)))
-(S (NP Hermione) (VP eats))""".split('\n')
-	#corpus = """(NN (N (A (A (A mal) (J riĉ)) (A eg)) (A ul)) o)
-	#(NN (N (N (N (V kudr) (A ist)) (A in)) (N edz)) o)
-	#(JJ (JJ (V (V (P en) (V konduk)) (V it)) a) j)""".split('\n')
-	d = GoodmanDOP((Tree(a) for a in corpus), rootsymbol='S')
-	d = GoodmanDOP((Tree(a) for a in corpus), rootsymbol='S', parser=BitParChartParser)
+(S (NP Harry) (VP (V eats) (NP pizza)))
+(S (NP Hermione) (VP (V eats)))""".split('\n')
+	corpus = [Tree(a) for a in corpus]
+	#d = GoodmanDOP(corpus, rootsymbol='S')
+	d = GoodmanDOP(corpus, rootsymbol='S', parser=BitParChartParser)
 	#print d.grammar
 	print "corpus"
 	for a in corpus: print a
