@@ -25,6 +25,12 @@ directed dependencies with the dimension of trajector/landmark from
 construction grammar. These provide a means of comparison and a potential
 treebank.
 
+ *Acknowledgements*: I wish to thank the following people (in reverse
+chronological order): Federico Sangati for practical advice on DOP, Ken Miner
+for advice on morphology and suggesting the application of DOP to Esperanto,
+Eckhard Bick for the Monato treebank, Rens Bod for teaching me Data-Oriented
+Parsing, and last but not least Wim Jansen for teaching me Esperanto.
+
 @ Research questions:
 
 * Does making morphology transparent to syntax improve parsing results for
@@ -362,9 +368,26 @@ biased to computation over memory).
 
 @ DOP and Esperanto
 
-The appropriateness of DOP for Esperanto should be noted. In contrast
-with the earlier a priori, philosophical languages published as completed
-projects (Maat 1999), Esperanto was presented in a modest brochure
+I attribute the idea of applying Data-Oriented Parsing to Esperanto to
+Ken Miner (2006a):
+
+[[[
+	Ech se ni disvolvus stokastajn alirojn bazitajn sur Datum-Orientita
+	Pritraktado (DOP), ankorau necesus denaskaj parolantoj por validumi
+	tiajn modelojn. Kiam temas pri la normala lingvistiko, ne eblas eskapi
+	la neceson de denaskaj parolantoj kiel fina kontrolo.
+]]] -- http://www.sunflower.com/~miner/NEGATIVA_package/negativa.html
+
+The quote is from a rather gloomy article on the lack of negative evidence
+for Esperanto, and the resulting impossibility of doing real linguistics (as
+opposed to the parochial ``Esperantology''). I personally do not think this
+lack of evidence makes linguistics on Esperanto problematic, because
+gramaticality judgements and semantic intuitions are philosophically
+problematic no matter how many native speakers are available.
+
+The appropriateness of DOP for Esperanto should be noted. In
+contrast with the earlier a priori, philosophical languages published as
+completed projects (Maat 1999), Esperanto was presented in a modest brochure
 (Zamenhof 1887) purporting to fully describe its grammar in 16 rules, along
 with examples of original and translated prose and poetry, inviting the reader
 to start building and using the language by following its examples. That
@@ -406,24 +429,24 @@ exemplar-based model, not only pragmatically because of DOP's success, but
 historically as well, since it accords with Esperanto's emergence. An
 interesting sidenote is that in the years after its publication, Esperanto's
 word formation processes appear to have regularized (Schubert 1989), favoring
-new coinings such as "aspekti" (to appear) over Germanisms such as "elrigardi" (Wennergren 2005)
-(literally to look out) in the sense of to appear (Dutch "er uitzien", German
-"aussehen"), naturally the literal sense of looking out e.g. a window remains.
-Interestingly, this is the opposite of creolization where a pidgin acquires a
-relatively complex rule system; a more important argument against the
-creolization of Esperanto is that creolization is by definition driven by a
-newly formed, geographically homogenic community of native speakers, which
-Esperanto certainly does not have. Furthermore, if Esperanto were to be a
-pidgin (it is not; cf.  Haitao 2001), it would be one of an extremely curious
-sort: a pidgin with an authoritative corpus and a language academy. As Miner
-(2008) remarks, the latter is something which Chomsky could have facetiously
-remarked, instead he has claimed (quite incorrectly) that Esperanto is not a
-language for it lacks a generative grammar, putatively because it "parasitizes"
-on other languages (footnote: paraphrased from an interview transcript
-available at http://www3.sympatico.ca/mlgr/chomsky.pdf); this clearly belies
-his ignorance of Esperanto, as well as being an obvious non-sequitur (perhaps
-Chomsky implicitly believes that _real_ languages develop _de novo_ without any
-interlinguistic interaction to speak of).
+new coinings such as "aspekti" (to appear) over Germanisms such as "elrigardi"
+(Wennergren 2005) (literally to look out) in the sense of to appear (Dutch "er
+uitzien", German "aussehen"), naturally the literal sense of looking out e.g.
+a window remains.  Interestingly, this is the opposite of creolization where a
+pidgin acquires a relatively complex rule system; a more important argument
+against the creolization of Esperanto is that creolization is by definition
+driven by a newly formed, geographically homogenic community of native
+speakers, which Esperanto certainly does not have. Furthermore, if Esperanto
+were to be a pidgin (it is not; cf.  Haitao 2001), it would be one of an
+extremely curious sort: a pidgin with an authoritative corpus and a language
+academy. As Miner (2008) remarks, the latter is something which Chomsky could
+have facetiously remarked, instead he has claimed (quite incorrectly) that
+Esperanto is not a language for it lacks a generative grammar, putatively
+because it "parasitizes" on other languages (footnote: paraphrased from an
+interview transcript available at http://www3.sympatico.ca/mlgr/chomsky.pdf);
+this clearly belies his ignorance of Esperanto, as well as being an obvious
+non-sequitur (perhaps Chomsky implicitly believes that _real_ languages
+develop _de novo_ without any interlinguistic interaction to speak of).
 
 @ Tag set
 
@@ -567,7 +590,7 @@ Toy corpora:
 * Morphology: hand annotated list of 290 words, containing all closed class
   words and affixes, and various open class roots and derivations. Compiled
   from various more or less naturalistic sources (eg. Wennergren 2005, Miner
-  2006).
+  2006b).
 * Syntax: hand annotated list of 14 sentences (first paragraph of Zamenhof's 
   Dua Libro). Coverage of morphology is 100% with respect to this corpus.
 
@@ -827,7 +850,11 @@ Computation.
 
 MacWhinney, B. (1987), ``Mechanisms of Language Acquisition,'' Lawrence Erlbaum Associates, NJ.
 
-Miner, Ken (2006), ``Rimarkoj pri `En la komenco estas la vorto' de Geraldo
+Miner, Ken (2006a), ``Tranchitaj frazoj kaj la probleme pri negative
+evidento'' (Distituents and the problem of negative evidence). March 2006.
+http://www.sunflower.com/~miner/NEGATIVA_package/negativa.html
+
+Miner, Ken (2006b), ``Rimarkoj pri `En la komenco estas la vorto' de Geraldo
 Mattos (fina versio),'' (Comments on `In the beginning was the word' by Geraldo
 Mattos (final version)). http://www.sunflower.com/~miner/EKVO_package/ekvo.html
 
@@ -898,7 +925,7 @@ Communication.
 
 DLT: Distributed Language Translation project.
 
-(from Miner 2006)
+(from Miner 2006a)
 
 Sakaguchi, Alicja, 1996. Die Dichotomie "künstlich" vs. "natürlich" und das historische Phänomen einer funktionierenden Plansprache. Language Problems and Language Planning 20:1.
 
