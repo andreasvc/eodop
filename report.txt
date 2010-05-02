@@ -25,7 +25,7 @@ directed dependencies with the dimension of trajector/landmark from
 construction grammar. These provide a means of comparison and a potential
 treebank.
 
- *Acknowledgements*: I wish to thank the following people (in reverse
+ *Acknowledgements:* I wish to thank the following people (in reverse
 chronological order): Federico Sangati for practical advice on DOP, Ken Miner
 for advice on morphology and suggesting the application of DOP to Esperanto,
 Eckhard Bick for the Monato treebank, Rens Bod for teaching me Data-Oriented
@@ -321,7 +321,7 @@ aspects of non-probabilistic machine learning techniques such as k-nearest
 neighbor with a probabilistic approach to deal with unseen (novel) exemplars;
 thus DOP provides a way to deal with the spectrum ranging from stock phrases
 that can be memorized by rote to completely novel sentences. The larger the
-fragments used in a derivation, the less indepedence assumptions need to be
+fragments used in a derivation, the less independence assumptions need to be
 made; however, novel sentences can be parsed by backing off to smaller
 fragments. Thus, in the limit (as the corpus size approaches infinity) DOP does
 not make any independence assumptions at all. 
@@ -463,7 +463,7 @@ uitzien", German "aussehen"), naturally the literal sense of looking out e.g.
 a window remains.  Interestingly, this is the opposite of creolization where a
 pidgin acquires a relatively complex rule system; a more important argument
 against the creolization of Esperanto is that creolization is by definition
-driven by a newly formed, geographically homogenic community of native
+driven by a newly formed, geographically homogeneous community of native
 speakers, which Esperanto certainly does not have. Furthermore, if Esperanto
 were to be a pidgin (it is not; cf.  Haitao 2001), it would be one of an
 extremely curious sort: a pidgin with an authoritative corpus and a language
