@@ -16,11 +16,11 @@ def monato():
 		""" strip all function labels from a tree with labels of
 		the form "function:form", eg. S:np for subject, np. """
 		for a in treepositions(tree):
-			if isinstance(tree[a], Tree):
+			if isinstance(tree[a], Tree) and ':' in tree[a].node:
 				tree[a].node = tree[a].node.split(':')[1]
 
 	# turn cleanup off so that the grammar will not be removed
-	d = GoodmanDOP((stripfunc(cnf(Tree(a))) for a in open("arbobanko1.sexp")), rootsymbol='fcl', parser=BitParChartParser, cleanup=False)
+	d = GoodmanDOP((stripfunc(cnf(Tree(a))) for a in open("arbobanko1.train")), rootsymbol='fcl', parser=BitParChartParser, cleanup=False)
 	#d = GoodmanDOP((Tree(a) for a in corpus), rootsymbol='S', wrap=True)
 	#print d.grammar
 	w = "foo!"
@@ -169,5 +169,5 @@ if __name__ == '__main__':
 	optionflags=doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS)
 	if attempted and not fail:
 		print "%d doctests succeeded!" % attempted
-	morphology()   #interactive demo with toy corpus
-	#monato()        #get monato DOP reduction
+	#morphology()   #interactive demo with toy corpus
+	monato()        #get monato DOP reduction

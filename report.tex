@@ -711,10 +711,10 @@ syntax treebank.  This assumption should be empirically verified.
 Example:
 
 \begin{verbatim}
-S := \{ (S (NP (NN amiko)) (VP (VB venis))) \}
-M := \{ (NN (N amik) o) (VB (V ven) is) \}
+S := { (S (NP (NN amiko)) (VP (VB venis))) } 
+M := { (NN (N amik) o) (VB (V ven) is) }
 
-S o M = \{ (S (NP (NN (N amik) o)) (VP (VB (V ven) is))) \}
+S o M = { (S (NP (NN (N amik) o)) (VP (VB (V ven) is))) }
 \end{verbatim}
 
 S := %{i(/phpsyntaxtree/pngtree.php?data=[S [NP [NN amiko]] [VP [VB venis]]])}
@@ -840,7 +840,7 @@ morphology + syntax combined:
 
 %{i(https://unstable.nl/phpsyntaxtree/pngtree.php?data=[S [NP [NN [NN [N Vort] [NN_o o]] [NN_j j]]] [VP[NP [JJ [J [V kunmetit]  [J_a a]] [JJ_j j]]][VP [VB [V est] [VB_as as]] [VP[JJ [J [V kreat] [J_a a]] [JJ_j j]][NP [NP[JJ [V [N per] [V simpl]] [JJ_a a]][NN [N kunligad] [NN_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J_a a]] [JJ_j j]] [NN [NN [N vort] [NN_o o]] [NN_j j]]]]]]]]])}
 %{i(https://unstable.nl/phpsyntaxtree/pngtree.php?data=
-\synttree [S [NP [NN [NN [N Vort] [NN_o o]] [NN_j j]]] [VP[NP [JJ [J [V kunmetit]  [J_a a]] [JJ_j j]]][VP [VB [V est] [VB_as as]] [VP[JJ [J [V kreat] [J_a a]] [JJ_j j]][NP [NP[JJ [V [N per] [V simpl]] [JJ_a a]][NN [N kunligad] [NN_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J_a a]] [JJ_j j]] [NN [NN [N vort] [NN_o o]] [NN_j j]]]]]]]]]
+\synttree [S [NP [NN [NN [N Vort] [NN\_o o]] [NN\_j j]]] [VP[NP [JJ [J [V kunmetit]  [J\_a a]] [JJ\_j j]]][VP [VB [V est] [VB\_as as]] [VP[JJ [J [V kreat] [J\_a a]] [JJ\_j j]][NP [NP[JJ [V [N per] [V simpl]] [JJ\_a a]][NN [N kunligad] [NN\_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J\_a a]] [JJ\_j j]] [NN [NN [N vort] [NN\_o o]] [NN\_j j]]]]]]]]]
 %\includegraphics[scale=0.5,angle=90]{eoimg/tree10}
 
 (Translation: Derived words are created using simple concatenation of simple
@@ -876,7 +876,7 @@ Vortoj kunmetitaj estas kreataj per simpla kunligado de simplaj vortoj
 \end{verbatim}
 
 %{i(https://unstable.nl/phpsyntaxtree/pngtree.php?data=[S [NP[NN [NN [N Vort] [NN_o o]] [NN_j j]][JJ [J [V kunmetit] [J_a a]] [JJ_j j]]] [VP[VP [VB [V est] [VB_as as]] [NP [JJ [J [V kreat] [J_a a]] [JJ_j j]] [IN per]]][NP [NP [JJ [J simpl] [JJ_a a]] [NN [J kunligad] [NN_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J_a a]] [JJ_j j]] [NN [NN [N vort] [NN_o o]] [NN_j j]]]]]]])}
-\synttree [S [NP[NN [NN [N Vort] [NN_o o]] [NN_j j]][JJ [J [V kunmetit] [J_a a]] [JJ_j j]]] [VP[VP [VB [V est] [VB_as as]] [NP [JJ [J [V kreat] [J_a a]] [JJ_j j]] [IN per]]][NP [NP [JJ [J simpl] [JJ_a a]] [NN [J kunligad] [NN_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J_a a]] [JJ_j j]] [NN [NN [N vort] [NN_o o]] [NN_j j]]]]]]]
+\synttree [S [NP[NN [NN [N Vort] [NN\_o o]] [NN\_j j]][JJ [J [V kunmetit] [J\_a a]] [JJ\_j j]]] [VP[VP [VB [V est] [VB\_as as]] [NP [JJ [J [V kreat] [J\_a a]] [JJ\_j j]] [IN per]]][NP [NP [JJ [J simpl] [JJ\_a a]] [NN [J kunligad] [NN\_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J\_a a]] [JJ\_j j]] [NN [NN [N vort] [NN\_o o]] [NN\_j j]]]]]]]
 %\includegraphics[scale=0.5,angle=90]{eoimg/tree11}
 
 The morphology is identical, but syntactically the results are a little
