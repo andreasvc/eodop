@@ -15,9 +15,10 @@ def monato():
 	def stripfunc(tree):
 		""" strip all function labels from a tree with labels of
 		the form "function:form", eg. S:np for subject, np. """
-		for a in treepositions(tree):
+		for a in tree.treepositions():
 			if isinstance(tree[a], Tree) and ':' in tree[a].node:
 				tree[a].node = tree[a].node.split(':')[1]
+		return tree
 
 	# turn cleanup off so that the grammar will not be removed
 	d = GoodmanDOP((stripfunc(cnf(Tree(a))) for a in open("arbobanko1.train")), rootsymbol='fcl', parser=BitParChartParser, cleanup=False)
