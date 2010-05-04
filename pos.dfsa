@@ -34,11 +34,8 @@
 2	j	2
 2	n	2
 3	n	3
-1	wordclass	H:n
-1	wordclass	CJT:n
-2	wordclass	DN:adj
-2	wordclass	CJT:adj
-3	wordclass	DA:adv
-3	wordclass	fA:adv
-4	wordclass	P:v-fin
-5	wordclass	P:v-inf
+1	wordclass	1
+2	wordclass	2
+3	wordclass	3
+4	wordclass	4
+5	wordclass	5
