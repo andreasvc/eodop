@@ -89,8 +89,9 @@ def parse(input, stripmorph=True):
 				out += ' (' * (a.count('=') - n)
 				open += (a.count('=') - n)
 			elif a.count('=') < n:
-				out += "%s %s" % (')' * n, a.count('=') * '(')
-				open -= (n - a.count('='))
+				#out += "%s %s" % (')' * n, a.count('=') * '(')
+				out += "%s %s" % (')' * (1 + n - a.count('=')), '(')
+				open -= (n - a.count('=')) - 1
 		n = a.count('=')
 		# remove morphology tags & lemma; replace other parentheses with braces because nltk.Tree gets confused
 		if stripmorph:
