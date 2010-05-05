@@ -11,7 +11,7 @@ from uuid import uuid1
 from nltk import Tree, FreqDist, InsideChartParser
 
 class BitParChartParser:
-	def __init__(self, weightedrules, lexicon, rootsymbol=None, unknownwords=None, openclassdfsa=None, cleanup=True):
+	def __init__(self, weightedrules, lexicon, rootsymbol=None, unknownwords=None, openclassdfsa=None, cleanup=True, name=''):
 		""" Interface to bitpar chart parser. Expects a list of weighted
 		productions with frequencies (not probabilities).
 		
@@ -58,7 +58,8 @@ class BitParChartParser:
 		self.grammar = weightedrules
 		self.lexicon = lexicon
 		self.rootsymbol = rootsymbol
-		self.id = uuid1()
+		if name: self.id = name
+		else: self.id = uuid1()
 		self.cleanup = cleanup
 		self.unknownwords = unknownwords
 		self.openclassdfsa = openclassdfsa

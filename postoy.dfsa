@@ -24,6 +24,7 @@
 0	s	4
 0	t	0
 0	u	0
+0	u	4
 0	v	0
 0	w	0
 0	x	0
@@ -35,10 +36,7 @@
 2	n	2
 3	n	3
 1	wordclass	1
-1	wordclass	2
-2	wordclass	3
-2	wordclass	4
-3	wordclass	5
-3	wordclass	6
-4	wordclass	7
-5	wordclass	8
+2	wordclass	2
+3	wordclass	3
+4	wordclass	4
+5	wordclass	5
