@@ -161,11 +161,12 @@ morphologically richer languages.
 Esperanto is a constructed language (also referred to as a planned language).
 The term ``artificial language" that is sometimes employed is inappropriate, as
 its artificial design is just a point in time of its century long continuous
-usage and evolution. It is a spoken language with its own literature and culture, so while it
-may not  be a ``natural language" strictly speaking (Gobbo (2009) uses the term
-Quasi-Natural Language), it is certainly a human language that performs all the
-communicative and expressive functions of Ethnic languages, albeit mostly as a
-second language used by a diverse and scattered speech community. 
+usage and evolution. It is a spoken language with its own literature and
+culture, so while it may not  be a ``natural language" strictly speaking (Gobbo
+(2009) uses the term Quasi-Natural Language), it is certainly a human language
+that performs all the communicative and expressive functions of Ethnic
+languages, albeit mostly as a second language used by a diverse and scattered
+speech community. 
 
 Typologically Esperanto has the unique character of being a morphologically
 agglutinative and synthetic language with a vocabulary largely based on
@@ -584,8 +585,8 @@ Annotated example sentences:
 \end{verbatim}
 
 %{i(/phpsyntaxtree/pngtree.php?fontsize=6\&data=[S [S [NP [DT la] [N' [JJ venontajn] [N' [JJ apartajn] [NN pecojn]]]] [VP [NP [PRP mi]] [VP [VBP donas]]]] [S' [IN ke] [S [NP [DT la] [NN lernantoj]] [VP [VB povu] [VP [VP [VP [VB ripeti] [RB praktike]] [NP [NP [DT la] [NN regulojn]] [PP [IN de] [NP [DT l'] [N' [NN gramatiko] [JJ internacia]]]]]] [VPC [CC kaj] [VP [VP [VB kompreni] [RB bone]] [NP [NP [NP [DT la] [NN signifon]] [NPC [CC kaj] [NP [DT la] [NN uzon]]]] [PP [IN de] [NP [DT l'] [N' [NN sufiksoj] [NC [CC kaj] [NN prefiksoj]]]]]]]]]]]]])97}
-\synttree [S [S [NP [DT la] [N' [JJ venontajn] [N' [JJ apartajn] [NN pecojn]]]] [VP [NP [PRP mi]] [VP [VBP donas]]]] [S' [IN ke] [S [NP [DT la] [NN lernantoj]] [VP [VB povu] [VP [VP [VP [VB ripeti] [RB praktike]] [NP [NP [DT la] [NN regulojn]] [PP [IN de] [NP [DT l'] [N' [NN gramatiko] [JJ internacia]]]]]] [VPC [CC kaj] [VP [VP [VB kompreni] [RB bone]] [NP [NP [NP [DT la] [NN signifon]] [NPC [CC kaj] [NP [DT la] [NN uzon]]]] [PP [IN de] [NP [DT l'] [N' [NN sufiksoj] [NC [CC kaj] [NN prefiksoj]]]]]]]]]]]]]
-%\includegraphics[scale=0.4, angle=90]{eoimg/tree2}
+%\synttree [S [S [NP [DT la] [N' [JJ venontajn] [N' [JJ apartajn] [NN pecojn]]]] [VP [NP [PRP mi]] [VP [VBP donas]]]] [S' [IN ke] [S [NP [DT la] [NN lernantoj]] [VP [VB povu] [VP [VP [VP [VB ripeti] [RB praktike]] [NP [NP [DT la] [NN regulojn]] [PP [IN de] [NP [DT l'] [N' [NN gramatiko] [JJ internacia]]]]]] [VPC [CC kaj] [VP [VP [VB kompreni] [RB bone]] [NP [NP [NP [DT la] [NN signifon]] [NPC [CC kaj] [NP [DT la] [NN uzon]]]] [PP [IN de] [NP [DT l'] [N' [NN sufiksoj] [NC [CC kaj] [NN prefiksoj]]]]]]]]]]]]]
+\includegraphics[scale=0.4, angle=90]{eoimg/tree2}
 %\includegraphics[width=17cm]{eoimg/tree2}
 
 Some annotated example words:
@@ -656,13 +657,19 @@ coverage of segmentation beyond that of the words in the morphology corpus. The
 algorithm works as follows:
 
 \begin{itemize}
-\item take the set of segmented words in the corpus by reading off the leaves of their trees
-\item construct a dictionary from positions to the set of morphemes occurring at that position
-\item generate possible words by taking the cartesian product of all morphemes occurring
- at position 0 and 1, corresponding to all possible 2-morpheme words using the available
- vocabulary of roots.
-\item repeat until position n where n is highest number of morphemes in the treebank to
- generate all possible words with n+1 morphemes.
+\item take the set of segmented words in the corpus by reading off the leaves
+of their trees
+
+\item construct a dictionary from positions to the set of morphemes occurring
+at that position
+
+\item generate possible words by taking the cartesian product of all morphemes
+occurring at position 0 and 1, corresponding to all possible 2-morpheme words
+using the available vocabulary of roots.
+
+\item repeat until position n where n is highest number of morphemes in the
+treebank to generate all possible words with n+1 morphemes.
+
 \end{itemize}
 
 Unfortunately this algorithm suffers from overgeneration. This should be
@@ -672,10 +679,14 @@ remedied by discarding any segmentations contradicting the initial set of
 An alternative method of generating segmentations:
 
 \begin{itemize}
-\item take the set of segmented words in the corpus by reading off the leaves of their trees
-\item construct a dictionary from number of morphemes to words with that number of morphemes
-\item generate possible words with n morphemes by taking the pointwise cartesian product of
- all words with $n$ morphemes (ie., cartpi(zip(words[n])) )
+\item take the set of segmented words in the corpus by reading off the leaves
+of their trees
+
+\item construct a dictionary from number of morphemes to words with that number
+of morphemes
+
+\item generate possible words with n morphemes by taking the pointwise
+cartesian product of all words with $n$ morphemes (ie., cartpi(zip(words[n])) )
 \end{itemize}
 
 This still overgenerates, though less so (eg., word class, plural and
@@ -840,8 +851,8 @@ morphology + syntax combined:
 
 %{i(https://unstable.nl/phpsyntaxtree/pngtree.php?data=[S [NP [NN [NN [N Vort] [NN_o o]] [NN_j j]]] [VP[NP [JJ [J [V kunmetit]  [J_a a]] [JJ_j j]]][VP [VB [V est] [VB_as as]] [VP[JJ [J [V kreat] [J_a a]] [JJ_j j]][NP [NP[JJ [V [N per] [V simpl]] [JJ_a a]][NN [N kunligad] [NN_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J_a a]] [JJ_j j]] [NN [NN [N vort] [NN_o o]] [NN_j j]]]]]]]]])}
 %{i(https://unstable.nl/phpsyntaxtree/pngtree.php?data=
-\synttree [S [NP [NN [NN [N Vort] [NN\_o o]] [NN\_j j]]] [VP[NP [JJ [J [V kunmetit]  [J\_a a]] [JJ\_j j]]][VP [VB [V est] [VB\_as as]] [VP[JJ [J [V kreat] [J\_a a]] [JJ\_j j]][NP [NP[JJ [V [N per] [V simpl]] [JJ\_a a]][NN [N kunligad] [NN\_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J\_a a]] [JJ\_j j]] [NN [NN [N vort] [NN\_o o]] [NN\_j j]]]]]]]]]
-%\includegraphics[scale=0.5,angle=90]{eoimg/tree10}
+%\synttree [S [NP [NN [NN [N Vort] [NN\_o o]] [NN\_j j]]] [VP[NP [JJ [J [V kunmetit]  [J\_a a]] [JJ\_j j]]][VP [VB [V est] [VB\_as as]] [VP[JJ [J [V kreat] [J\_a a]] [JJ\_j j]][NP [NP[JJ [V [N per] [V simpl]] [JJ\_a a]][NN [N kunligad] [NN\_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J\_a a]] [JJ\_j j]] [NN [NN [N vort] [NN\_o o]] [NN\_j j]]]]]]]]]
+\includegraphics[scale=0.5,angle=90]{eoimg/tree10}
 
 (Translation: Derived words are created using simple concatenation of simple
 words [NB: words means roots here])
@@ -876,8 +887,8 @@ Vortoj kunmetitaj estas kreataj per simpla kunligado de simplaj vortoj
 \end{verbatim}
 
 %{i(https://unstable.nl/phpsyntaxtree/pngtree.php?data=[S [NP[NN [NN [N Vort] [NN_o o]] [NN_j j]][JJ [J [V kunmetit] [J_a a]] [JJ_j j]]] [VP[VP [VB [V est] [VB_as as]] [NP [JJ [J [V kreat] [J_a a]] [JJ_j j]] [IN per]]][NP [NP [JJ [J simpl] [JJ_a a]] [NN [J kunligad] [NN_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J_a a]] [JJ_j j]] [NN [NN [N vort] [NN_o o]] [NN_j j]]]]]]])}
-\synttree [S [NP[NN [NN [N Vort] [NN\_o o]] [NN\_j j]][JJ [J [V kunmetit] [J\_a a]] [JJ\_j j]]] [VP[VP [VB [V est] [VB\_as as]] [NP [JJ [J [V kreat] [J\_a a]] [JJ\_j j]] [IN per]]][NP [NP [JJ [J simpl] [JJ\_a a]] [NN [J kunligad] [NN\_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J\_a a]] [JJ\_j j]] [NN [NN [N vort] [NN\_o o]] [NN\_j j]]]]]]]
-%\includegraphics[scale=0.5,angle=90]{eoimg/tree11}
+%\synttree [S [NP[NN [NN [N Vort] [NN\_o o]] [NN\_j j]][JJ [J [V kunmetit] [J\_a a]] [JJ\_j j]]] [VP[VP [VB [V est] [VB\_as as]] [NP [JJ [J [V kreat] [J\_a a]] [JJ\_j j]] [IN per]]][NP [NP [JJ [J simpl] [JJ\_a a]] [NN [J kunligad] [NN\_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J\_a a]] [JJ\_j j]] [NN [NN [N vort] [NN\_o o]] [NN\_j j]]]]]]]
+\includegraphics[scale=0.5,angle=90]{eoimg/tree11}
 
 The morphology is identical, but syntactically the results are a little
 different, eg. the first noun and adjective are together in an NP. However,
@@ -925,7 +936,7 @@ have been enough).
 \item distinguish between morpheme and word boundaries (how?).
   possibly by having a trailing space as part of a morphological analysis 
   (but: this should not block inflection for plurality and accusative (+j and +n respectively).
-\item finish report (convert wiki to latex?). evaluation \& conclusion.
+\item finish report; evaluation \& conclusion.
   write about Dasgupta (2008) \& is there work on DOP + dependencies? 
   mention DLT as older exemplar model.
 \item look at DOP* / U-DOP
@@ -938,9 +949,10 @@ TBD.
 
 \begin{enumerate}
 \item Construct all possible test sets of 2 sentences from the toy corpus of 14
-sentences, evaluate with evalb (or extend toy corpus to the complete
-Fundamento).
-\item Tenfold testing of Monato treebank, with and without regard for morphology.
+sentences, evaluate with evalb (or extend corpus to the complete
+Fundamento to get more representative results).
+\item Tenfold testing of Monato treebank, with and without regard for
+morphology. This requires better pre-processing of this treebank.
 \end{enumerate}
 
 \subsection{Conclusion}
