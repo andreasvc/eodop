@@ -4,11 +4,12 @@
 \usepackage{amsmath}
 \usepackage[pdftex]{graphicx}
 \usepackage[english]{babel}
-\usepackage{synttree}
+%\usepackage{synttree}
 \usepackage[colorlinks=true, linkcolor=black, urlcolor=blue, pdfborder={0 0 0}]{hyperref}
 %\usepackage{fullpage}
 %\usepackage[utf8x]{inputenc}
 
+% title page stuff
 \makeatletter
 \def\s@btitle{\relax}
 \def\subtitle#1{\gdef\s@btitle{#1}}
@@ -54,7 +55,7 @@ Cognitive Models of Language project, April 2010, \\
 Master of Logic, University of Amsterdam 
 \end{center}
 
-\vspace{3em}
+\vspace{6em}
 \abstract{
 Esperanto is a constructed language with a rich and regular morphology.  It
 seems likely that taking its morphology into account when parsing syntax will
@@ -92,7 +93,9 @@ Esperanto.}
 \item Does making morphology transparent to syntax improve parsing results for
 syntax?
 \item Are morphology and syntax autonomous? ie., is morphology opaque or
-transparent to syntax? These possibilities correspond to a modularist (cf.
+transparent to syntax? 
+
+These possibilities correspond to a modularist (cf.
 Pinker 1994, Jackendoff 2003) vs. an interactionist approach (cf.  MacWhinney
 1987). Here modularism refers to the functionalist hypothesis of the autonomy
 of syntax from other levels, both the stronger claim of processing autonomy,
@@ -105,7 +108,10 @@ ignored in the majority of work in (computational) linguistics to date.
 Jackendoff's (2003) parallel architecture suggest a compromise where
 interfaces of different autonomous levels are possible (e.g.,
 phonology-semantics to deal with focus effects).
-\item Are words the smallest units of syntax, or is it perhaps morphemes?
+
+\item Are words the smallest units of syntax, or is it perhaps morphemes? A
+fully transparent morphology could imply that morphemes are the smallest units
+of syntax.
 \end{itemize}
 
 Because this is a pilot project, only the first question shall be answered,
@@ -127,10 +133,10 @@ DOP*; (Zollman 2005) (the latter only given a sufficiently large corpus)
 enough to continue with syntax
 \item Morphology transparent to syntax: take treebank corpus, merge phrase 
 structure trees with morphological analyses, construct a single DOP model
-\item Morphology opaque to syntax: construct a DOP model for morphology, taking one 
-word at a time, and a DOP model for syntax, producing phrase structure trees
-without morphology.  Morphological structure and phrase structure can be parsed
-in parallel and independent of each other.
+\item Morphology opaque to syntax: construct a DOP model for morphology, taking
+one word at a time, and a DOP model for syntax, producing phrase structure
+trees without morphology.  Morphological structure and phrase structure can be
+parsed in parallel and independent of each other.
 \end{itemize}
 
 \section{Background}
@@ -140,69 +146,73 @@ Much work in Computational Linguistics focuses exclusively on syntax; this is
 a form of syntactocentrism, a term coined in Generative Linguistics 
 (Jackendoff 2003). This also goes for Data-Oriented Parsing (DOP), although
 excursions into semantics have been made. In this project I will go in the
-other direction and turn to the stratum of morphology. Most accounts of
-morphology in Computational Linguistics seem to present the structure of words
-as a sequence of morpheme-feature pairs (e.g., Jurafsky \& Martin 2000),
-as parsed by a (Stochastic) Finite State Transducer (cf., Schmid et al. 2004).
+other direction and turn to the linguistic stratum of morphology. Most accounts
+of morphology in Computational Linguistics seem to present the structure of
+words as merely a sequence of morpheme-feature pairs (e.g., Jurafsky \& Martin
+2000), as parsed by a (Stochastic) Finite State Transducer (cf., Schmid et al.
+2004).
 
 However, due to the complexity and potentially unlimited productivity of
-morphology in Esperanto such a representation will necessarily contain only
-part of the structural information of words in Esperanto (more on this in the
-next section). Such an approach is to the representation of the present project
-what POS tagged sentences are to hierarchical phrase structure trees. Although
-the present project focuses on Esperanto, the method of adding morphology to
-DOP should generalize to other languages, especially to languages such as
-English which display only a very limited amount of morphological productivity
-and hence exhibit only a subset of the derivational complexity in
+morphology in Esperanto such a representation will necessarily be limited to
+only a part of the structural information of words in Esperanto (more on this
+in the next section). Such an approach is to the representation of the present
+project what POS tagged sentences are to hierarchical phrase structure trees.
+Although the present project focuses on Esperanto, the method of adding
+morphology to DOP should generalize to other languages, especially to languages
+such as English which display only a very limited amount of morphological
+productivity and hence exhibit only a subset of the derivational complexity in
 morphologically richer languages.
 
 \subsection{About Esperanto}
 
 Esperanto is a constructed language (also referred to as a planned language).
 The term ``artificial language" that is sometimes employed is inappropriate, as
-its artificial design is just a point in time of its century long continuous
+its artificial design is only a point in time of its century long continuous
 usage and evolution. It is a spoken language with its own literature and
 culture, so while it may not  be a ``natural language" strictly speaking (Gobbo
 (2009) uses the term Quasi-Natural Language), it is certainly a human language
 that performs all the communicative and expressive functions of Ethnic
 languages, albeit mostly as a second language used by a diverse and scattered
-speech community. 
+speech community. When Esperanto is referred to as a ``failed project'' in the
+popular press this refers to the ambitious pacifistic ideals of the language, 
+not its achievements as a langauge.
 
 Typologically Esperanto has the unique character of being a morphologically
-agglutinative and synthetic language with a vocabulary largely based on
+agglutinative and synthetic language, but with a vocabulary largely based on
 Romance languages (apart from some German \& Russian words, and schematic
-function words as well). Its word formation is extremely compositional (ie., its
-word formation is fully transparent); I go as far as to contend that it is the
-most compositional spoken language in use today. Its syntax is schematic
-(designed) and allows for a relatively free word-order through obligatory case
-marking, although in practice a default word-order of SVO has emerged, with
-systematic deviations, triggered by complex (heavy) constituents and by
-pragmatics to express focus; these findings accord with relatively universal
-features found in natural languages (Jansen 2007). Cases are marked, viz.
-through a null-marking for the nominative and direct object, an inflection in
-case of the accusative, and through a set of prepositions initially intended
-to be unambiguous (e.g., the English preposition ``with" translates in two ways
-in Esperanto, through the instrumentalis "per" or with "kun," meaning
-together. 
+function words as well). Its word formation is extremely compositional (ie.,
+complex words are semantically fully transparent); I would go as far as to
+contend that it is the most compositional spoken language in use today. Its
+syntax is schematic (designed) and allows for a relatively free word-order
+through obligatory case marking, although in practice a default word-order of
+SVO has emerged, with systematic deviations, triggered by complex (heavy)
+constituents and by pragmatics to express focus; these findings accord with
+relatively universal features found in natural languages (Jansen 2007). Cases
+are marked, viz. through a null-marking for the nominative and direct object,
+an inflection in case of the accusative, and through a set of prepositions
+initially intended to be unambiguous (e.g., the English preposition ``with"
+translates in two ways in Esperanto, through the instrumentalis "per" or with
+"kun," meaning together. 
 
 The qualification ``relatively'' is a commonly made one for the freeness of
 word-order. To be specific, it refers here to the fact that within
-constituents word-order is fixed for determiners and prepositions and negation
-and degree particles, while being free for adjectives and nouns. The order of
+constituents word-order is fixed for determiners, prepositions and negation
+\& degree particles, while being free for adjectives and nouns. The order of
 constituents has a higher amount of freedom, but the order of prepositional
 phrases does reflect their argument structure. Lastly wh-question formation
 co-occurs with a word-order transformation, ie., if the wh-constituent is in
 the accusative it is moved to sentence initial position.  Strangely enough
 this does not happen for polar questions, which are marked with a
-polar-forming morpheme. This leaves Esperanto in the perhaps uncommon position
-of marking one type of question with word-order (since the wh-words also
-denote relative pronouns), and the other with a morpheme. We should also
-consider the ambiguities introduced by relaxing word-order. Since the
-accusative is marked through a declension with obligatory agreement, it is
-trivial to distinguish subjects and objects. However, boundaries between other
-constituents such as the nominative and the direct object or the end of
-prepositional phrases are unmarked, and can result in ambiguity due to
-the aforementioned underspecification.
+polar question morpheme. This leaves Esperanto in the perhaps uncommon position
+of marking one type of question with word-order (which is desirable since the
+wh-words also serve as relative pronouns), and the other with a morpheme. 
+
+We should also consider the ambiguities introduced by relaxing word-order.
+Since the accusative is marked through a declension with obligatory agreement,
+it is trivial to distinguish subjects and objects. However, boundaries between
+other constituents such as the nominative and the direct object or the end of
+prepositional phrases are unmarked, and can result in ambiguity due to the
+aforementioned underspecification.
 
 Concerning prepositions, the initial intention was to express some rather vague
 relations such as ``believing {\em in} God" (which is neither spatial nor
@@ -260,8 +270,8 @@ Content words are a little more involved (ibid):
 
 %\begin{verbatim}
 \texttt{
-word := prefix* left* right ending ($\epsilon$ | declension) \\
-left := right ($\epsilon$ | ending) \\
+word := prefix* left* right ending ($\varepsilon$ | declension) \\
+left := right ($\varepsilon$ | ending) \\
 right := prefix* root suffix* \\
 ending := o | a | e \\
 declension := j | n \\
@@ -493,15 +503,18 @@ complexity of Volap\"uk is demonstrated by the fact that its verb paradigm
 contains 1584 conjugations, by combining tense, aspect, voice, person, number
 and gender, among others. Such features made Volap\"uk difficult to learn and
 use, just as the philosophical languages. During the first Esperanto congress
-the {\em Fundamento} (Zamenhof 1905) was ratified as the untouchable foundation of
-the language, containing the 16 grammar rules, a dictionary with 2600 words
-and translations in six languages, and a collection of exercises; all of these
-had been published at least a decade earlier and where already sanctioned
-through practice. In effect, the {\em Fundamento} can be considered as the
-authoritative corpus on Esperanto, to which only new vocabulary is to be added
-as needed, provided that it follows its orthography. Concerning morphology in
-particular, Schubert (1993) notes, after referring to Zamenhof instruction of
-consulting the supplied dictionary of roots and affixes:
+the {\em Fundamento} (Zamenhof 1905) was ratified as the untouchable foundation
+of the language\footnote{perusable online at
+\url{http://www.akademio-de-esperanto.org/fundamento/index.html}}, containing
+the 16 grammar rules, a dictionary with 2600 words and translations in six
+languages, and a collection of
+exercises; all of these had been published at least a decade earlier and where
+already sanctioned through practice. In effect, the {\em Fundamento} can be
+considered as the authoritative corpus on Esperanto, to which only new
+vocabulary is to be added as needed, provided that it follows its orthography.
+Concerning morphology in particular, Schubert (1993) notes, after referring to
+Zamenhof instruction of consulting the supplied dictionary of roots and
+affixes:
 
 \begin{quote}
 	``Apart from this recipe for deciphering Esperanto texts,
@@ -559,21 +572,26 @@ all grammatical endings and declensions (o, j, n, etc.).
 \end{itemize}
 
 The Monato treebank uses a different tag set, based on the 
-\href{http://beta.visl.sdu.dk/visl/eo/index.php}{EspGram} constraint 
-grammar. The POS tags of the morphology corpus should be adapted 
-to fit those of the Monato treebank.
+EspGram\footnote{\url{http://beta.visl.sdu.dk/visl/eo/index.php}} constraint
+grammar. The POS tags of the morphology corpus should be adapted to fit those
+of the Monato treebank.
 
-Annotated example sentences:
+Figure \ref{s1} and \ref{s2} shows some annotated example sentences.
 
-\begin{verbatim}
-(S (NP (NN amiko)) (VP (VB venis)))
-\end{verbatim}
+%\begin{verbatim}
+%(S (NP (NN amiko)) (VP (VB venis)))
+%\end{verbatim}
 
 %{i(/phpsyntaxtree/pngtree.php?data=[S [NP [NN amiko]] [VP [VB venis]]])}
-\synttree [S [NP [NN amiko]] [VP [VB venis]]]
-%\includegraphics[scale=0.5]{eoimg/tree1}
+%\synttree [S [NP [NN amiko]] [VP [VB venis]]]
+\begin{figure}
+\centering
+\includegraphics[scale=0.5]{eoimg/tree1}
+\caption{Translation: a friend came}
+\label{s1}
+\end{figure}
 
-
+\begin{comment}
 \begin{verbatim}
 (S (S (NP (DT la) (N' (JJ venontajn) (N' (JJ apartajn) (NN pecojn)))) 
 (VP (NP (PRP mi)) (VP (VBP donas)))) (S' (IN ke) (S (NP (DT la) (NN lernantoj)) 
@@ -583,14 +601,22 @@ Annotated example sentences:
 (NPC (CC kaj) (NP (DT la) (NN uzon)))) (PP (IN de) 
 (NP (DT l') (N' (NN sufiksoj) (NC (CC kaj) (NN prefiksoj)))))))))))))
 \end{verbatim}
+\end{comment}
 
 %{i(/phpsyntaxtree/pngtree.php?fontsize=6\&data=[S [S [NP [DT la] [N' [JJ venontajn] [N' [JJ apartajn] [NN pecojn]]]] [VP [NP [PRP mi]] [VP [VBP donas]]]] [S' [IN ke] [S [NP [DT la] [NN lernantoj]] [VP [VB povu] [VP [VP [VP [VB ripeti] [RB praktike]] [NP [NP [DT la] [NN regulojn]] [PP [IN de] [NP [DT l'] [N' [NN gramatiko] [JJ internacia]]]]]] [VPC [CC kaj] [VP [VP [VB kompreni] [RB bone]] [NP [NP [NP [DT la] [NN signifon]] [NPC [CC kaj] [NP [DT la] [NN uzon]]]] [PP [IN de] [NP [DT l'] [N' [NN sufiksoj] [NC [CC kaj] [NN prefiksoj]]]]]]]]]]]]])97}
 %\synttree [S [S [NP [DT la] [N' [JJ venontajn] [N' [JJ apartajn] [NN pecojn]]]] [VP [NP [PRP mi]] [VP [VBP donas]]]] [S' [IN ke] [S [NP [DT la] [NN lernantoj]] [VP [VB povu] [VP [VP [VP [VB ripeti] [RB praktike]] [NP [NP [DT la] [NN regulojn]] [PP [IN de] [NP [DT l'] [N' [NN gramatiko] [JJ internacia]]]]]] [VPC [CC kaj] [VP [VP [VB kompreni] [RB bone]] [NP [NP [NP [DT la] [NN signifon]] [NPC [CC kaj] [NP [DT la] [NN uzon]]]] [PP [IN de] [NP [DT l'] [N' [NN sufiksoj] [NC [CC kaj] [NN prefiksoj]]]]]]]]]]]]]
+\begin{figure}
+\centering
 \includegraphics[scale=0.4, angle=90]{eoimg/tree2}
 %\includegraphics[width=17cm]{eoimg/tree2}
+\caption{Translation: the following separate pieces I give so that the students
+will be able to rehearse practically the rules of the international grammar and understand properly the meaning and usage of the suffixes and affixes}
+\label{s2}
+\end{figure}
 
-Some annotated example words:
+Some annotated example words are list in figure \ref{w1}.
 
+\begin{comment}
 \begin{verbatim}
 (JJ (JJ (V (V (P en) (V konduk)) (V it)) a) j)
 
@@ -598,21 +624,28 @@ Some annotated example words:
 
 (VB (P al) (VB (V glu) i))
 \end{verbatim}
+\end{comment}
 
 %{i(/phpsyntaxtree/pngtree.php?data=[JJ [JJ [V [V [P en] [V konduk]] [V it]] a] j])} {i(/phpsyntaxtree/pngtree.php?data=[NN [N [J [J [A mal] [J rich]] [A eg]] [A ul]] o])} {i(/phpsyntaxtree/pngtree.php?data=[VB [P al] [VB [V glu] i]])}
-\synttree [JJ [JJ [V [V [P en] [V konduk]] [V it]] a] j]
-\synttree [NN [N [J [J [A mal] [J rich]] [A eg]] [A ul]] o]
-\synttree [VB [P al] [VB [V glu] i]]
-%\includegraphics[scale=0.5]{eoimg/tree3}
-%\includegraphics[scale=0.5]{eoimg/tree4}
-%\includegraphics[scale=0.5]{eoimg/tree5}
+%\synttree [JJ [JJ [V [V [P en] [V konduk]] [V it]] a] j]
+%\synttree [NN [N [J [J [A mal] [J rich]] [A eg]] [A ul]] o]
+%\synttree [VB [P al] [VB [V glu] i]]
+\begin{figure}
+\includegraphics[scale=0.5]{eoimg/tree3}
+\includegraphics[scale=0.5]{eoimg/tree4}
+\includegraphics[scale=0.5]{eoimg/tree5}
+\caption{Sample words. Translations: those-that-were-introduced, 
+very-poor-person, gluing-to}
+\label{w1}
+\end{figure}
 
 \subsection{Implementation}
 
 \begin{itemize}
-\item Goodman reduction: \href{http://www.github.com/andreasvc/eodop}{own implementation}, using 
+\item Goodman reduction: 
+own implementation\footnote{\url{http://www.github.com/andreasvc/eodop}}, using 
 \href{http://groups.google.com/group/nltk-dev/browse_thread/thread/86ca038723195978/c112b8d171b33d25}{NLTK}. 
-maybe add backoff DOP or DOP*; fast PCFG parsing using 
+may add backoff DOP or DOP*; fast PCFG parsing using 
 \href{http://www.ims.uni-stuttgart.de/tcl/SOFTWARE/BitPar.html}{bitpar} 
 (Schmid 2004), a bit vector based chart parser.
 \end{itemize}
@@ -667,8 +700,8 @@ at that position
 occurring at position 0 and 1, corresponding to all possible 2-morpheme words
 using the available vocabulary of roots.
 
-\item repeat until position n where n is highest number of morphemes in the
-treebank to generate all possible words with n+1 morphemes.
+\item repeat until position $n$ where n is highest number of morphemes in the
+treebank to generate all possible words with $n+1$ morphemes.
 
 \end{itemize}
 
@@ -680,22 +713,43 @@ An alternative method of generating segmentations:
 
 \begin{itemize}
 \item take the set of segmented words in the corpus by reading off the leaves
-of their trees
+of their trees, store words as tuples of morphemes.
 
 \item construct a dictionary from number of morphemes to words with that number
 of morphemes
 
-\item generate possible words with n morphemes by taking the pointwise
-cartesian product of all words with $n$ morphemes (ie., cartpi(zip(words[n])) )
+\item generate possible words with $n$ morphemes for all suitable $n$ by taking
+the pointwise cartesian product of all words with $n$ morphemes; ie.,
+\texttt{cartpi(zip(words[n]))}, which coresponds to:
+
+\[ \displaystyle\bigcup_{n=0}^{\vert longest\_word\vert}\prod_{\{x \in words \: : \: \vert x\vert \, = \, n\}} x \]
+
+
 \end{itemize}
 
 This still overgenerates, though less so (eg., word class, plural and
 accusative endings in the wrong order; it may be necessary to treat endings
 separately). A third way would be to use a bigram model and produce every
-possible sequence up till a certain length, which avoids these issues. A fourth
-way would be to employ the context-free grammar described above to generate all
-valid words up to a certain length given a collection of roots along with their
-categories.
+possible sequence up till a certain length, which avoids such issues.
+
+When none of these approaches are able to segment a word we can resort to
+using the the context-free grammar described above, which recognizes any valid
+sequence of morphemes. The reason for using this as a last resort is that it
+does not distinguish between attested and unattested segmentations, let alone
+generalize over attested segmentations, as the previous methods do.
+
+\subsection{POS tags for unknown words}
+
+Since part-of-speech tags are transparently marked in Esperanto, it is
+possible to assign tags to any open class word. This can be done using the
+Finite-State Automaton in figure \ref{posfsa}.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.5]{posfsa-crop}
+\caption{A finite-state automaton for word classificatin in Esperanto}
+\label{posfsa}
+\end{figure}
 
 \subsection{DOP model composition}
 
@@ -723,22 +777,20 @@ Example:
 
 \begin{verbatim}
 S := { (S (NP (NN amiko)) (VP (VB venis))) } 
-M := { (NN (N amik) o) (VB (V ven) is) }
-
+M := { (NN (N amik) o), (VB (V ven) is) }
 S o M = { (S (NP (NN (N amik) o)) (VP (VB (V ven) is))) }
 \end{verbatim}
-
 S := %{i(/phpsyntaxtree/pngtree.php?data=[S [NP [NN amiko]] [VP [VB venis]]])}
-\synttree[S [NP [NN amiko]] [VP [VB venis]]]
-%\includegraphics[scale=0.5]{eoimg/tree6}
+%\synttree[S [NP [NN amiko]] [VP [VB venis]]]
+\includegraphics[scale=0.5]{eoimg/tree6}
 M := %{i(/phpsyntaxtree/pngtree.php?data=[NN [N amik] o])}  {i(/phpsyntaxtree/pngtree.php?data=[VB [V ven] is])}
-\synttree [NN [N amik] o]
-\synttree [VB [V ven] is]
-%\includegraphics[scale=0.5]{eoimg/tree7}
-%\includegraphics[scale=0.5]{eoimg/tree8}
+%\synttree [NN [N amik] o]
+%\synttree [VB [V ven] is]
+\includegraphics[scale=0.5]{eoimg/tree7}
+\includegraphics[scale=0.5]{eoimg/tree8}
 S o M = %{i(/phpsyntaxtree/pngtree.php?data=[S [NP [NN [N amik] o]] [VP [VB [V ven] is]]])}
-\synttree [S [NP [NN [N amik] o]] [VP [VB [V ven] is]]]
-%\includegraphics[scale=0.5]{eoimg/tree9}
+%\synttree [S [NP [NN [N amik] o]] [VP [VB [V ven] is]]]
+\includegraphics[scale=0.5]{eoimg/tree9}
 
 \subsection{Corpora}
 
@@ -849,13 +901,17 @@ morphology + syntax combined:
               (NN (NN (N vort) (NN_o o)) (NN_j j)))))))))
 \end{verbatim}
 
+See figure \ref{s3} for the tree.
+
 %{i(https://unstable.nl/phpsyntaxtree/pngtree.php?data=[S [NP [NN [NN [N Vort] [NN_o o]] [NN_j j]]] [VP[NP [JJ [J [V kunmetit]  [J_a a]] [JJ_j j]]][VP [VB [V est] [VB_as as]] [VP[JJ [J [V kreat] [J_a a]] [JJ_j j]][NP [NP[JJ [V [N per] [V simpl]] [JJ_a a]][NN [N kunligad] [NN_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J_a a]] [JJ_j j]] [NN [NN [N vort] [NN_o o]] [NN_j j]]]]]]]]])}
 %{i(https://unstable.nl/phpsyntaxtree/pngtree.php?data=
 %\synttree [S [NP [NN [NN [N Vort] [NN\_o o]] [NN\_j j]]] [VP[NP [JJ [J [V kunmetit]  [J\_a a]] [JJ\_j j]]][VP [VB [V est] [VB\_as as]] [VP[JJ [J [V kreat] [J\_a a]] [JJ\_j j]][NP [NP[JJ [V [N per] [V simpl]] [JJ\_a a]][NN [N kunligad] [NN\_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J\_a a]] [JJ\_j j]] [NN [NN [N vort] [NN\_o o]] [NN\_j j]]]]]]]]]
+\begin{figure}
+\centering
 \includegraphics[scale=0.5,angle=90]{eoimg/tree10}
-
-(Translation: Derived words are created using simple concatenation of simple
-words [NB: words means roots here])
+\caption{Derivation using the interactionist approach. Translation: Derived words are created using simple concatenation of simple words [NB: words means roots here]}
+\label{s3}
+\end{figure}
 
 There are some mistakes in segmenting (kun-met-it, kre-at, per simpl-a,
 kun-lig-ad).  The phrase structure has mistakes as well, eg. ``vortoj
@@ -888,7 +944,11 @@ Vortoj kunmetitaj estas kreataj per simpla kunligado de simplaj vortoj
 
 %{i(https://unstable.nl/phpsyntaxtree/pngtree.php?data=[S [NP[NN [NN [N Vort] [NN_o o]] [NN_j j]][JJ [J [V kunmetit] [J_a a]] [JJ_j j]]] [VP[VP [VB [V est] [VB_as as]] [NP [JJ [J [V kreat] [J_a a]] [JJ_j j]] [IN per]]][NP [NP [JJ [J simpl] [JJ_a a]] [NN [J kunligad] [NN_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J_a a]] [JJ_j j]] [NN [NN [N vort] [NN_o o]] [NN_j j]]]]]]])}
 %\synttree [S [NP[NN [NN [N Vort] [NN\_o o]] [NN\_j j]][JJ [J [V kunmetit] [J\_a a]] [JJ\_j j]]] [VP[VP [VB [V est] [VB\_as as]] [NP [JJ [J [V kreat] [J\_a a]] [JJ\_j j]] [IN per]]][NP [NP [JJ [J simpl] [JJ\_a a]] [NN [J kunligad] [NN\_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J\_a a]] [JJ\_j j]] [NN [NN [N vort] [NN\_o o]] [NN\_j j]]]]]]]
+\begin{figure}
 \includegraphics[scale=0.5,angle=90]{eoimg/tree11}
+\caption{Derivation using the modularist approach, same sentence.}
+\label{s4}
+\end{figure}
 
 The morphology is identical, but syntactically the results are a little
 different, eg. the first noun and adjective are together in an NP. However,
@@ -896,7 +956,7 @@ the preposition ``per" appears oddly at the end of an NP, instead of
 introducing a PP (in the previous tree it ended up prefixing an NP because the
 model cannot distinguish the difference between word and morpheme boundary).
 
-That the deterministic finite state automaton is working can be seen from
+That the finite state automaton is working can be seen from
 the following non-sense input:
 
 \begin{verbatim}
@@ -938,7 +998,7 @@ have been enough).
   (but: this should not block inflection for plurality and accusative (+j and +n respectively).
 \item finish report; evaluation \& conclusion.
   write about Dasgupta (2008) \& is there work on DOP + dependencies? 
-  mention DLT as older exemplar model.
+  mention DLT as older exemplar model (prior art?).
 \item look at DOP* / U-DOP
 \end{comment}
 
@@ -955,7 +1015,7 @@ Fundamento to get more representative results).
 morphology. This requires better pre-processing of this treebank.
 \end{enumerate}
 
-\subsection{Conclusion}
+\section{Conclusion}
 
 We have described a regular grammar that enumerates the word forms of
 Esperanto's lexicon, which can be used to automatically segment word strings.
@@ -1113,3 +1173,106 @@ Gledhill, Christopher, 2000. The Grammar of Esperanto: A Corpus-Based Descriptio
 
 Grimley-Evans, Edmundo, 1997. "Vortfarado", (Word derivation) La Brita Esperantisto, marto-aprilo 1997, pp. 57-59.
 
+
+GRAMMAR
+
+A) THE ALPHABET
+Aa,
+a as in
+"last"	Bb,
+b as in
+"be"	Cc,
+ts as in
+"wits"	Ĉĉ,
+ch as in
+"church"	Dd,
+d as in
+"do"	Ee,
+a as in
+"make"	Ff,
+f as in
+"fly"
+Gg,
+g as in
+"gun"	Ĝĝ,
+j as in
+"join"	Hh,
+h as in
+"half"	Ĥĥ,
+strongly
+aspirated
+h, "ch"
+in "loch"
+(scotch)	Ii,
+i as in
+"marine"	Jj,
+y as in
+"yoke"	Ĵĵ,
+z as in
+"azure"
+Kk,
+k as in
+"key"	Ll,
+l as in
+"line"	Mm,
+m as in
+"make"	Nn,
+n as in
+"now"	Oo,
+o as in
+"not"	Pp,
+p as in
+"pair"	Rr,
+r as in
+"rare"
+Ss,
+s as in
+"see"	Ŝŝ,
+sh as in
+"show"	Tt,
+t as in
+"tea"	Uu,
+u as in
+"bull"	Ŭŭ,
+u as in
+"mount"
+(used in
+diphtongs)	Vv,
+v as in
+"very"	Zz,
+z as in
+"zeal"
+Remark. ― If it be found impraticable to print works with the diacritical signs (^,˘), the letter h may be substituted for the sign (^), and the sign (˘), may be altogether omitted.
+B) PARTS OF SPEECH
+1. There is no indefinite, and only one definite, article, la, for all genders, numbers, and cases.
+2. Substantives are formed by adding o to the root. For the plural, the letter j must be added to the singular. There are two cases: the nominative and the objective (accusative). The root with the added o is the nominative, the objective adds an n after the o. Other cases are formed by prepositions; thus, the possessive (genitive) by de, „of”; the dative by al, „to”, the instrumental (ablative) by kun, „with”, or other preposition as the sense demands. E. g. root patr, „father”; la patr'o, „the father”; la patr'o'n, „the father” (objective), de la patr'o, „of the father”; al la patr'o, „to the father”; kun la patr'o, „with the father”; la patr'o'j, „the fathers”; la patr'o'j'n, „the fathers” (obj.), por la patr'o'j, „for the fathers”.
+3. Adjectives are formed by adding a to the root. The numbers and cases are the same as in substantives. The comparative degree is formed by prefixing pli (more); the superlative by plej (most). The word „than” is rendered by ol, e. g. pli blanka ol neĝo, „whiter than snow”.
+4. The cardinal numerals do not change their forms for the different cases. They are: unu (1), du (2), tri (3), kvar (4), kvin (5), ses (6), sep (7), ok (8), naŭ (9), dek (10), cent (100), mil (1000). The tens and hundreds are formed by simple junction of the numerals, e. g. 533 = kvin'cent tri'dek tri. Ordinals are formed by adding the adjectival a to the cardinals, e. g. unu'a, „first”; du'a, „second”, etc. Multiplicatives (as „threefold”, „fourfold”, etc.) add obl, e. g. tri'obl'a, „threefold”. Fractionals add on, as du'on'o, „a half”; kvar'on'o, „a quarter”. Collective numerals add op, as kvar'op'e, „four together”. Distributive prefix po, e. g., po kvin, „five apiece”. Adverbials take e, e. g., unu'e, „firstly”, etc.
+5. The personal pronouns are: mi, „I”; vi, „thou”, „you”; li, „he”; ŝi, „she”; ĝi, „it”; si, „self”; ni, „we”; ili, „they”; oni, „one”, „people”, (French „on”). Possessive pronouns are formed by suffixing to the required personal, the adjectival termination. The declension of the pronouns is identical with that of substantives. E. g. mi, „I”; mi'n, „me” (obj.); mi'a, „my”, „mine”.
+6. The verb does not change its form for numbers or persons, e. g. mi far'as, „I do”; la patr'o far'as, „the father does”; ili far'as, „they do”.
+Forms of the Verb:
+a) The present tense ends in as, e. g. mi far'as, „I do”.
+b) The past tense ends in is, e. g. li far'is, „he did”.
+c) The future tense ends in os, e. g. ili far'os, „they will do”.
+ĉ) The subjunctive mood ends in us, e. g. ŝi far'us, „she may do”.
+d) The imperative mood ends in u, e. g. ni far'u, „let us do”.
+e) The infinitive mood ends in i, e. g. fari, „to do”.
+There are two forms of the participle in the international language, the changeable or adjectival, and the unchangeable or adverbial.
+f) The present participle active ends in ant, e. g. far'ant'a, „he who is doing”; far'ant'e, „doing”.
+g) The past participle active ends in int, e. g. far'int'a, „he who has done”; far'int'e, „having done”.
+ĝ) The future participle active ends in ont, e. g. far'ont'a, „he who will do”; far'ont'e, „about to do”.
+h) The present participle passive ends in at, e. g. far'at'e, „being done”.
+ĥ) The past participle passive ends in it, e. g. far'it'a, „that which has been done”; far'it'e, „having been done”.
+i) The future participle passive ends in ot, e. g. far'ot'a, „that which will be done”; far'ot'e, „about to be done”.
+All forms of the passive are rendered by the respective forms of the verb est (to be) and the participle passive of the required verb; the preposition used is de, „by”. E. g. ŝi est'as am'at'a de ĉiu'j, „she is loved by every one”.
+7. Adverbs are formed by adding e to the root. The degrees of comparison are the same as in adjectives, e. g., mi'a frat'o kant'as pli bon'e ol mi, „my brother sings better than I”.
+8. All prepositions govern the nominative case.
+C) GENERAL RULES
+9. Every word is to be read exactly as written, there are no silent letters.
+10. The accent falls on the last syllable but one, (penultimate).
+11. Compound words are formed by the simple junction of roots, (the principal word standing last), which are written as a single word, but, in elementary works, separated by a small line ('). Grammatical terminations are considered as independent words. E. g. vapor'ŝip'o, „steamboat” is composed of the roots vapor, „steam”, and ŝip, „a boat”, with the substantival termination o.
+12. If there be one negative in a clause, a second is not admissible.
+13. In phrases answering the question „where?” (meaning direction), the words take the termination of the objective case; e. g. kie'n vi ir'as?„where are you going?”; dom'o'n, „home”; London'o'n, „to London”, etc.
+14. Every preposition in the international language has a definite fixed meaning. If it be necessary to employ some preposition, and it is not quite evident from the sense which it should be, the word je is used, which has no definite meaning; for example, ĝoj'i je tio, „to rejoice over it”; rid'i je tio, „to laugh at it”; enu'o je la patr'uj'o, „a longing for one’s fatherland”. In every language different prepositions, sanctioned by usage, are employed in these dubious cases, in the international language, one word, je, suffices for all. Instead of je, the objective without a preposition may be used, when no confusion is to be feared.
+15. The so-called „foreign” words, i. e. words which the greater number of languages have derived from the same source, undergo no change in the international language, beyond conforming to its system of orthography. ― Such is the rule with regard to primary words, derivatives are better formed (from the primary word) according to the rules of the international grammar, e. g. teatr'o, „theatre”, but teatr'a, „theatrical”, (not teatrical'a), etc.
+16. The a of the article, and final o of substantives, may be sometimes dropped euphoniae gratia, e. g. de l’ mond'o for de la mond'o; Ŝiller’ for Ŝiller'o; in such cases an apostrophe should be substituted for the discarded vowel.

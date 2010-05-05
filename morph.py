@@ -1,6 +1,10 @@
-#!/bin/sh
+#!/usr/bin/python
+""" An application of Data-Oriented Parsing to Esperanto.
+	Combines a syntax and a morphology corpus. """
+
 from dopg import *
 from bitpar import BitParChartParser
+from random import sample
 
 def cnf(tree):
 	""" make sure all terminals have POS tags; 
@@ -20,7 +24,7 @@ def stripfunc(tree):
 	return tree
 
 def dos(words):
-	""" `Data-Oriented Segmentation:' given a sequence of segmented words
+	""" `Data-Oriented Segmentation 1': given a sequence of segmented words
 	(ie., a sequence of morphemes), produce a dictionary with extrapolated
 	segmentations (mapping words to sequences of morphemes). 
 	Assumes non-ambiguity. 
@@ -32,7 +36,7 @@ def dos(words):
 		reduce(chain, (cartpi([morph_at[x] for x in range(n)]) 
 			for n in range(min(l), max(l)))))
 def dos1(words):
-	""" `Data-Oriented Segmentation:' given a sequence of segmented words
+	""" `Data-Oriented Segmentation 2': given a sequence of segmented words
 	(ie., a sequence of morphemes), produce a dictionary with extrapolated
 	segmentations (mapping words to sequences of morphemes). 
 	Discards ambiguous results.
@@ -49,15 +53,25 @@ def dos3(words):
 	# regex tokenizer. TBD
 	pass
 
-def segment(w):
-	""" consult segmentation dictionary with fallback to rule-based heuristics. """
-	try: return segmentd[w]
-	#naive esperanto segmentation (assume root of the appropriate type)
-	except KeyError:
-		if w[-1] in 'jn': return segment(w[:-1]) + (w[-1],)
-		if w[-1] in 'oaeu': return (w[:-1], w[-1])
-		if w[-1] == 's': return (w[:-2], w[-2:])
-	return (w,)
+def segmentor(segmentd):
+	""" wrap a segmentation dictionary in a naive unknown word 
+	segmentation function """
+
+	# this unspeakable hack is necessary because python does not have
+	# proper support for lexical closures.
+	def s(segmentd):
+		def f(w):
+			""" consult segmentation dictionary with fallback to rule-based heuristics. """
+			try: return segmentd[w]
+			#naive esperanto segmentation (assume root of the appropriate type)
+			except KeyError:
+				if w[-1] in 'jn': return f(w[:-1]) + (w[-1],)
+				if w[-1] in 'oaeu': return (w[:-1], w[-1])
+				if w[-1] == 's': return (w[:-2], w[-2:])
+			#last resort, unanalyzable word, e.g. proper noun
+			return (w,)
+		return f
+	return s(segmentd)
 
 def removeids(tree):
 	""" remove unique IDs introduced by the Goodman reduction """
@@ -66,30 +80,34 @@ def removeids(tree):
 			tree[a].node = tree[a].node.split('@')[0]
 	return tree
 
-def morphmerge(tree):
+def morphmerge(tree, md, segmented):
 	""" merge morphology into phrase structure tree """
 	copy = tree.copy(True)
-	for a in tree.treepositions('leaves'):
+	for a,w in zip(tree.treepositions('leaves'), segmented):
 		try:
-			#print tree[a[:-1]][0],
-			copy[a[:-1]] = removeids(md.parse(segment(tree[a[:-1]][0]))[0])
+			copy[a[:-1]] = removeids(md.parse(w))[0]
 		except Exception as e:
-			print "word:", tree[a[:-1]][0],
+			print "word:", tree[a[:-1]][0], "segmented", w
 			print "error:", e
 	return copy
 
 
 def monato():
+	""" produce the goodman reduction of the full monato corpus """
 	# turn cleanup off so that the grammar will not be removed
 	d = GoodmanDOP((stripfunc(cnf(Tree(a))) for a in open("arbobanko1.train")), rootsymbol='fcl', parser=BitParChartParser, cleanup=False)
 	#d = GoodmanDOP((Tree(a) for a in corpus), rootsymbol='S', wrap=True)
 
 def toy():
+	#syntax treebank
 	from corpus import corpus
-	# turn cleanup off so that the grammar will not be removed
-	d = GoodmanDOP((Tree(a) for a in corpus), rootsymbol='S', parser=BitParChartParser, cleanup=False, unknownwords='unknownwords', openclassdfsa='postoy.dfsa')
-	print "built syntax model"
+	test = sample(corpus, 0.1 * len(corpus))
+	train = [a for a in corpus if a not in test]
+	#morphology treebank
 	mcorpus = open("morph.corp.txt").readlines()
+
+	d = GoodmanDOP((Tree(a) for a in train), rootsymbol='S', parser=BitParChartParser, cleanup=False, unknownwords='unknownwords', openclassdfsa='postoy.dfsa')
+	print "built syntax model"
 	md = GoodmanDOP((cnf(Tree(a)) for a in mcorpus), rootsymbol='W', wrap=True, parser=BitParChartParser, unknownwords='unknownmorph')
 	print "built morphology model"
 
@@ -102,21 +120,40 @@ def toy():
 	for a in (Tree(a).leaves() for a in mcorpus):
 		segmentd["".join(a)] = tuple(a)
 
+	segment = segmentor(segmentd)
 	print "extrapolated:", len(segmentd) #, " ".join(segmentd.keys())
 
 	print "analyzing morphology of treebank"
 	mtreebank = []
 	for n, a in enumerate(corpus):
 		print '%d / %d:' % (n, len(corpus)-1),
-		mtreebank.append(morphmerge(Tree(a)))
+		mtreebank.append(morphmerge(Tree(a), md, map(segment, a.leaves())))
 		print
 
 	#mtreebank = [m(Tree(a)) for a in corpus]
 	#for a in mtreebank: print a
 	msd = GoodmanDOP(mtreebank, rootsymbol='S', parser=BitParChartParser, unknownwords='unknownmorph')
 	print "built combined morphology-syntax model"
+	
+	#evaluation
+	for tree in test:
+		w = tree.leaves()
+		#morphology + syntax combined
+		try:
+			sent = list(reduce(chain, map(segment, w)))
+			print sent
+			print removeids(msd.parse(sent))
+		except Exception as e:
+			print "error", e
+
+		#syntax & morphology separate
+		try:
+			print morphmerge(removeids(d.parse(w)), md, map(segment, a.leaves()))
+		except Exception as e:
+			print "error:", e
 
 def morphology():
+	""" an interactive interface to the toy corpus """
 	from corpus import corpus
 	#corpus = ["(S (NP (NN amiko)) (VP (VB venis)))"]
 	d = GoodmanDOP((Tree(a) for a in corpus), rootsymbol='S', parser=BitParChartParser, unknownwords='unknownwords', openclassdfsa='postoy.dfsa')
@@ -134,14 +171,15 @@ def morphology():
 	#restore original original words in case they were overwritten
 	for a in (Tree(a).leaves() for a in mcorpus):
 		segmentd["".join(a)] = tuple(a)
+	segment = segmentor(segmentd)
 
 	print "extrapolated:", len(segmentd) #, " ".join(segmentd.keys())
 
 	print "analyzing morphology of treebank"
 	mtreebank = []
-	for n, a in enumerate(corpus):
+	for n, a in enumerate(Tree(a) for a in corpus):
 		print '%d / %d:' % (n, len(corpus)-1),
-		mtreebank.append(morphmerge(Tree(a)))
+		mtreebank.append(morphmerge(a, md, map(segment, a.leaves())))
 		print
 
 	#mtreebank = [m(Tree(a)) for a in corpus]
@@ -171,7 +209,7 @@ def morphology():
 			
 		print "morphology + syntax combined:"
 		try:
-			sent = list(reduce(chain, (segment(a) for a in w)))
+			sent = list(reduce(chain, map(segment, w)))
 			print sent
 			print removeids(msd.parse(sent))
 			#for tree in d.parser.nbest_parse(w):
@@ -181,8 +219,10 @@ def morphology():
 
 		print "syntax & morphology separate:"
 		try:
-			#TODO: d.parse(w) should backoff to POS supplied by morphology for unknown words
-			print morphmerge(removeids(d.parse(w)))
+			#TODO?: d.parse(w) should backoff to POS supplied by morphology for
+			#unknown words; but bitpar already does this with its word class
+			#automata support
+			print morphmerge(removeids(d.parse(w)), md, map(segment, w))
 			#sent = ["".join(a.split('|')) for a in w]
 			#for tree in d.parser.nbest_parse(w):
 			#	print tree
@@ -197,5 +237,6 @@ if __name__ == '__main__':
 	optionflags=doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS)
 	if attempted and not fail:
 		print "%d doctests succeeded!" % attempted
-	#morphology()   #interactive demo with toy corpus
-	monato()        #get monato DOP reduction
+	morphology()   #interactive demo with toy corpus
+	#toy()		#get toy corpus DOP reduction
+	#monato()        #get monato DOP reduction
