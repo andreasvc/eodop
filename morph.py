@@ -91,22 +91,12 @@ def morphmerge(tree, md, segmented):
 			print "error:", e
 	return copy
 
-def monato():
-	""" produce the goodman reduction of the full monato corpus """
-	# turn cleanup off so that the grammar will not be removed
-	d = GoodmanDOP((stripfunc(cnf(Tree(a))) for a in open("arbobanko1.train")), rootsymbol='fcl', parser=BitParChartParser, name='syntax', cleanup=False)
-	#d = GoodmanDOP((Tree(a) for a in corpus), rootsymbol='S', wrap=True)
-
-def toy():
-	#syntax treebank
-	from corpus import corpus
-	test = sample(corpus, 0.1 * len(corpus))
-	train = [a for a in corpus if a not in test]
-	#morphology treebank
-	mcorpus = open("morph.corp.txt").readlines()
-
-	d = GoodmanDOP((Tree(a) for a in train), rootsymbol='S', parser=BitParChartParser, cleanup=False, unknownwords='unknownwords', openclassdfsa='postoy.dfsa', name='syntax')
+def morphology(train):
+	""" an interactive interface to the toy corpus """
+	d = GoodmanDOP((Tree(a) for a in train), rootsymbol='S', parser=BitParChartParser, unknownwords='unknownwords', openclassdfsa='postoy.dfsa', name='syntax')
 	print "built syntax model"
+
+	mcorpus = open("morph.corp.txt").readlines()
 	md = GoodmanDOP((cnf(Tree(a)) for a in mcorpus), rootsymbol='W', wrap=True, parser=BitParChartParser, unknownwords='unknownmorph', name='morphology')
 	print "built morphology model"
 
@@ -118,22 +108,31 @@ def toy():
 	#restore original original words in case they were overwritten
 	for a in (Tree(a).leaves() for a in mcorpus):
 		segmentd["".join(a)] = tuple(a)
-
 	segment = segmentor(segmentd)
+
 	print "extrapolated:", len(segmentd) #, " ".join(segmentd.keys())
 
 	print "analyzing morphology of treebank"
 	mtreebank = []
-	for n, a in enumerate(corpus):
-		print '%d / %d:' % (n, len(corpus)-1),
-		mtreebank.append(morphmerge(Tree(a), md, map(segment, a.leaves())))
+	for n, a in enumerate(Tree(a) for a in train):
+		print '%d / %d:' % (n, len(train)-1),
+		mtreebank.append(morphmerge(a, md, map(segment, a.leaves())))
 		print
 
-	#mtreebank = [m(Tree(a)) for a in corpus]
+	#mtreebank = [m(Tree(a)) for a in train]
 	#for a in mtreebank: print a
 	msd = GoodmanDOP(mtreebank, rootsymbol='S', parser=BitParChartParser, unknownwords='unknownmorph', name='morphsyntax')
 	print "built combined morphology-syntax model"
-	
+
+	return d, md, msd, segment
+
+def toy():
+	#syntax treebank
+	from corpus import corpus
+	test = sample(corpus, 0.1 * len(corpus))
+	train = [a for a in corpus if a not in test]	
+	m, md, msd, segment = morphology(train)
+
 	#evaluation
 	for tree in test:
 		w = tree.leaves()
@@ -151,44 +150,9 @@ def toy():
 		except Exception as e:
 			print "error:", e
 
-def morphology():
-	""" an interactive interface to the toy corpus """
+def interface():
 	from corpus import corpus
-	#corpus = ["(S (NP (NN amiko)) (VP (VB venis)))"]
-	d = GoodmanDOP((Tree(a) for a in corpus), rootsymbol='S', parser=BitParChartParser, unknownwords='unknownwords', openclassdfsa='postoy.dfsa', name='syntax')
-	print "built syntax model"
-
-	mcorpus = open("morph.corp.txt").readlines()
-	md = GoodmanDOP((cnf(Tree(a)) for a in mcorpus), rootsymbol='W', wrap=True, parser=BitParChartParser, unknownwords='unknownmorph', name='morphology')
-	print "built morphology model"
-
-	segmentd = dict(("".join(a), tuple(a)) for a in (Tree(a).leaves() for a in mcorpus))
-	print "morphology exemplars: ", " ".join(segmentd.keys())
-	print "segmentation dictionary size:", len(segmentd),
-
-	segmentd = dos1(set(segmentd.values()))
-	#restore original original words in case they were overwritten
-	for a in (Tree(a).leaves() for a in mcorpus):
-		segmentd["".join(a)] = tuple(a)
-	segment = segmentor(segmentd)
-
-	print "extrapolated:", len(segmentd) #, " ".join(segmentd.keys())
-
-	print "analyzing morphology of treebank"
-	mtreebank = []
-	for n, a in enumerate(Tree(a) for a in corpus):
-		print '%d / %d:' % (n, len(corpus)-1),
-		mtreebank.append(morphmerge(a, md, map(segment, a.leaves())))
-		print
-
-	#mtreebank = [m(Tree(a)) for a in corpus]
-	#for a in mtreebank: print a
-	msd = GoodmanDOP(mtreebank, rootsymbol='S', parser=BitParChartParser, unknownwords='unknownmorph', name='morphsyntax')
-	print "built combined morphology-syntax model"
-
-	#d.writegrammar('/tmp/syntax.pcfg', '/tmp/syntax.lex')
-	#md.writegrammar('/tmp/morph.pcfg', '/tmp/morph.lex')
-	#msd.writegrammar('/tmp/morphsyntax.pcfg', '/tmp/morphsyntax.lex')
+	d, md, msd, segment = morphology(corpus)
 
 	#print d.grammar
 	w = "foo!"
@@ -228,6 +192,12 @@ def morphology():
 		except Exception as e:
 			print "error:", e
 
+def monato():
+	""" produce the goodman reduction of the full monato corpus """
+	# turn cleanup off so that the grammar will not be removed
+	d = GoodmanDOP((stripfunc(cnf(Tree(a))) for a in open("arbobanko1.train")), rootsymbol='fcl', parser=BitParChartParser, name='syntax', cleanup=False)
+	#d = GoodmanDOP((Tree(a) for a in corpus), rootsymbol='S', wrap=True)
+
 if __name__ == '__main__':
 	import doctest
 	# do doctests, but don't be pedantic about whitespace (I suspect it is the
@@ -236,6 +206,6 @@ if __name__ == '__main__':
 	optionflags=doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS)
 	if attempted and not fail:
 		print "%d doctests succeeded!" % attempted
-	morphology()   #interactive demo with toy corpus
+	interface()   #interactive demo with toy corpus
 	#toy()		#get toy corpus DOP reduction
 	#monato()        #get monato DOP reduction
