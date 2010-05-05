@@ -4,7 +4,8 @@
 
 from dopg import *
 from bitpar import BitParChartParser
-from random import sample
+from random import sample,seed
+seed()
 
 def cnf(tree):
 	""" make sure all terminals have POS tags; 
@@ -68,6 +69,7 @@ def segmentor(segmentd):
 				if w[-1] in 'jn': return f(w[:-1]) + (w[-1],)
 				if w[-1] in 'oaeu': return (w[:-1], w[-1])
 				if w[-1] == 's': return (w[:-2], w[-2:])
+				if w[-1] == 'i': return (w[:-1], w[-1])
 			#last resort, unanalyzable word, e.g. proper noun
 			return (w,)
 		return f
@@ -129,12 +131,12 @@ def morphology(train):
 def toy():
 	#syntax treebank
 	from corpus import corpus
-	test = sample(corpus, 0.1 * len(corpus))
+	test = sample(corpus, int(0.1 * len(corpus)))
 	train = [a for a in corpus if a not in test]	
-	m, md, msd, segment = morphology(train)
+	d, md, msd, segment = morphology(train)
 
 	#evaluation
-	for tree in test:
+	for tree in (Tree(a) for a in test):
 		w = tree.leaves()
 		#morphology + syntax combined
 		try:
@@ -146,9 +148,17 @@ def toy():
 
 		#syntax & morphology separate
 		try:
-			print morphmerge(removeids(d.parse(w)), md, map(segment, a.leaves()))
+			print morphmerge(removeids(d.parse(w)), md, map(segment, w))
 		except Exception as e:
 			print "error:", e
+
+	for a in open("fundamento.vocab"):
+		if len(a) <= 1:	continue
+		try: print removeids(md.parse(segment(a[:-1].lower())))
+		except:
+			try: print segment(a[:-1].lower())
+			except: print a[:-1].lower()
+		pass #the bucket
 
 def interface():
 	from corpus import corpus
@@ -206,6 +216,6 @@ if __name__ == '__main__':
 	optionflags=doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS)
 	if attempted and not fail:
 		print "%d doctests succeeded!" % attempted
-	interface()   #interactive demo with toy corpus
-	#toy()		#get toy corpus DOP reduction
+	#interface()   #interactive demo with toy corpus
+	toy()		#get toy corpus DOP reduction
 	#monato()        #get monato DOP reduction
