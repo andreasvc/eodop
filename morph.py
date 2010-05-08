@@ -3,6 +3,7 @@
 	Combines a syntax and a morphology corpus. """
 
 from dopg import *
+from nltk import UnsortedChartParser
 from bitpar import BitParChartParser
 from random import sample,seed
 seed()
@@ -75,19 +76,14 @@ def segmentor(segmentd):
 		return f
 	return s(segmentd)
 
-def removeids(tree):
-	""" remove unique IDs introduced by the Goodman reduction """
-	for a in tree.treepositions():
-		if '@' in str(tree[a]):
-			tree[a].node = tree[a].node.split('@')[0]
-	return tree
-
 def morphmerge(tree, md, segmented):
 	""" merge morphology into phrase structure tree """
 	copy = tree.copy(True)
 	for a,w in zip(tree.treepositions('leaves'), segmented):
 		try:
-			copy[a[:-1]] = removeids(md.parse(w))[0]
+			# MPD: copy[a[:-1]] = md.removeids(md.parse(w))[0]
+			# MPP
+			copy[a[:-1]] = md.mostprobableparse(w, 100)[0]
 		except Exception as e:
 			print "word:", tree[a[:-1]][0], "segmented", w
 			print "error:", e
@@ -95,11 +91,11 @@ def morphmerge(tree, md, segmented):
 
 def morphology(train):
 	""" an interactive interface to the toy corpus """
-	d = GoodmanDOP((Tree(a) for a in train), rootsymbol='S', parser=BitParChartParser, unknownwords='unknownwords', openclassdfsa='postoy.dfsa', name='syntax')
+	d = GoodmanDOP((Tree(a) for a in train), rootsymbol='S', parser=BitParChartParser, n=100, unknownwords='unknownwords', openclassdfsa='postoy.dfsa', name='syntax')
 	print "built syntax model"
 
 	mcorpus = open("morph.corp.txt").readlines()
-	md = GoodmanDOP((cnf(Tree(a)) for a in mcorpus), rootsymbol='W', wrap=True, parser=BitParChartParser, unknownwords='unknownmorph', name='morphology')
+	md = GoodmanDOP((cnf(Tree(a)) for a in mcorpus), rootsymbol='W', wrap=True, parser=BitParChartParser, n=100, unknownwords='unknownmorph', name='morphology')
 	print "built morphology model"
 
 	segmentd = dict(("".join(a), tuple(a)) for a in (Tree(a).leaves() for a in mcorpus))
@@ -111,7 +107,8 @@ def morphology(train):
 	for a in (Tree(a).leaves() for a in mcorpus):
 		segmentd["".join(a)] = tuple(a)
 	segment = segmentor(segmentd)
-
+	mlexicon = set(reduce(chain, segmentd.values()))
+	
 	print "extrapolated:", len(segmentd) #, " ".join(segmentd.keys())
 
 	print "analyzing morphology of treebank"
@@ -123,46 +120,71 @@ def morphology(train):
 
 	#mtreebank = [m(Tree(a)) for a in train]
 	#for a in mtreebank: print a
-	msd = GoodmanDOP(mtreebank, rootsymbol='S', parser=BitParChartParser, unknownwords='unknownmorph', name='morphsyntax')
+	msd = GoodmanDOP(mtreebank, rootsymbol='S', parser=BitParChartParser, n=100, unknownwords='unknownmorph', name='morphsyntax')
 	print "built combined morphology-syntax model"
 
-	return d, md, msd, segment
+	return d, md, msd, segment, mlexicon
 
 def toy():
 	#syntax treebank
 	from corpus import corpus
 	test = sample(corpus, int(0.1 * len(corpus)))
 	train = [a for a in corpus if a not in test]	
-	d, md, msd, segment = morphology(train)
+	d, md, msd, segment, lexicon = morphology(train)
 
 	#evaluation
-	for tree in (Tree(a) for a in test):
+	for tree in (Tree(a) for a in []): #test
 		w = tree.leaves()
 		#morphology + syntax combined
 		try:
 			sent = list(reduce(chain, map(segment, w)))
 			print sent
-			print removeids(msd.parse(sent))
+			print msd.removeids(msd.mostprobableparse(sent))
 		except Exception as e:
 			print "error", e
 
 		#syntax & morphology separate
 		try:
-			print morphmerge(removeids(d.parse(w)), md, map(segment, w))
+			print morphmerge(d.removeids(d.mostprobableparse(w)), md, map(segment, w))
 		except Exception as e:
 			print "error:", e
 
+	def guess(w):
+		""" guess a plausible morphological structure """
+		if w[:3] == 'mal':
+			a = guess(w[3:])
+			return "(%s (%s (A mal) %s) %s)" % (a[1:a.index(' ')], a[a.index(' ')+1:a.index(' ', 2)], a[a.index(' '):-1], a[:-2])
+		if w[-1] == 'n':
+			a = guess(w[:-1])
+			return "(%s %s n)" % (a[1:a.index(' ')], a)
+		if w[-1] == 'j':
+			a = guess(w[:-1])
+			return "(%s %s j)" % (a[1:a.index(' ')], a)
+		if w[-1] == 'o':
+			return "(NN (N %s) o)" % w[:-1]
+		if w[-1] == 'a':
+			return "(JJ (J %s) a)" % w[:-1]
+		if w[-1] == 'e':
+			return "(RB (R %s) e)" % w[:-1]
+		if w[-1] == 'i':
+			return "(VB (V %s) i)" % w[:-1]
+		if w[-1] == 's':
+			return "(VB (V %s) %s)" % (w[:-2], w[-2:])
+		return "(%s %s)" % (w, w)
+
 	for a in open("fundamento.vocab"):
 		if len(a) <= 1:	continue
-		try: print removeids(md.parse(segment(a[:-1].lower())))
-		except:
-			try: print segment(a[:-1].lower())
+		if all(a in lexicon for a in segment(a[:-1].lower())):
+			print md.removeids(md.mostprobableparse(segment(a[:-1].lower())))[0]
+		else:
+			try:
+				w = segment(a[:-1].lower())
+				print guess(w)
 			except: print a[:-1].lower()
-		pass #the bucket
 
 def interface():
 	from corpus import corpus
-	d, md, msd, segment = morphology(corpus)
+	d, md, msd, segment, lexicon = morphology(corpus)
 
 	#print d.grammar
 	w = "foo!"
@@ -176,7 +198,7 @@ def interface():
 		print "morphology:"
 		for a in w:
 			try:
-				print a, md.parse(segment(a))[0]
+				print a, md.mostprobableparse(segment(a))[0]
 			except Exception as e:
 				print "error:", e
 			
@@ -184,7 +206,7 @@ def interface():
 		try:
 			sent = list(reduce(chain, map(segment, w)))
 			print sent
-			print removeids(msd.parse(sent))
+			print msd.removeids(msd.mostprobableparse(sent))
 			#for tree in d.parser.nbest_parse(w):
 			#	print tree
 		except Exception as e:
@@ -195,7 +217,7 @@ def interface():
 			#TODO?: d.parse(w) should backoff to POS supplied by morphology for
 			#unknown words; but bitpar already does this with its word class
 			#automata support
-			print morphmerge(removeids(d.parse(w)), md, map(segment, w))
+			print morphmerge(d.removeids(d.parse(w)), md, map(segment, w))
 			#sent = ["".join(a.split('|')) for a in w]
 			#for tree in d.parser.nbest_parse(w):
 			#	print tree
@@ -216,6 +238,6 @@ if __name__ == '__main__':
 	optionflags=doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS)
 	if attempted and not fail:
 		print "%d doctests succeeded!" % attempted
-	#interface()   #interactive demo with toy corpus
-	toy()		#get toy corpus DOP reduction
-	#monato()        #get monato DOP reduction
+	interface()	#interactive demo with toy corpus
+	#toy()		#get toy corpus DOP reduction
+	#monato()	#get monato DOP reduction

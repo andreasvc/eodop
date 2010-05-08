@@ -8,10 +8,10 @@ Todo:
 from collections import defaultdict
 from subprocess import Popen, PIPE
 from uuid import uuid1
-from nltk import Tree, FreqDist, InsideChartParser
+from nltk import Tree, ProbabilisticTree, FreqDist, InsideChartParser
 
 class BitParChartParser:
-	def __init__(self, weightedrules, lexicon, rootsymbol=None, unknownwords=None, openclassdfsa=None, cleanup=True, name=''):
+	def __init__(self, weightedrules, lexicon, rootsymbol=None, unknownwords=None, openclassdfsa=None, cleanup=True, n=10, name=''):
 		""" Interface to bitpar chart parser. Expects a list of weighted
 		productions with frequencies (not probabilities).
 		
@@ -20,7 +20,8 @@ class BitParChartParser:
 			frequencies. The reason we use this format is that
 			it is close to bitpar's file format; converting a
 			weighted grammar with probabilities to frequencies
-			would be a detour.
+			would be a detour, and bitpar wants frequencies so
+			it can do smoothing.
 		@param lexicon: set of strings belonging to the lexicon
 			(ie., the set of terminals)
 		@param rootsymbol: starting symbol for the grammar
@@ -28,15 +29,18 @@ class BitParChartParser:
 			with frequencies
 		@param openclassdfsa: a deterministic finite state automaton,
 			refer to the bitpar manpage.
-		@param cleanup: boolean, when set to true the grammar will be
+		@param cleanup: boolean, when set to true the grammar files will be
 			removed when the BitParChartParser object is deleted.
+		@param name: filename of grammar files in case you want to export it,
+			if not given will default to a unique identifier
+		@param n: the n best parse trees will be requested
 		>>> wrules = (	("S\\tNP\\tVP", 1), \
 				("NP\\tmary", 1), \
 				("VP\\twalks", 1) )
 		>>> p = BitParChartParser(wrules, set(("mary","walks")))
 		>>> tree = p.parse("mary walks".split())
 		>>> print tree
-		(S (NP mary) (VP walks))
+		(S (NP mary) (VP walks)) (p=1.0)
 
 		>>> from dopg import GoodmanDOP
 		>>> d = GoodmanDOP([tree], parser=InsideChartParser)
@@ -44,16 +48,32 @@ class BitParChartParser:
 		ProbabilisticTree('S', [ProbabilisticTree('NP@1', ['mary'])
 		(p=1.0), ProbabilisticTree('VP@2', ['walks']) (p=1.0)])
 		(p=0.444444444444)
+		>>> d.parser.nbest_parse("mary walks".split(), 10)
+		[ProbabilisticTree('S', [ProbabilisticTree('NP@1', ['mary']) (p=1.0),
+			ProbabilisticTree('VP@2', ['walks']) (p=1.0)]) (p=0.444444444444),
+		ProbabilisticTree('S', [ProbabilisticTree('NP', ['mary']) (p=1.0),
+			ProbabilisticTree('VP@2', ['walks']) (p=1.0)]) (p=0.222222222222),
+		ProbabilisticTree('S', [ProbabilisticTree('NP@1', ['mary']) (p=1.0),
+			ProbabilisticTree('VP', ['walks']) (p=1.0)]) (p=0.222222222222),
+		ProbabilisticTree('S', [ProbabilisticTree('NP', ['mary']) (p=1.0),
+			ProbabilisticTree('VP', ['walks']) (p=1.0)]) (p=0.111111111111)]
+
 		>>> d = GoodmanDOP([tree], parser=BitParChartParser)
 		    writing grammar
 		>>> d.parser.parse("mary walks".split())
-		Tree('S', [Tree('NP@1', ['mary']), Tree('VP@2', ['walks'])])
+		ProbabilisticTree('S', [Tree('NP@1', ['mary']), Tree('VP@2', ['walks'])]) (p=0.444444)
+		>>> list(d.parser.nbest_parse("mary walks".split()))
+		[ProbabilisticTree('S', [Tree('NP@1', ['mary']), Tree('VP@2', ['walks'])]) 
+		(p=0.444444),
+		ProbabilisticTree('S', [Tree('NP', ['mary']), Tree('VP@2', ['walks'])])
+		(p=0.222222),
+		ProbabilisticTree('S', [Tree('NP@1', ['mary']), Tree('VP', ['walks'])])
+		(p=0.222222), 
+		ProbabilisticTree('S', [Tree('NP', ['mary']), Tree('VP', ['walks'])])
+		(p=0.111111)]
 
-		should become: 
-		(by parsing bitpar's chart output and or probabilites)
-		ProbabilisticTree('S', [ProbabilisticTree('NP@1', ['mary'])
-		(p=1.0), ProbabilisticTree('VP@2', ['walks']) (p=1.0)])
-		(p=0.444444444444)"""
+		TODO: parse bitpar's chart output / parse forest
+		"""
 
 		self.grammar = weightedrules
 		self.lexicon = lexicon
@@ -61,6 +81,7 @@ class BitParChartParser:
 		if name: self.id = name
 		else: self.id = uuid1()
 		self.cleanup = cleanup
+		self.n = n
 		self.unknownwords = unknownwords
 		self.openclassdfsa = openclassdfsa
 		self.writegrammar('/tmp/g%s.pcfg' % self.id, '/tmp/g%s.lex' % self.id)
@@ -72,8 +93,8 @@ class BitParChartParser:
 		self.stop()
 
 	def start(self):
-		# quiet, yield best parse, use frequencies
-		options = "bitpar -q -b 1 -p "
+		# quiet, yield best parse, show viterbi prob., use frequencies
+		options = "bitpar -q -b %d -vp -p " % (self.n)
 		# if no rootsymbol is given, 
 		# bitpar defaults to the first nonterminal in the rules
 		if self.rootsymbol: options += "-s %s " % self.rootsymbol
@@ -90,11 +111,25 @@ class BitParChartParser:
 	def parse(self, sent):
 		if isinstance(self.bitpar.poll(), int): self.start()
 		result, stderr = self.bitpar.communicate("%s\n\n" % "\n".join(sent))
+		prob, tree = result.split("\n", 1)[0], result.split("\n", 2)[1]
+		prob = float(prob.split("=")[1])
+		tree = Tree(tree)
 		try:
-			return Tree(result)
+			return ProbabilisticTree(tree.node, tree, prob=prob)
 		except:
 			# bitpar returned some error or didn't produce output
 			raise ValueError("no output. stdout: \n%s\nstderr:\n%s " % (result.strip(), stderr.strip()))
+
+	def nbest_parse(self, sent, n_will_be_ignored=None):
+		""" n has to be specified in the constructor because it is specified
+		as a command line parameter to bitpar, allowing it here would require
+		potentially expensive restarts of bitpar. """
+		if isinstance(self.bitpar.poll(), int): self.start()
+		result, stderr = self.bitpar.communicate("%s\n\n" % "\n".join(sent))
+		results = result.split("\n")[:-1] #strip trailing blank line
+		probs = (float(a.split("=")[1]) for a in results[::2] if "=" in a)
+		trees = (Tree(a) for a in results[1::2])
+		return (ProbabilisticTree(b.node, b, prob=a) for a, b in zip(probs, trees))
 
 	def writegrammar(self, f, l):
 		""" write a grammar to files f and l in a format that bitpar 

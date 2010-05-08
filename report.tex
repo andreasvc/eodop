@@ -149,7 +149,7 @@ excursions into semantics have been made. In this project I will go in the
 other direction and turn to the linguistic stratum of morphology. Most accounts
 of morphology in Computational Linguistics seem to present the structure of
 words as merely a sequence of morpheme-feature pairs (e.g., Jurafsky \& Martin
-2000), as parsed by a (Stochastic) Finite State Transducer (cf., Schmid et al.
+2000), as parsed by a Finite State Transducer (cf., Schmid et al.
 2004).
 
 However, due to the complexity and potentially unlimited productivity of
@@ -657,8 +657,8 @@ normal form). This is done by translating subtrees of the form
 relative frequency:
 
 \[
-\frac{\displaystyle\prod_{m = 0}^n(
-\text{$freq(B_m)$ if $B_m$ has an id else $1$})}{freq(A)}
+\frac{\displaystyle\prod_{m = 1}^n(
+\text{$freq(B_m)$ if $B_m$ {\em has an id} else $1$})}{freq(A)}
 \] 
 
 \vspace{2em}
@@ -1041,117 +1041,120 @@ done.
 \section{References}
 
 \begin{description}
-\item[Bick], Eckhard (2007), ``Tagging and Parsing an Artificial Language: an
+\item[Bick,] Eckhard (2007), ``Tagging and Parsing an Artificial Language: an
 annotated web-corpus of Esperanto,'' in: {\em Proceedings of Corpus
-Linguistics}, Birmingham, UK.
+Linguistics}, Birmingham, UK. \\
 \url{http://beta.visl.sdu.dk/pdf/CorpusLinguistics2007_esp.pdf}
 
-\item[Bod], Rens \& Scha, Remko (1996) ``Data-Oriented Language Processing: an
+\item[Bod,] Rens \& Scha, Remko (1996) ``Data-Oriented Language Processing: an
 overview.'' Research reports, Institute for Logic, Language and Computation,
-University of Amsterdam. \url{http://dare.uva.nl/document/1144}
+University of Amsterdam. \\
+\url{http://dare.uva.nl/document/1144}
 
-\item[Clancey], W.J. (1991), ``The biology of consciousness: Comparative review
+\item[Clancey,] W.J. (1991), ``The biology of consciousness: Comparative review
 of Israel Rosenfield, The Strange, Familiar, and Forgotten: An anatomy of
 Consciousness and Gerald M. Edelman, Bright Air, Brilliant Fire: On the Matter
 of the Mind,'' {\em Artificial Intelligence} vol. 60, pp. 313--356
 
-\item[Gobbo], Federico (2009), ``Adpositional Grammars: a multilingual grammar
+\item[Gobbo,] Federico (2009), ``Adpositional Grammars: a multilingual grammar
 formalism for NLP,'' PhD dissertation, Universita degli Studi dell'Insubria.
 
-\item[Goodman], Joshua (1996), ``Efficient Algorithms for Parsing the DOP Model''. {\em Proceedings Empirical Methods in Natural Language Processing} pp. 143-152.
+\item[Goodman,] Joshua (1996), ``Efficient Algorithms for Parsing the DOP Model''. {\em Proceedings Empirical Methods in Natural Language Processing}, pp. 143-152. \\
 \url{http://acl.ldc.upenn.edu/W/W96/W96-0214.pdf}
 
-\item[Jackendoff], Ray (2003), ``Précis of Foundations of Language: Brain, Meaning,
+\item[Jackendoff,] Ray (2003), ``Précis of Foundations of Language: Brain, Meaning,
 Grammar, Evolution,'' Behavioral and Brain Sciences (2003), 26:6:651-665
 Cambridge University Press.
 
-\item[Jansen], W. (2007). ``Woordvolgorde in het Esperanto: normen, taalgebruik en
+\item[Jansen,] W. (2007). ``Woordvolgorde in het Esperanto: normen, taalgebruik en
 universalia" (Word-order in Esperanto: norms, usage and universals). PhD
 thesis, LOT Utrecht.
 
-\item[Jurafsky], D. \& Martin, J.H. (2000), ``Speech \& Language Processing An
+\item[Jurafsky,] D. \& Martin, J.H. (2000), ``Speech \& Language Processing An
 introduction to natural language processing, computational linguistics, and
 speech recognition,'' Pearson Education.
 
-\item[Haitao], Liu (2001), ``Creoles, Pidgins, and Planned Languages.'' Interface.
+\item[Haitao,] Liu (2001), ``Creoles, Pidgins, and Planned Languages.'' Interface.
 Journal of Applied Linguistics / Tijdschrift voor Toegepaste Linguïstiek 15 [2]. pp. 121--177.
 
-\item[Kalocsay], Kálmán \& Waringhien, Gaston (1980), Plena Analiza Gramatiko de
+\item[Kalocsay,] Kálmán \& Waringhien, Gaston (1980), Plena Analiza Gramatiko de
 Esperanto (Complete, analyzed Grammar of Esperanto), Rotterdam, Universala
 Esperanto-Asocio.
 
-\item[Maat], Jaap (1999), ``Philosophical Languages in the Seventeenth Century:
+\item[Maat,] Jaap (1999), ``Philosophical Languages in the Seventeenth Century:
 Dalgarno, Wilkins, Leibniz,'' Amsterdam, Institute for Logic, Language and
 Computation.
 
-\item[MacWhinney], B. (1987), ``Mechanisms of Language Acquisition,'' Lawrence Erlbaum Associates, NJ.
+\item[MacWhinney,] B. (1987), ``Mechanisms of Language Acquisition,'' Lawrence Erlbaum Associates, NJ.
 
-\item[Miner], Ken (2006a), ``Tranchitaj frazoj kaj la probleme pri negative
-evidento'' (Distituents and the problem of negative evidence). March 2006.
+\item[Miner,] Ken (2006a), ``Tranchitaj frazoj kaj la probleme pri negative
+evidento'' (Cut phrases and the problem of negative evidence). March 2006. \\
 \url{http://www.sunflower.com/~miner/NEGATIVA_package/negativa.html}
 
-\item[Miner], Ken (2006b), ``Rimarkoj pri `En la komenco estas la vorto' de Geraldo
+\item[Miner,] Ken (2006b), ``Rimarkoj pri `En la komenco estas la vorto' de Geraldo
 Mattos (fina versio),'' (Comments on `In the beginning was the word' by Geraldo
-Mattos (final version)). \url{http://www.sunflower.com/~miner/EKVO_package/ekvo.html}
+Mattos (final version)). \\
+\url{http://www.sunflower.com/~miner/EKVO_package/ekvo.html}
 
-\item[Miner], Ken (2008), ``La neebleco de priesperanto lingvoscienco,'' (The
-impossibility of Esperanto linguistics). October 2008.
-\url{http://www.sunflower.com/~miner/LINGVISTIKO_package/lingvistiko.html}
+\item[Miner,] Ken (2008), ``La neebleco de priesperanto lingvoscienco,'' (The
+impossibility of Esperanto linguistics). October 2008. \\
+\url{http://www.sunflower.com/~miner/LINGVISTIKO_package/lingvistiko.html} \\
 Also published in ``La arto labori kune : festlibro por Humphrey Tonkin'' (The
 art of working together: Festschrift for Humphrey Tonkin). Roterdam, Universala
 Esperanto Asocio, January 2010
 
-\item[Pinker], S. (1994). The language instinct: How the mind creates language. New York: W. Morrow.
+\item[Pinker,] S. (1994). The language instinct: How the mind creates language. New York: W. Morrow.
 
-\item[Prescher], D., Scha, R., Sima`an, K., Zollmann, A., (2004) ``On the statistical
+\item[Prescher,] D., Scha, R., Sima`an, K., Zollmann, A., (2004) ``On the statistical
 consistency of DOP estimators.'' In {\em Proceedings of the 14th Meeting of
 Computational Linguistics in the Netherlands}, Antwerp, Belgium.
 
-\item[Scha], Remko (1990), ``Taaltheorie en Taaltechnologie; Competence en
+\item[Scha,] Remko (1990), ``Taaltheorie en Taaltechnologie; Competence en
 Performance'' (Language theory and language technology: Competence and
 Performance), in Q.A.M. de kort and G.L.J. Leerdam (eds.), {\em Computertoepassingen in de Neerlandistiek} pp. 7-22, Almere: Landelijke
 Vereniging van Neerlandici (LVVN-jaarboek). English translation
 \url{http://www.hum.uva.nl/computerlinguistiek/scha/IAAA/rs/cv.html}
 
-\item[Schleyer], Johan Martin (1884), ``Volapük. Grammatik der Universalsprache für
+\item[Schleyer,] Johan Martin (1884), ``Volapük. Grammatik der Universalsprache für
 alle gebildete Erdbewohner,'' Überlingen am Bodensee: Buchdruckerei August
 Feyel, Buchhandlung Aug. Schoy. Third edition.
 
-\item[Schmid], Helmut (2004), ``Efficient Parsing of Highly Ambiguous Context-Free
+\item[Schmid,] Helmut (2004), ``Efficient Parsing of Highly Ambiguous Context-Free
 Grammars with Bit Vectors,'' {\em Proceedings of the 20th International Conference
 on Computational Linguistics} (COLING 2004), Geneva, Switzerland.
 \url{http://www.ims.uni-stuttgart.de/www/projekte/gramotron/PAPERS/COLING04/BitPar.pdf}
 
-\item[Schmid], Helmut, Arne Fitschen and Ulrich Heidi (2004), SMOR: A German Computational Morphology Covering Derivation, Composition, and Inflection, Proceedings of the IVth International Conference on Language Resources and Evaluation (LREC 2004), p. 1263-1266, Lisbon, Portugal. \url{http://www.ims.uni-stuttgart.de/www/projekte/gramotron/PAPERS/LREC04/smor.pdf}
+\item[Schmid,] Helmut, Arne Fitschen and Ulrich Heidi (2004), SMOR: A German Computational Morphology Covering Derivation, Composition, and Inflection, Proceedings of the IVth International Conference on Language Resources and Evaluation (LREC 2004), p. 1263-1266, Lisbon, Portugal. \url{http://www.ims.uni-stuttgart.de/www/projekte/gramotron/PAPERS/LREC04/smor.pdf}
 
-\item[Schubert], Klaus, 1989. "An unplanned development in planned languages", en Klaus Schubert, red., Interlinguistics: Aspects of the Science of Planned Languages [ = Trends in Linguistics: Studies and Monographs 42], Mouton de Gruyter.
+\item[Schubert,] Klaus, 1989. "An unplanned development in planned languages", en Klaus Schubert, red., Interlinguistics: Aspects of the Science of Planned Languages [ = Trends in Linguistics: Studies and Monographs 42], Mouton de Gruyter.
 
-\item[Schubert], Klaus (1993), ``Semantic compositionality: Esperanto word-formation
+\item[Schubert,] Klaus (1993), ``Semantic compositionality: Esperanto word-formation
 for language technology.'' {\em Linguistics} 31: 311-365.
 
-\item[Wells], John (1989), ``Lingvistikaj aspektoj de Esperanto,'' Universala
+\item[Wells,] John (1989), ``Lingvistikaj aspektoj de Esperanto,'' Universala
 Esperanto Asocio, Rotterdam. Second edition.
 
-\item[Wennergren], Bertilo (2005), ``Plena Manlibro de Esperanta Gramatiko,''
+\item[Wennergren,] Bertilo (2005), ``Plena Manlibro de Esperanta Gramatiko,''
 (Complete handbook of Esperanto Grammar), version 13.0, 14th of April 2005.
 Available online at \url{http://bertilow.com/pmeg/}.
 
-\item[Zamenhof], Dr. L. L. (1887/1968), ``Internationale Sprache. Vorrede und
+\item[Zamenhof,] Dr. L. L. (1887/1968), ``Internationale Sprache. Vorrede und
 Vollständiges Lehrbuch,'' Warschau, photographic reprint from 1968
 (Saarbrücken: Artur E. Illtis). German translation of the original Russian
 brochure.
 
-\item[Zamenhof], Dr. L. L. (1905/1963), ``Fundamento de Esperanto.'' Ninth edition
+\item[Zamenhof,] Dr. L. L. (1905/1963), ``Fundamento de Esperanto.'' Ninth edition
 with Introduction, Notes and Linguistics comments, edited by Dr. A. Albault
 (Esperantaj Francaj Eldonoj: Marmande, 1963).
 
-\item[Zollmann], Andreas \& Sima'an, Khalil (2005), ``A Consistent and Efficient
+\item[Zollmann,] Andreas \& Sima'an, Khalil (2005), ``A Consistent and Efficient
 Estimator for DOP.''  {\em Journal of Automota Languages and Combinatorics} vol.
 10, pp. 367.  \url{http://staff.science.uva.nl/~simaan/D-Papers/JALCsubmit.pdf}
 
 \end{description}
 
 \end{document}
+
 
 \subsection{Needed references}
 

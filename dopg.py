@@ -8,7 +8,7 @@ from collections import defaultdict
 from itertools import chain, count
 #from math import log #do something with logprobs instead?
 from nltk import Production, WeightedProduction, WeightedGrammar, FreqDist
-from nltk import Tree, Nonterminal, InsideChartParser, UnsortedChartParser
+from nltk import Tree, ImmutableTree, Nonterminal, InsideChartParser, UnsortedChartParser
 from bitpar import BitParChartParser
 
 def cartprod(a, b):
@@ -245,16 +245,36 @@ class GoodmanDOP:
 			#rule.append(prob(*rule))
 		#return [(rule, prob(rule[1])) for rule in cfg]
 
+	def removeids(self, tree):
+		""" remove unique IDs introduced by the Goodman reduction """
+		for a in tree.treepositions():
+			if '@' in str(tree[a]):
+				tree[a].node = tree[a].node.split('@')[0]
+		return tree
+
 	def parse(self, sent):
 		""" memoize parse trees. TODO: maybe add option to add every
-		parse tree to the set of exemplars, ie., incremental learning. """
+		parse tree to the set of exemplars, ie., incremental learning. 
+		this uses the most probable derivation (not very good)."""
 		try:
 			return self.exemplars[tuple(sent)]
 		except KeyError:
 			self.exemplars[tuple(sent)] = self.parser.parse(sent)
 			return self.exemplars[tuple(sent)]
 
-	def mccparse(self, sent):
+	def mostprobableparse(self, sent, sample=None):
+		""" warning: this problem is NP-complete. using an unsorted
+		chart parser avoids unnecessary sorting (since we need all
+		derivations anyway).
+		
+		@param sent: a sequence of terminals
+		@param sample: None or int; if int then sample that many parses"""
+		p = FreqDist()
+		for a in self.parser.nbest_parse(sent, sample):
+			p.inc(ImmutableTree.convert(self.removeids(a)), a.prob())
+		return p.max()
+
+	def mostconstituentscorrect(self, sent):
 		""" not working yet. almost verbatim translation of Goodman's (1996)
 		most constituents correct parsing algorithm, except for python's
 		zero-based indexing. needs to be modified to return the actual parse
@@ -287,6 +307,7 @@ class GoodmanDOP:
 				#for r in range(s, t):
 				#	best_split = max(maxc[(s,r)] + maxc[(r+1,t)])
 				maxc[(s,t)] = sumx(max_x) + best_split
+		
 		return maxc[(1, len(sent) + 1)]
 				
 def main():
@@ -295,18 +316,28 @@ def main():
 (S (NP Peter) (VP (V hates) (NP Susan)))
 (S (NP Harry) (VP (V eats) (NP pizza)))
 (S (NP Hermione) (VP (V eats)))""".split('\n')
+	#(S (NP Harry) (VP (V likes) (NP Susan) (ADVP (RB very) (RB much))))
 	corpus = [Tree(a) for a in corpus]
 	#d = GoodmanDOP(corpus, rootsymbol='S')
-	d = GoodmanDOP(corpus, rootsymbol='S', parser=BitParChartParser)
+	#d = GoodmanDOP(corpus, rootsymbol='S', parser=BitParChartParser)
+	d = GoodmanDOP(corpus, rootsymbol='S')
 	#print d.grammar
+	from nltk import ImmutableTree
 	print "corpus"
 	for a in corpus: print a
 	w = "foo!"
 	while w:
 		print "sentence:",
 		w = raw_input().split()
+		#print d.parser.prob_parse(w)
 		try:
-			print d.parse(w)
+			p = FreqDist()
+			for a in d.parser.nbest_parse(w):
+				print a
+				p.inc(ImmutableTree.convert(d.removeids(a)), a.prob())
+			for a,b in p.items():
+				print a, b
+			#print d.parse(w)
 		except Exception as e:
 			print "error", e
 
