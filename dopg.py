@@ -272,7 +272,8 @@ class GoodmanDOP:
 		p = FreqDist()
 		for a in self.parser.nbest_parse(sent, sample):
 			p.inc(ImmutableTree.convert(self.removeids(a)), a.prob())
-		return p.max()
+		if p.max(): return p.max()
+		else: raise ValueError("no parse")
 
 	def mostconstituentscorrect(self, sent):
 		""" not working yet. almost verbatim translation of Goodman's (1996)

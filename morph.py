@@ -83,7 +83,7 @@ def morphmerge(tree, md, segmented):
 		try:
 			# MPD: copy[a[:-1]] = md.removeids(md.parse(w))[0]
 			# MPP
-			copy[a[:-1]] = md.mostprobableparse(w, 100)[0]
+			copy[a[:-1]] = md.mostprobableparse(w)[0]
 		except Exception as e:
 			print "word:", tree[a[:-1]][0], "segmented", w
 			print "error:", e
@@ -102,12 +102,12 @@ def morphology(train):
 	print "morphology exemplars: ", " ".join(segmentd.keys())
 	print "segmentation dictionary size:", len(segmentd),
 
+	mlexicon = set(reduce(chain, segmentd.values()))
 	segmentd = dos1(set(segmentd.values()))
 	#restore original original words in case they were overwritten
 	for a in (Tree(a).leaves() for a in mcorpus):
 		segmentd["".join(a)] = tuple(a)
 	segment = segmentor(segmentd)
-	mlexicon = set(reduce(chain, segmentd.values()))
 	
 	print "extrapolated:", len(segmentd) #, " ".join(segmentd.keys())
 
@@ -174,13 +174,18 @@ def toy():
 
 	for a in open("fundamento.vocab"):
 		if len(a) <= 1:	continue
-		if all(a in lexicon for a in segment(a[:-1].lower())):
-			print md.removeids(md.mostprobableparse(segment(a[:-1].lower())))[0]
-		else:
-			try:
-				w = segment(a[:-1].lower())
-				print guess(w)
-			except: print a[:-1].lower()
+		try: s = segment(a[:-1].lower())
+		except:
+			s = None
+			print "( %s)" % a[:-1].lower()
+		if s and all(a in lexicon for a in s):
+			try: print md.removeids(md.mostprobableparse(s))[0]
+			except:
+				try: print guess(a[:-1])
+				except: print "( %s)" % a[:-1].lower()
+		else: 
+			try: print guess(a[:-1])
+			except: print "( %s)" % a[:-1].lower()
 
 def interface():
 	from corpus import corpus
@@ -238,6 +243,6 @@ if __name__ == '__main__':
 	optionflags=doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS)
 	if attempted and not fail:
 		print "%d doctests succeeded!" % attempted
-	interface()	#interactive demo with toy corpus
-	#toy()		#get toy corpus DOP reduction
+	#interface()	#interactive demo with toy corpus
+	toy()		#get toy corpus DOP reduction
 	#monato()	#get monato DOP reduction
