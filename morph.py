@@ -57,7 +57,8 @@ def dos3(words):
 
 def segmentor(segmentd):
 	""" wrap a segmentation dictionary in a naive unknown word 
-	segmentation function """
+	segmentation function with some heuristics 
+	(phonological rules could probably improve this further) """
 
 	# this unspeakable hack is necessary because python does not have
 	# proper support for lexical closures.
@@ -91,7 +92,7 @@ def morphmerge(tree, md, segmented):
 
 def morphology(train):
 	""" an interactive interface to the toy corpus """
-	d = GoodmanDOP((Tree(a) for a in train), rootsymbol='S', parser=BitParChartParser, n=100, unknownwords='unknownwords', openclassdfsa='postoy.dfsa', name='syntax')
+	d = GoodmanDOP((Tree(a) for a in train), rootsymbol='S', parser=BitParChartParser, n=100, unknownwords='unknownwords', openclassdfsa='pos.dfsa', name='syntax')
 	print "built syntax model"
 
 	mcorpus = open("morph.corp.txt").readlines()
@@ -150,7 +151,7 @@ def toy():
 			print "error:", e
 
 	def guess(w):
-		""" guess a plausible morphological structure """
+		""" heuristics for a plausible morphological structure """
 		if w[:3] == 'mal':
 			a = guess(w[3:])
 			return "(%s (%s (A mal) %s) %s)" % (a[1:a.index(' ')], a[a.index(' ')+1:a.index(' ', 2)], a[a.index(' '):-1], a[:-2])
@@ -218,7 +219,8 @@ def interface():
 			print "error", e
 
 		print "syntax & morphology separate:"
-		try:
+		#try:
+		if 1:
 			#TODO?: d.parse(w) should backoff to POS supplied by morphology for
 			#unknown words; but bitpar already does this with its word class
 			#automata support
@@ -226,8 +228,8 @@ def interface():
 			#sent = ["".join(a.split('|')) for a in w]
 			#for tree in d.parser.nbest_parse(w):
 			#	print tree
-		except Exception as e:
-			print "error:", e
+		#except Exception as e:
+		#	print "error:", e
 
 def monato():
 	""" produce the goodman reduction of the full monato corpus """
@@ -243,6 +245,6 @@ if __name__ == '__main__':
 	optionflags=doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS)
 	if attempted and not fail:
 		print "%d doctests succeeded!" % attempted
-	#interface()	#interactive demo with toy corpus
-	toy()		#get toy corpus DOP reduction
+	interface()	#interactive demo with toy corpus
+	#toy()		#get toy corpus DOP reduction
 	#monato()	#get monato DOP reduction

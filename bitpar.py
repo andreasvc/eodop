@@ -111,14 +111,13 @@ class BitParChartParser:
 	def parse(self, sent):
 		if isinstance(self.bitpar.poll(), int): self.start()
 		result, stderr = self.bitpar.communicate("%s\n\n" % "\n".join(sent))
+		if not "=" in result:
+			# bitpar returned some error or didn't produce output
+			raise ValueError("no output. stdout: \n%s\nstderr:\n%s " % (result.strip(), stderr.strip()))
 		prob, tree = result.split("\n", 1)[0], result.split("\n", 2)[1]
 		prob = float(prob.split("=")[1])
 		tree = Tree(tree)
-		try:
-			return ProbabilisticTree(tree.node, tree, prob=prob)
-		except:
-			# bitpar returned some error or didn't produce output
-			raise ValueError("no output. stdout: \n%s\nstderr:\n%s " % (result.strip(), stderr.strip()))
+		return ProbabilisticTree(tree.node, tree, prob=prob)
 
 	def nbest_parse(self, sent, n_will_be_ignored=None):
 		""" n has to be specified in the constructor because it is specified
