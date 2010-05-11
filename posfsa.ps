@@ -1,0 +1,475 @@
+%!PS-Adobe-3.0 EPSF-3.0
+%%BoundingBox: 60 470 403 772
+
+% Don't forget to adjust the boundingbox!
+
+%%%%%%%% START OF HEADER %%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                             %
+%   Automaton transition diagram              %
+%                                             %
+%   (c) P. Kleiweg  1996, 1998                %
+%                                             %
+%   Manual available at:                      %
+%   http://www.let.rug.nl/~kleiweg/automata/  %
+%                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+/petersFSA 256 dict  def
+petersFSA begin
+
+/NodeR  20 def			% Radius for node circle
+/ENodeR NodeR 0.8 mul def	% Radius for inner circle of final node
+/LoopR  NodeR 4   mul def	% Radius for loop arc
+/LoopW	30 def			% Width for loop arc (degrees)
+/NodeW   2 def			% Linewidth for node circle
+/ENodeW  1 def			% Linewidth for inner circle of final node
+/LineW   1 def			% Linewidth for arcs
+
+/Color false def			% Should we use fill colors?
+
+%%%% FONTS %%%%
+
+/TopSkip    2 def		% Extra white space above text
+/BottomSkip 2 def               % Extra white space below text
+/SideSkip   2 def               % Extra white space aside of text
+
+/SuperRaise  5 def		% Vertical position for superscript text
+/SubLower   -3 def		% Vertical position for subscript text
+
+% Stack in:  NewFontName EncodingVector OldFontName
+% Stack out:
+/RE {
+  findfont
+  dup maxlength dict begin
+  {
+    1 index /FID ne { def } { pop pop } ifelse
+  } forall
+  /Encoding exch def
+  dup /FontName exch def
+  currentdict end definefont pop
+} bind def
+
+/Times-Roman-ISOLatin1 ISOLatin1Encoding /Times-Roman RE
+
+% Switch to regular font
+% Stack in:
+% Stack out:
+/NormalFont {
+  /Times-Roman-ISOLatin1 findfont
+  11 scalefont
+  setfont
+} bind def
+
+% Switch to font used for superscript and subscript
+% Stack in:
+% Stack out:
+/SmallFont {
+  /Times-Roman-ISOLatin1 findfont
+  8 scalefont
+  setfont
+} bind def
+
+% Switch to symbol font
+% Stack in:
+% Stack out:
+/SymbolFont {
+  /Symbol findfont
+  11 scalefont
+  setfont
+} bind def
+
+% Calculate height of normal font
+gsave
+  newpath
+  NormalFont
+  0 0 moveto
+  (\() false charpath
+  pathbbox
+grestore
+/TOP exch def		% height above baseline
+pop
+/BOTTOM exch def	% depth below baseline (negative number)
+pop
+
+%%%% DISPLAYING TEXT %%%%
+
+% Positions for displaying text relative to currentpoint
+/Centre	0 def
+/North	1 def
+/East	2 def
+/South	4 def
+/West	8 def
+/NorthEast North East or def
+/NorthWest North West or def
+/SouthEast South East or def
+/SouthWest South West or def
+
+% Text types
+/Rm    1 def	% Use normal text (Roman)
+/Super 2 def	% Use superscript
+/Sub   3 def	% Use subscript
+/Sym   4 def    % Use symbol font
+/Ovl   5 def    % Use overlined normal text
+
+% Calculate width of text in pixels
+% Stack in:  [ (text1) type1 (text2) type2 ... ] 
+% Stack out: width
+/textwidth {
+  /Txt exch def
+  /L 0 def
+  0 2 Txt length 2 sub {
+    dup
+    Txt exch get /T exch def
+    Txt exch 1 add get /P exch def
+    P Rm eq P Ovl eq or {
+      /L L NormalFont T stringwidth pop add def
+    } if
+    P Super eq P Sub eq or {
+      /L L SmallFont T stringwidth pop add def
+    } if
+    P Sym eq {
+      /L L SymbolFont T stringwidth pop add def
+    } if
+  } for
+  L
+} bind def
+
+% Display text at currentpoint
+% Stack in:  [ (text1) type1 (text2) type2 ... ] position
+% Stack out:
+/puttext {
+  /Pos exch def        % Centre, North, NorthEast, etc
+  /Txt exch def
+
+  /Width Txt textwidth def
+
+  Pos West and 0 ne {
+    Width neg SideSkip sub 0 rmoveto
+  } {
+    Pos East and 0 ne {
+      SideSkip 0 rmoveto
+    } {
+      Width 2 div neg 0 rmoveto
+    } ifelse
+  } ifelse
+
+  Pos North and 0 ne {
+    0 BOTTOM neg BottomSkip add rmoveto
+  } {
+    Pos South and 0 ne {
+      0 TOP neg TopSkip sub rmoveto
+    } {
+      0 TOP BOTTOM add 2 div neg rmoveto
+    } ifelse
+  } ifelse
+
+  0 2 Txt length 2 sub {
+    dup
+    Txt exch get /T exch def
+    Txt exch 1 add get /P exch def
+    P Rm eq {
+      NormalFont T show
+    } if
+    P Super eq {
+      0 SuperRaise rmoveto
+      SmallFont T show
+      0 SuperRaise neg rmoveto
+    } if
+    P Sub eq {
+      0 SubLower rmoveto
+      SmallFont T show
+      0 SubLower neg rmoveto
+    } if
+    P Sym eq {
+      SymbolFont T show
+    } if
+    P Ovl eq {
+      NormalFont
+      gsave
+        .5 setlinewidth
+        0.6 T maxheight 1.5 add rmoveto
+        T stringwidth pop 2 sub 0 rlineto stroke
+      grestore
+      T show
+    } if
+  } for
+} bind def
+
+% stack in:  (text)
+% stack out: height
+/maxheight {
+  /MHT exch def
+  /MHH 0 def
+  0 1 MHT length 1 sub {
+    MHT exch 1 getinterval
+    gsave
+      newpath
+      0 0 moveto
+      false charpath
+      pathbbox
+      dup MHH gt {
+        /MHH exch def
+      } {
+        pop
+      } ifelse
+      pop pop pop
+    grestore
+  } for
+  MHH
+} bind def
+
+%%%% DRAWING NODES %%%%
+
+% Draw a node
+% Stack in:  [ x y ] red green blue
+% Stack out:
+/node {
+  4 -1 roll
+  aload pop
+  /Y exch def
+  /X exch def
+
+  NodeW setlinewidth
+  X NodeR add Y moveto
+  X Y NodeR 0 360 arc
+  Color {
+    gsave
+      setrgbcolor
+      fill
+    grestore
+  } {
+    pop pop pop
+  } ifelse
+  stroke
+} bind def
+
+% Make node initial
+% Stack in:   [ x y ] angle
+% Stack uit:
+/initialnode {
+  gsave
+    exch
+    aload pop
+    translate
+    rotate
+    NodeR NodeW 2 div add 0 translate
+    /N NodeR 3 div def
+    0 0 moveto
+    N N neg lineto
+    N 2 div 0 N 2 div 0 N N curveto
+    closepath
+    fill
+  grestore
+} bind def    
+
+% Make node final
+% Stack in:   [ x y ]
+% Stack out:
+/finalnode {
+  aload pop
+  /Y exch def
+  /X exch def
+  ENodeW setlinewidth
+  X ENodeR add Y moveto
+  X Y ENodeR 0 360 arc
+  stroke
+} bind def
+
+%%%% DRAWING TRANSITIONS %%%%
+
+% Draw arrowhead at x2 y2 from direction x1 y1
+% Stack in:  x1 y1 x2 y2
+% Stack out:
+/arrowHead {
+  /AY2 exch def
+  /AX2 exch def
+  /AY1 exch def
+  /AX1 exch def
+  gsave
+    AX2 AY2 translate
+    AY2 AY1 sub AX2 AX1 sub atan rotate
+    0 0 moveto
+    LineW neg 2 div 0 translate
+    -8 LineW mul 2 LineW mul lineto
+    -6 LineW mul 0
+    -6 LineW mul 0
+    -8 LineW mul -2 LineW mul curveto
+    closepath
+    fill
+  grestore
+} bind def
+
+% Draw a transition
+% Stack in:  [ x1 y1 ] [ x2 y2 ] angle part arrow1 arrow2
+% Stack out:
+/transition {
+  /Arrow2 exch def	% Arrow to final node: true / false
+  /Arrow1 exch def	% Arrow ot starting node: true / false
+  /F exch def		% Position for label (value between 0 and 1)
+  /A exch def		% Angle (value between -120 and 120 exclusive for non-loops)
+  aload pop
+  /Y2 exch def		% Final node
+  /X2 exch def		%
+  aload pop
+  /Y1 exch def		% Starting node
+  /X1 exch def		%
+
+  /Clear LineW 4 mul def
+  LineW setlinewidth
+  X1 X2 eq Y1 Y2 eq and {
+    Arrow1 {
+      /XX0 A LoopW add cos NodeR NodeW 2 div add mul X1 add def
+      /YY0 A LoopW add sin NodeR NodeW 2 div add mul Y1 add def
+      /XX0i A LoopW add cos NodeR NodeW 2 div add Clear add mul X1 add def
+      /YY0i A LoopW add sin NodeR NodeW 2 div add Clear add mul Y1 add def
+    } {
+      /XX0 A LoopW add cos NodeR mul X1 add def
+      /YY0 A LoopW add sin NodeR mul Y1 add def
+      /XX0i XX0 def
+      /YY0i YY0 def
+    } ifelse
+    Arrow2 {
+      /XX3 A LoopW sub cos NodeR NodeW 2 div add mul X1 add def
+      /YY3 A LoopW sub sin NodeR NodeW 2 div add mul Y1 add def
+      /XX3i A LoopW sub cos NodeR NodeW 2 div add Clear add mul X1 add def
+      /YY3i A LoopW sub sin NodeR NodeW 2 div add Clear add mul Y1 add def
+    } {
+      /XX3 A LoopW sub cos NodeR mul X1 add def
+      /YY3 A LoopW sub sin NodeR mul Y1 add def
+      /XX3i XX3 def
+      /YY3i YY3 def
+    } ifelse
+    /XX1 A LoopW add cos LoopR mul X1 add def
+    /YY1 A LoopW add sin LoopR mul Y1 add def
+    /XX2 A LoopW sub cos LoopR mul X1 add def
+    /YY2 A LoopW sub sin LoopR mul Y1 add def
+  } {
+    /ALFA Y2 Y1 sub X2 X1 sub atan def
+    Arrow1 {
+      /XX0 A ALFA add cos NodeR NodeW 2 div add mul X1 add def
+      /YY0 A ALFA add sin NodeR NodeW 2 div add mul Y1 add def
+      /XX0i A ALFA add cos NodeR NodeW 2 div add Clear add mul X1 add def
+      /YY0i A ALFA add sin NodeR NodeW 2 div add Clear add mul Y1 add def
+    } {
+      /XX0 A ALFA add cos NodeR mul X1 add def
+      /YY0 A ALFA add sin NodeR mul Y1 add def
+      /XX0i XX0 def
+      /YY0i YY0 def
+    } ifelse
+    Arrow2 {
+      /XX3  ALFA 180 add A sub cos NodeR NodeW 2 div add mul X2 add def
+      /YY3  ALFA 180 add A sub sin NodeR NodeW 2 div add mul Y2 add def
+      /XX3i ALFA 180 add A sub cos NodeR NodeW 2 div add Clear add mul X2 add def
+      /YY3i ALFA 180 add A sub sin NodeR NodeW 2 div add Clear add mul Y2 add def
+    } {
+      /XX3  ALFA 180 add A sub cos NodeR mul X2 add def
+      /YY3  ALFA 180 add A sub sin NodeR mul Y2 add def
+      /XX3i XX3 def
+      /YY3i YY3 def
+    } ifelse
+    /LEN
+      XX0 XX3 sub dup mul YY0 YY3 sub dup mul add sqrt
+      1 2 A cos mul add
+      div
+    def
+    /XX1 XX0 LEN ALFA A add cos mul add def
+    /YY1 YY0 LEN ALFA A add sin mul add def
+    /XX2 XX3 LEN ALFA 180 add A sub cos mul add def
+    /YY2 YY3 LEN ALFA 180 add A sub sin mul add def
+  } ifelse
+
+  XX0i YY0i moveto
+  XX1 YY1 XX2 YY2 XX3i YY3i curveto
+  stroke
+
+  /Cx XX1 XX0i sub 3 mul def
+  /Cy YY1 YY0i sub 3 mul def
+  /Bx XX2 XX1 sub 3 mul Cx sub def
+  /By YY2 YY1 sub 3 mul Cy sub def
+  /Ax XX3i XX0i sub Cx sub Bx sub def
+  /Ay YY3i YY0i sub Cy sub By sub def
+
+  /XL F F F mul mul Ax mul F F mul Bx mul add F Cx mul add XX0i add def
+  /YL F F F mul mul Ay mul F F mul By mul add F Cy mul add YY0i add def
+
+  Arrow1 {
+      XX1 YY1 XX0 YY0 arrowHead
+  } if
+  Arrow2 {
+      XX2 YY2 XX3 YY3 arrowHead
+  } if
+
+  XL YL moveto
+} bind def
+
+% Draw a transition with arrow to final node
+% Stack in:  [ x1 y1 ] [ x2 y2 ] angle part
+% Stack out:
+/trans {
+  false true transition
+} bind def
+
+%%%% MISC %%%%
+
+% Stack in:  [ x y ]
+% Stack out:
+% Result:    x y moveto
+/amoveto {
+  aload pop
+  moveto
+} bind def
+
+end
+
+%%%%%%%% END OF HEADER %%%%%%%%
+
+petersFSA begin
+
+% Define locations for nodes
+% Don't use capital letters in names
+% %%BoundingBox: 60 470 403 772
+/rb [ 140 555 ] def
+/jj [ 150 675 ] def
+/root [ 240 610 ] def
+/nn [ 320 650 ] def
+/vb [ 320 555 ] def
+
+% Draw nodes, using supplied red/green/blue fill colors
+[ rb jj root nn vb ] { 1 .8 .6 node } forall
+%q0 1 1 0 node
+%q2 0 1 1 node
+
+% Make this node initial
+root 180 initialnode
+
+% Make this node final
+rb finalnode
+jj finalnode
+nn finalnode
+vb finalnode
+
+% Put labels in nodes
+rb amoveto [ (rb) Rm ] Centre puttext
+jj amoveto [ (jj) Rm ] Centre puttext
+root amoveto [ (root) Rm ] Centre puttext
+nn amoveto [ (nn) Rm ] Centre puttext
+vb amoveto [ (vb) Rm ] Centre puttext
+
+% Draw transitions...			...and put labels with them
+root rb 20 .5  trans			[ (e) Rm ] NorthWest puttext
+root jj 20 .5  trans			[ (a) Rm ] SouthWest puttext
+root nn 20 .5  trans			[ (o) Rm ] North puttext
+root vb 20 .25  trans			[ ({i,u}) Rm ] NorthEast puttext
+root root 90 .5 trans			[ ([a-z]) Rm ] North puttext
+vb vb 90 .5  trans			[ ({i,s,u}) Rm ] North puttext
+rb rb 90 .5  trans			[ ({e,n}) Rm ] North puttext
+jj jj 90 .5  trans			[ ({a,j,n}) Rm ] North puttext
+nn nn 90 .5  trans			[ ({o,j,n}) Rm ] North puttext
+
+end
+
+showpage
+
+%%EOF
