@@ -3,7 +3,7 @@
 	Combines a syntax and a morphology corpus. """
 
 from dopg import *
-from nltk import UnsortedChartParser
+from nltk import UnsortedChartParser, NgramModel
 from bitpar import BitParChartParser
 from random import sample,seed
 seed()
@@ -48,8 +48,19 @@ def dos1(words):
 		reduce(chain, (cartpi(zip(*(w for w, m in zip(words, l) if m == n)))
 			for n in range(min(l), max(l)))))
 def dos2(words):
-	#bigram model. TBD
-	pass
+	#bigram model. there must be a way to avoid precomputing this?
+	#this is not working yet has I haven't succeeded in getting nltk's
+	#smoothing implemantion's to work.
+	#also, a better way would be to systematically try all possibilities
+	#and store the ones with a probability above a threshold
+	#(there must be an algorithm for doing this efficiently)
+	model = NgramModel(2, words)
+	lengths = map(len, words)
+	# iterate over possible number of morphemes
+	for n in range(2, max(lengths)+1):
+		# sample as many words as there are words with this number of morphemes
+		for m in lengths.count(n):
+			yield model.generate(n)
 
 def dos3(words):
 	# regex tokenizer. TBD

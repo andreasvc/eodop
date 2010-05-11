@@ -86,22 +86,26 @@ def parse(input, stripmorph=True):
 			out += ') ('
 		else:
 			if a.count('=') > n:
-				out += ' (' * (a.count('=') - n)
+				out += ' (' * ((a.count('=') - n))
 				open += (a.count('=') - n)
 			elif a.count('=') < n:
 				#out += "%s %s" % (')' * n, a.count('=') * '(')
-				out += "%s %s" % (')' * (1 + n - a.count('=')), '(')
-				open -= (n - a.count('=')) - 1
+				out += ')' * (n - a.count('='))
+				open -= (n - a.count('='))
 		n = a.count('=')
 		# remove morphology tags & lemma; replace other parentheses with braces because nltk.Tree gets confused
+		if '      ' in a: w = True
+		else: w = False
 		if stripmorph:
 			word = re.sub("=+|\(.*\)", "", a).replace('(','{').replace(')','}').split()
 		else:
 			word = a.replace('(','{').replace(')','}').split()
 		#every terminal should have a POS tag, be creative if it does not
 		if len(word) == 1: word == (word, word)
+		if w: out += "("
 		out += " " + " ".join(word)
-		
+		if w: out += ")"
+
 	out += open * ')'
 	return "".join(out).replace('( ', '(')[1:]
 
