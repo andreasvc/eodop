@@ -19,9 +19,28 @@ example2 = """STA:fcl
 ==DN:pron-dem("tia" <*> <Dem> <Du> <dem> DET P NOM)     Tiaj
 ==H:n("akuzo" <act> <sd> P NOM) akuzoj
 =fA:adv("certe")        certe
-=P:v-fin("dauxri" <va+TEMP> <mv> FUT VFIN)      dauxros
-."""
+=P:v-fin("dauxri" <va+TEMP> <mv> FUT VFIN)      dauxros"""
 
+example3 = """STA:par
+=CJT:fcl
+==fA:adv("krome" <*>)   Krome
+==,
+==S:np
+===DN:art("la") la
+===H:n("savo" <act> <event> S NOM)      savo
+===DN:pp
+====H:prp("de") de
+====DP:np
+=====H:n("konkuranto" <Hprof> S NOM)    konkuranto
+==P:v-fin("helpi" <cjt-head> <vta+INF> <mv> FUT VFIN)   helpos
+=====DN:prop("Microsoft" <*> S NOM)     Microsoft
+=CJT:icl
+==P:v-pcp2("refi" <cjt-STA> <mv> PAS COND INF)  refuti
+==Od:np
+===H:n("akuzo" <act> <sd> P ACC)        akuzojn
+===DN:pp
+====H:prp("pri")        pri
+====DP:n("monopolismo" S NOM)   monopolismo"""
 
 from nltk import Tree
 from nltk.tokenize import word_tokenize, wordpunct_tokenize
@@ -64,7 +83,7 @@ def parse(input, stripmorph=True):
 	==DP:np
 	===DN:adj("ekonomia" <Deco> P NOM)	ekonomiaj
 	===H:n("transformo" P NOM)	transformoj	
-	>>> parse(example.split('\\n'))
+	>>> parse(example.splitlines())
 	'(X:np (H:n Konsekvencoj) (DN:pp (H:prp de) (DP:np (DN:adj ekonomiaj) (H:n transformoj))))'	
 	>>> print example2
 	STA:fcl
@@ -73,41 +92,90 @@ def parse(input, stripmorph=True):
 	==H:n("akuzo" <act> <sd> P NOM) akuzoj
 	=fA:adv("certe")        certe
 	=P:v-fin("dauxri" <va+TEMP> <mv> FUT VFIN)      dauxros
-	.
 
-	>>> parse(example2.split('\\n'))
-	'(STA:fcl (S:np (DN:pron-dem Tiaj) (H:n akuzoj)) (fA:adv certe) (P:v-fin dauxros) .)'
+	>>> parse(example2.splitlines())
+	'(STA:fcl (S:np (DN:pron-dem Tiaj) (H:n akuzoj)) (fA:adv certe) (P:v-fin dauxros))'
+	>>> parse(example3.splitlines())
+	'(STA:par (CJT:fcl (fA:adv Krome) (,) (S:np (DN:art la) (H:n savo) (DN:pp (H:prp de) (DP:np (H:n konkuranto)))) (P:v-fin helpos (((DN:prop Microsoft))))) CJT:icl (P:v-pcp2 refuti) (Od:np (H:n akuzojn) (DN:pp (H:prp pri) (DP:n monopolismo))))'
 	"""
 	n = -1
-	open = 0
+	open = 1
 	out = []
 	for a in input:
+		if '("' in a:
+			w = True
+		else: w = False
 		if a.count('=') == n and n != 0:
 			out += ') ('
 		else:
+			if a.count('=') < n:
+				#out += "%s %s" % (')' * n, a.count('=') * '(')
+				out += ')' * (1 + n - a.count('='))
+				open -= (1 + n - a.count('='))
 			if a.count('=') > n:
 				out += ' (' * ((a.count('=') - n))
 				open += (a.count('=') - n)
-			elif a.count('=') < n:
-				#out += "%s %s" % (')' * n, a.count('=') * '(')
-				out += ')' * (n - a.count('='))
-				open -= (n - a.count('='))
+			elif w:
+				out += ' ('
+				open += 1
 		n = a.count('=')
 		# remove morphology tags & lemma; replace other parentheses with braces because nltk.Tree gets confused
-		if '      ' in a: w = True
-		else: w = False
 		if stripmorph:
 			word = re.sub("=+|\(.*\)", "", a).replace('(','{').replace(')','}').split()
 		else:
 			word = a.replace('(','{').replace(')','}').split()
 		#every terminal should have a POS tag, be creative if it does not
 		if len(word) == 1: word == (word, word)
-		if w: out += "("
 		out += " " + " ".join(word)
-		if w: out += ")"
 
-	out += open * ')'
+	out += (open - 1) * ')'
 	return "".join(out).replace('( ', '(')[1:]
+
+
+relinelev = re.compile(r'(=*)(.*)')
+reclean = re.compile(r'\s*\((\S+)[^)]*\)')
+
+def clean(a, stripmorph=True):
+	# remove morphology tags & lemma; replace other parentheses with braces because nltk.Tree gets confused
+	if stripmorph:
+		return " ".join(re.sub("\(.*\)", "", a).replace('(','{').replace(')','}').split())
+		#return a.split()[-1]
+		#return reclean.sub(r'\1', a) #.replace('(','{').replace(')','}').split()
+	else:
+		return a.replace('(','{').replace(')','}').split()
+
+def reparse(tree):
+	"""following code contributed by Alex Martelli at StackOverflow:
+	http://stackoverflow.com/questions/2815020/converting-a-treebank-of-vertical-trees-to-s-expressions
+
+	parse a horizontal tree into an s-expression (ie., WSJ format). 
+	Defaults to stripping morphology information. 
+	Parentheses in the input are converted to braces.
+
+	>>> reparse(example.splitlines())
+	'(X:np (H:n Konsekvencoj) (DN:pp (H:prp de) (DP:np (DN:adj ekonomiaj) (H:n transformoj))))'	
+	>>> reparse(example2.splitlines())
+	'(STA:fcl (S:np (DN:pron-dem Tiaj) (H:n akuzoj)) (fA:adv certe) (P:v-fin dauxros))'
+	>>> reparse(example3.splitlines())
+	'(STA:par (CJT:fcl (fA:adv Krome) (,) (S:np (DN:art la) (H:n savo) (DN:pp (H:prp de) (DP:np (H:n konkuranto)))) (P:v-fin helpos (DN:prop Microsoft))) (CJT:icl (P:v-pcp2 refuti) (Od:np (H:n akuzojn) (DN:pp (H:prp pri) (DP:n monopolismo)))))'
+	"""
+	stack = [-1]
+	result = []
+	for line in tree:
+		equals, rest = relinelev.match(line).groups()
+		linelev = len(equals)
+		while linelev < stack[-1]:
+			result[-1] += ')'
+			curlev = stack.pop()
+		if linelev == stack[-1]:
+			result[-1] += ')'
+		else:
+			stack.append(linelev)
+		result.append('(%s' % clean(rest))
+	while stack[-1] >= 0:
+		result[-1] += ')'
+		stack.pop()
+	return ' '.join(result)
 
 def main():
 	"""take a treebank from stdin in horizontal tree format, and output it
@@ -141,40 +209,48 @@ def main():
 	for a in stdin:
 		if s and a[:4] == "</s>":
 			s = 0
-			x = parse(tree)
+			if tree[-2].strip() == '.':
+				tree = tree[:-2] #+ ['']
+				period = ' .'
+			else: period = ''
+			x = "(TOP %s%s)" % (reparse(tree).replace('()',''), period)
+
 			try:
-				xx = Tree(x)
-				if sent == leaves(xx):
-					#cnf(xx)
-					stdout.write("%s\n" % str(cnf(xx)).replace('\n',''))
-					correct += 1
-				else:
-					# this happens when the leaves do not agree with the original sentence
-					stderr.write("""sentence-leaves mismatch!
-expected: %s
-got:      %s
-tree:
-%s
-""" % (repr(sent), repr(leaves(xx)), str(x)))
-					mismatch += 1
+				xx = cnf(Tree(x))
 			except ValueError:
-				# this only happens when our output failes to parse (malformed s-expression):
+				# this only happens when our output failes to parse (malformed s-expression -- eg. unbalanced parens):
 				stderr.write("""failed to parse:
 input:  %s
 output: %s
 """ % ("".join(tree), str(x)))
 				failed += 1
+				continue
+			if sent == leaves(xx):
+				# this tree is fine
+				stdout.write("%s\n" % x)
+				#stdout.write("%s\n" % str(xx).replace('\n',''))
+				correct += 1
+			else:
+				# this happens when the leaves do not agree with the original sentence in the comment line above the tree
+				stderr.write("""sentence-leaves mismatch!
+expected: %s
+got:      %s
+tree:
+%s
+""" % (repr(sent), repr(leaves(xx)), str(x)))
+				mismatch += 1
 		elif s and a[:2] == "ID":
-			#ID=123 the sentence. => ['the', 'sentence', '.']
+			# "ID=123 the sentence." => ['the', 'sentence', '.']
 			# we need this monstrosity because word_tokenize does
 			# not tokenize "word.)" into three tokens like it
 			# should
-			#sent = wordpunct_tokenize(" ".join(word_tokenize(a[a.index(' ')+1:].replace('(','{').replace(')','}'))))
+			# sent = wordpunct_tokenize(" ".join(word_tokenize(a[a.index(' ')+1:].replace('(','{').replace(')','}'))))
 			def mytokenize(a):
 				pass
-			sent = word_tokenize(a[a.index(' ')+1:].replace('(','{').replace(')','}'))
+			sent = word_tokenize(a.split(' ', 1)[1].replace('(','{').replace(')','}'))
 		elif s and "CAVE" in a:
-			#skip trees with errors
+			# skip trees with errors (a cave circularity is 
+			# a circular dependency link, which is illegal)
 			cave += 1
 			s = 0
 		elif s:

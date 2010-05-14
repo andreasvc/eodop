@@ -672,12 +672,23 @@ very-poor-person, gluing-to}
 
 \subsection{Implementation}
 
-Goodman (1996) reduction: 
-own implementation\footnote{\url{http://www.github.com/andreasvc/eodop}}, using 
-\href{http://groups.google.com/group/nltk-dev/browse_thread/thread/86ca038723195978/c112b8d171b33d25}{NLTK}. 
-may add backoff DOP or DOP*; fast PCFG parsing using 
+The implementation uses the Goodman (1996) reduction of DOP to a PCFG. I have
+written my own
+implementation\footnote{Full source code available at \url{http://www.github.com/andreasvc/eodop}, including the code dealing with morphology and preprocessing etc.}, using
+\href{http://groups.google.com/group/nltk-dev/browse_thread/thread/86ca038723195978/c112b8d171b33d25}{NLTK} (Bird et al., 2009). Future work should extend
+this implementation to add better estimators such as Backoff DOP or DOP*.
+
+After producing a PCFG parsing is done using
 \href{http://www.ims.uni-stuttgart.de/tcl/SOFTWARE/BitPar.html}{bitpar} 
-(Schmid 2004), a bit vector based chart parser.
+(Schmid 2004), an efficient bit vector based chart parser.
+
+%guest2@vici.science.uva.nl[9]~/andreas/eodop/ % time python morph.py
+%writing grammar
+%python morph.py  2121.87s user 32.43s system 99% cpu 36:12.34 total
+%guest2@vici.science.uva.nl[9]~/andreas/eodop/ % echo $[2122/60.0]
+%35.366666666666667
+%
+% ie., reduction takes 35 minutes, using about 4GB
 
 In order to apply the Goodman reduction to an arbitrary treebank, the reduction
 has been generalized to deal with arbitrary trees (not just trees in Chomsky
@@ -883,10 +894,12 @@ Treebanks:
 \item morphology: semi-supervised corpus generated from dictionaries (TBD)
 \item syntax: Monato treebank (Bick, personal communication, a corpus parsed
       with EspGram (Bick 2007).  Number of sentences: 1995, tokens: 30,397,
-      types: 9247. Average sentence length: 15.338. Resulting grammar is 5 GB.
-      Treebank requires preprocessing, a basic filter was applied to prune
-      parse trees whose leaves do not agree with the original input sentence;
-      also, unique POS tags are inserted for punctuation; about 1500 trees remain.
+      types: 9247. Average sentence length: 15.338. Resulting grammar is about
+      1 GB. Treebank requires preprocessing, a basic filter was applied to
+      prune parse trees whose leaves do not agree with the original input
+      sentence (be it because of a parse error in the original or an incorrect
+      conversion); also, unique POS tags are inserted for punctuation; about
+      1500 trees remain afterwards.
 \end{itemize}
 
 \section{Results}
@@ -1072,7 +1085,22 @@ have been enough).
   mention DLT as older exemplar model (prior art?).
 \item Bitpar should ignore non-ascii characters so that all words get a POS
 \item look at DOP* / U-DOP
+\item FOLD CASE! should be part of preprocessing!
 
+%finished
+%reading the word class guesser...finished
+%parameter estimation...finished
+%1terminate called after throwing an instance of 'std::bad_alloc'
+%  what():  St9bad_alloc
+%zsh: abort      bitpar -p -b 1 -u unknownwordsm -w pos.dfsa syntax.pcfg syntax.lex
+%guest2@vici.science.uva.nl[9]~/andreas/eodop/ % ls
+
+\item list previous work on EO morphology:
+	EspGram: list morphological features; seems to be the affixes and endings and lemma, not segmented?
+	Hana: two level morphology, morphemes + features, fully segmented.
+	DLT: ?? (Schubert (et al?))
+	other work? describe Miner? structuralist representation, hierarchical, unlabeled, implicit (trace?) endings for every morpheme.
+	
 \subsection{Future work}
 A two-level Hidden Markov Model (HMM) for assigning tags to unknown words and
 morphemes. The results can be added to the lexicon, after which Bitpar can be
@@ -1083,15 +1111,15 @@ reloaded.
 
 \subsection{Evaluation}
 
-TBD. 
+Tenfold testing of Monato treebank, with and without regard for
+morphology.
 
-\begin{enumerate}
-\item Construct all possible test sets of 2 sentences from the toy corpus of 14
-sentences, evaluate with evalb (or extend corpus to the complete
-Fundamento to get more representative results).
-\item Tenfold testing of Monato treebank, with and without regard for
-morphology. This requires better pre-processing of this treebank.
-\end{enumerate}
+To be done. Unfortunately parsing using the full monato corpus proved to be
+too much for bitpar, as it fails with a memory allocation error before
+producing any results. Alternatives would be to sample from the subtrees (ie.,
+sample from the rules containing IDs plus all the rules without IDs), or using
+a different parser, one optimised more for memory usage.
+
 
 \section{Conclusion}
 
@@ -1128,6 +1156,9 @@ $\infty$
 annotated web-corpus of Esperanto,'' in: {\em Proceedings of Corpus
 Linguistics}, Birmingham, UK. \\
 \url{http://beta.visl.sdu.dk/pdf/CorpusLinguistics2007_esp.pdf}
+
+\item[Bird,] Steven, Edward Loper \& Ewan Klein (2009).
+    ``Natural Language Processing with Python.''  O'Reilly Media Inc.
 
 \item[Bod,] Rens \& Scha, Remko (1996) ``Data-Oriented Language Processing: an
 overview.'' Research reports, Institute for Logic, Language and Computation,
