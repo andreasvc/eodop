@@ -782,6 +782,10 @@ generalize over attested segmentations, as the previous methods do. The result
 will be that potential ambiguities that play no role in naturalistic data will
 rear their head.
 
+In the current implementation I use neither the bigram nor the grammar for
+segmentation, as I have not yet encountered instances where it would be
+make a difference.
+
 \subsection{POS tags for unknown words}
 
 Since part-of-speech tags are transparently marked in Esperanto, it is
@@ -1072,20 +1076,18 @@ have been enough).
 \begin{comment}
 \subsection{Todo}
 
-\item parse bitpar chart output into NLTK (currently only most probable derivation; 
-  we need $n$ most probable parses and maybe shortest derivation, SL-DOP etc.)
+\item parse bitpar chart output into NLTK (currently only n most probable derivations; 
+  we need full chart and maybe shortest derivation, SL-DOP etc.)
 \item use Reta Vortaro / ergane Esperanto dictionary and root lists 
   to induce segmentation / morphology model in a semi-supervised fashion.
 \item check morphology coverage against vocabulary of Monato treebank
 \item distinguish between morpheme and word boundaries (how?).
   possibly by having a trailing space as part of a morphological analysis 
   (but: this should not block inflection for plurality and accusative (+j and +n respectively).
-\item finish report; evaluation \& conclusion.
-  write about Dasgupta (2008) \& is there work on DOP + dependencies? 
+\item write about Dasgupta (2008) \& is there work on DOP + dependencies? 
   mention DLT as older exemplar model (prior art?).
 \item Bitpar should ignore non-ascii characters so that all words get a POS
 \item look at DOP* / U-DOP
-\item FOLD CASE! should be part of preprocessing!
 
 %finished
 %reading the word class guesser...finished
@@ -1101,11 +1103,6 @@ have been enough).
 	DLT: ?? (Schubert (et al?))
 	other work? describe Miner? structuralist representation, hierarchical, unlabeled, implicit (trace?) endings for every morpheme.
 	
-\subsection{Future work}
-A two-level Hidden Markov Model (HMM) for assigning tags to unknown words and
-morphemes. The results can be added to the lexicon, after which Bitpar can be
-reloaded.
-
 \end{comment}
 
 
@@ -1120,6 +1117,49 @@ producing any results. Alternatives would be to sample from the subtrees (ie.,
 sample from the rules containing IDs plus all the rules without IDs), or using
 a different parser, one optimised more for memory usage.
 
+\subsection{Future work}
+
+Unknown words are already handled properly by the DFSA classifier supported by
+\texttt{bitpar} (save for proper names and foreign words, which are always
+problematic). However, dealing with unknown morphemes or morphemes used with an
+unattested tag is more difficult because morphemes are not explicitely marked,
+except by association with grammatical endings, which is not conclusive because
+the word may be the result of a category transformation (e.g., a nominalization).
+To deal with this problem I envision a two level Hidden Markov Model (HMM) for
+assigning tags to unknown words and morphemes. The first level will be words,
+where the hidden layer consists of their POS tags. The second layer will be the
+morphemes of those words, where the hidden layer consists of their morpheme
+tags. The HMM would be trained on the same training corpus as the DOP model,
+and its results should be added to the lexicon of the DOP model (ie., the rules
+of the form `POS tag $\rightarrow$ terminal'). It is unclear to me how this
+affects the DOP probability model, but \texttt{bitpar} will certainly have no
+qualms with it as it expects frequencies anyway, so as to be able to do
+smoothing.
+
+Another important improvement is to add explicit word boundaries when merging
+morphological structures with phrase structures. This can probably be
+implemented using a new root node containing the morphological analysis and a
+single space as children, but has not been explored yet.
+
+Concerning morphology, it should be noted that e.g., Miner (2006b; and others
+cited therein) annotate all morphemes in complex words with their implied
+grammatical endings, such that a ``vapor\^sipo'' (steamboat) is analyzed as
+``vaporo-\^sipo.''\footnote{Note that both surface forms are technically
+correct, but in practice the latter is only used for phonological reasons relating to
+prosody etc.} Such an analysis introduces additional ambiguity and departs from
+the empirical evidence, but it may be necessary for linguistic reasons.  I have
+not considered it because I do not consider it realistic to assume such trace
+constituents, but there is no evidence against them other than their absence in
+most surface forms. On the other hand, the morphological structures that Miner
+presents are unlabeled, which makes it harder to generalize over multiple
+exemplars as categories are only represented in terminals. The choice to label
+morphological constituents with the same labels as individual roots seems
+useful and justifiable.
+
+The Distributed Language Translation (DLT) project, which used Esperanto as a
+pivot language for Machine Translation, went as far as adding accusative
+endings inside complex words where implied. This goes against the grammar of
+Esperanto, but it is obviously useful for disambiguation.
 
 \section{Conclusion}
 
@@ -1138,12 +1178,13 @@ finite state automaton we can assign tags to unknown words and
 morphemes.
 
 The resulting system has been applied to a small corpus of morphology and
-syntax, showing the advantage of merging morphology and syntax treebanks
+syntax, hinting at the advantage of merging morphology and syntax treebanks
 before constructing a DOP model. Evaluation with a larger syntactic treebank,
 as well as the induction of morphology tags from dictionaries remains to be
 done. However, the groundwork for such an enterprise has been laid, as well as
-for addressing the research questions. It seems very likely that morphology
-will be very useful for parsing syntax.
+for addressing the research questions. It seems likely that morphology
+will be crucial for parsing syntax, especially when morphology is rich 
+and highly structured.
 
 \begin{center}
 $\infty$
@@ -1173,8 +1214,9 @@ of the Mind,'' {\em Artificial Intelligence} vol. 60, pp. 313--356
 \item[Gobbo,] Federico (2009), ``Adpositional Grammars: a multilingual grammar
 formalism for NLP,'' PhD dissertation, Universita degli Studi dell'Insubria.
 
-\item[Goodman,] Joshua (1996), ``Efficient Algorithms for Parsing the DOP Model''. {\em Proceedings Empirical Methods in Natural Language Processing}, pp. 143-152. \\
-\url{http://acl.ldc.upenn.edu/W/W96/W96-0214.pdf}
+\item[Goodman,] Joshua (1996), ``Efficient Algorithms for Parsing the DOP
+Model''. {\em Proceedings Empirical Methods in Natural Language Processing},
+pp. 143-152. \\ \url{http://acl.ldc.upenn.edu/W/W96/W96-0214.pdf}
 
 \item[Jackendoff,] Ray (2003), ``Précis of Foundations of Language: Brain, Meaning,
 Grammar, Evolution,'' Behavioral and Brain Sciences (2003), 26:6:651-665
@@ -1188,7 +1230,8 @@ thesis, LOT Utrecht.
 introduction to natural language processing, computational linguistics, and
 speech recognition,'' Pearson Education.
 
-\item[Hana,] Ji\~ri, ``Two-level morphology of Esperanto,'' MSc thesis, Charles University Prague, Faculty of Mathematics and Physics.
+\item[Hana,] Ji\~ri, ``Two-level morphology of Esperanto,'' MSc thesis, Charles
+University Prague, Faculty of Mathematics and Physics.
 \url{http://www.ling.ohio-state.edu/~hana/esr/thesis.html}
 
 \item[Haitao,] Liu (2001), ``Creoles, Pidgins, and Planned Languages.'' Interface.
@@ -1228,7 +1271,8 @@ Computational Linguistics in the Netherlands}, Antwerp, Belgium.
 
 \item[Scha,] Remko (1990), ``Taaltheorie en Taaltechnologie; Competence en
 Performance'' (Language theory and language technology: Competence and
-Performance), in Q.A.M. de kort and G.L.J. Leerdam (eds.), {\em Computertoepassingen in de Neerlandistiek} pp. 7-22, Almere: Landelijke
+Performance), in Q.A.M. de kort and G.L.J. Leerdam (eds.), {\em
+Computertoepassingen in de Neerlandistiek} pp. 7-22, Almere: Landelijke
 Vereniging van Neerlandici (LVVN-jaarboek). English translation
 \url{http://www.hum.uva.nl/computerlinguistiek/scha/IAAA/rs/cv.html}
 
@@ -1241,14 +1285,22 @@ Grammars with Bit Vectors,'' {\em Proceedings of the 20th International Conferen
 on Computational Linguistics} (COLING 2004), Geneva, Switzerland.
 \url{http://www.ims.uni-stuttgart.de/www/projekte/gramotron/PAPERS/COLING04/BitPar.pdf}
 
-\item[Schmid,] Helmut, Arne Fitschen and Ulrich Heidi (2004), SMOR: A German Computational Morphology Covering Derivation, Composition, and Inflection, Proceedings of the IVth International Conference on Language Resources and Evaluation (LREC 2004), p. 1263-1266, Lisbon, Portugal. \url{http://www.ims.uni-stuttgart.de/www/projekte/gramotron/PAPERS/LREC04/smor.pdf}
+\item[Schmid,] Helmut, Arne Fitschen and Ulrich Heidi (2004), SMOR: A German
+Computational Morphology Covering Derivation, Composition, and Inflection,
+Proceedings of the IVth International Conference on Language Resources and
+Evaluation (LREC 2004), p. 1263-1266, Lisbon, Portugal.
+\url{http://www.ims.uni-stuttgart.de/www/projekte/gramotron/PAPERS/LREC04/smor.pdf}
 
-\item[Schubert,] Klaus, 1989. "An unplanned development in planned languages", en Klaus Schubert, red., Interlinguistics: Aspects of the Science of Planned Languages [ = Trends in Linguistics: Studies and Monographs 42], Mouton de Gruyter.
+\item[Schubert,] Klaus, 1989. "An unplanned development in planned languages",
+en Klaus Schubert, red., Interlinguistics: Aspects of the Science of Planned
+Languages [ = Trends in Linguistics: Studies and Monographs 42], Mouton de
+Gruyter.
 
 \item[Schubert,] Klaus (1993), ``Semantic compositionality: Esperanto
 word-formation for language technology.'' {\em Linguistics} 31: 311-365.
 
-\item[Tsarfaty,] Reut (2010). ``Relational-Realizational Parsing,'' PhD thesis, Institute for Language, Logic and Computation (ILLC), University of Amsterdam.
+\item[Tsarfaty,] Reut (2010). ``Relational-Realizational Parsing,'' PhD thesis,
+Institute for Language, Logic and Computation (ILLC), University of Amsterdam.
 
 \item[Wells,] John (1989), ``Lingvistikaj aspektoj de Esperanto,'' Universala
 Esperanto Asocio, Rotterdam. Second edition.
