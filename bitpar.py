@@ -11,7 +11,7 @@ from uuid import uuid1
 from nltk import Tree, ProbabilisticTree, FreqDist, InsideChartParser
 
 class BitParChartParser:
-	def __init__(self, weightedrules, lexicon, rootsymbol=None, unknownwords=None, openclassdfsa=None, cleanup=True, n=10, name=''):
+	def __init__(self, weightedrules=None, lexicon=None, rootsymbol=None, unknownwords=None, openclassdfsa=None, cleanup=True, n=10, name=''):
 		""" Interface to bitpar chart parser. Expects a list of weighted
 		productions with frequencies (not probabilities).
 		
@@ -78,13 +78,17 @@ class BitParChartParser:
 		self.grammar = weightedrules
 		self.lexicon = lexicon
 		self.rootsymbol = rootsymbol
+		self.name = name
 		if name: self.id = name
 		else: self.id = uuid1()
 		self.cleanup = cleanup
 		self.n = n
 		self.unknownwords = unknownwords
 		self.openclassdfsa = openclassdfsa
-		self.writegrammar('/tmp/g%s.pcfg' % self.id, '/tmp/g%s.lex' % self.id)
+		if weightedrules and lexicon:
+			self.writegrammar('/tmp/g%s.pcfg' % self.id, '/tmp/g%s.lex' % self.id)
+		elif not name:
+			raise ValueError("need grammar or file name")
 		self.start()
 
 	def __del__(self):
@@ -100,7 +104,10 @@ class BitParChartParser:
 		if self.rootsymbol: options += "-s %s " % self.rootsymbol
 		if self.unknownwords: options += "-u %s " % self.unknownwords
 		if self.openclassdfsa: options += "-w %s " % self.openclassdfsa
-		options += "/tmp/g%s.pcfg /tmp/g%s.lex" % (self.id, self.id)
+		if self.name:
+			options += "%s.pcfg %s.lex" % (self.id, self.id)
+		else:
+			options += "/tmp/g%s.pcfg /tmp/g%s.lex" % (self.id, self.id)
 		#if self.debug: print options.split()
 		self.bitpar = Popen(options.split(), stdin=PIPE, stdout=PIPE, stderr=PIPE)
 

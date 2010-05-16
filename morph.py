@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: UTF-8 -*-
 """ An application of Data-Oriented Parsing to Esperanto.
 	Combines a syntax and a morphology corpus. """
 
@@ -7,6 +8,14 @@ from nltk import UnsortedChartParser, NgramModel
 from bitpar import BitParChartParser
 from random import sample,seed
 seed()
+
+def chapelitoj(word): #todo: replace capitals as well Ĉ Ĝ Ĥ Ĵ Ŝ Ŭ
+	return unicode(word).replace(u'cx',u'ĉ').replace(u'gx',u'ĝ').replace(u'hx',
+		u'ĥ').replace(u'jx',u'ĵ').replace(u'sx',u'ŝ').replace(u'ux',u'ŭ')
+
+def malchapelitoj(word): #todo: replace capitals as well Ĉ Ĝ Ĥ Ĵ Ŝ Ŭ
+	return unicode(word).replace(u'ĉ', u'cx').replace(u'ĝ', u'gx').replace(u'ĥ', 
+		u'hx').replace(u'ĵ', u'jx').replace(u'ŝ', u'sx').replace(u'ŭ', u'ux')
 
 def cnf(tree):
 	""" make sure all terminals have POS tags; 
@@ -103,10 +112,10 @@ def morphmerge(tree, md, segmented):
 
 def morphology(train):
 	""" an interactive interface to the toy corpus """
-	d = GoodmanDOP((Tree(a) for a in train), rootsymbol='S', parser=BitParChartParser, n=100, unknownwords='unknownwords', openclassdfsa='pos.dfsa', name='syntax')
+	d = GoodmanDOP((Tree(malchapelitoj(a)) for a in train), rootsymbol='S', parser=BitParChartParser, n=100, unknownwords='unknownwords', openclassdfsa='pos.dfsa', name='syntax')
 	print "built syntax model"
 
-	mcorpus = open("morph.corp.txt").readlines()
+	mcorpus = map(malchapelitoj, open("morph.corp.txt").readlines())
 	md = GoodmanDOP((cnf(Tree(a)) for a in mcorpus), rootsymbol='W', wrap=True, parser=BitParChartParser, n=100, unknownwords='unknownmorph', name='morphology')
 	print "built morphology model"
 
@@ -122,6 +131,8 @@ def morphology(train):
 	segment = segmentor(segmentd)
 	
 	print "extrapolated:", len(segmentd) #, " ".join(segmentd.keys())
+	from cPickle import dump
+        dump(segmentd, open('segmentd.pickle', 'wb'), protocol=-1)
 
 	print "analyzing morphology of treebank"
 	mtreebank = []
@@ -258,6 +269,6 @@ if __name__ == '__main__':
 	optionflags=doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS)
 	if attempted and not fail:
 		print "%d doctests succeeded!" % attempted
-	#interface()	#interactive demo with toy corpus
+	interface()	#interactive demo with toy corpus
 	#toy()		#get toy corpus DOP reduction
-	monato()	#get monato DOP reduction
+	#monato()	#get monato DOP reduction

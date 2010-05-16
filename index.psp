@@ -73,7 +73,7 @@ import os, sys
 os.chdir("/var/www/https/andreas/eodop")
 sys.path.append(".")
 from itertools import chain
-from morph import segmentor, morphmerge
+from morph import segmentor, morphmerge, chapelitoj, malchapelitoj
 from bitpar import BitParChartParser as bitpar
 from nltk import Tree
 
@@ -87,10 +87,6 @@ def removeids(tree):
 def lower(word):
 	return word.lower().replace(u'Ĉ',u'ĉ').replace(u'Ĝ',u'ĝ').replace(u'Ĥ',
 		u'ĥ').replace(u'Ĵ',u'ĵ').replace(u'Ŝ',u'ŝ').replace(u'Ŭ',u'ŭ')
-
-def chapelitoj(word): #todo: replace capitals as well Ĉ Ĝ Ĥ Ĵ Ŝ Ŭ
-	return word.replace(u'cx',u'ĉ').replace(u'gx',u'ĝ').replace(u'hx',
-		u'ĥ').replace(u'jx',u'ĵ').replace(u'sx',u'ŝ').replace(u'ux',u'ŭ')
 
 if 'sent' in form:
 	sent = chapelitoj(form['sent']).split()
@@ -114,17 +110,17 @@ if 'sent' in form:
 #end
 
 if 'word' in form:
-	word = chapelitoj(form['word'])
-	req.write("Word: <tt>%s</tt><br>\n" % repr(str(word)))
+	word = malchapelitoj(form['word'])
+	req.write(u"Word: <tt>'%s'</tt><br>\n" % word)
 	segmentd = load(open('segmentd.pickle', 'rb'))
 	segment = segmentor(segmentd)
 	md = bitpar(name='gmorphology', n=100, unknownwords='unknownmorph', rootsymbol = 'W')
 	w = segment(word)
-	req.write("Segmented: <tt>%s</tt>\n" % " ".join(w))
+	req.write(u"Segmented: <tt>%s</tt>\n" % " ".join(w))
 	parsetree = removeids(md.parse(w))
 	#remove goodman IDs
-	req.write("<p>Parsed:\n <pre>%s</pre>\n" % parsetree._pprint_flat('','()',''))
-	req.write("<img src=\"/phpsyntaxtree/pngtree.php?data=%s\"></p>\n" % parsetree._pprint_flat('','[]',''))
+	req.write(u"<p>Parsed:\n <pre>%s</pre>\n" % malchapelitoj(parsetree._pprint_flat('','()','')))
+	req.write(u"<img src=\"/phpsyntaxtree/pngtree.php?data=%s\"></p>\n" % parsetree._pprint_flat('','[]',''))
 #end
 
 %>
