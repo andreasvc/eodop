@@ -88,12 +88,12 @@ def lower(word):
 	return word.lower().replace(u'Ĉ',u'ĉ').replace(u'Ĝ',u'ĝ').replace(u'Ĥ',
 		u'ĥ').replace(u'Ĵ',u'ĵ').replace(u'Ŝ',u'ŝ').replace(u'Ŭ',u'ŭ')
 
-def chapelitoj(word):
-	return word.replace(u'Ĉ',u'ĉ').replace(u'Ĝ',u'ĝ').replace(u'Ĥ',
-		u'ĥ').replace(u'Ĵ',u'ĵ').replace(u'Ŝ',u'ŝ').replace(u'Ŭ',u'ŭ')
+def chapelitoj(word): #todo: replace capitals as well Ĉ Ĝ Ĥ Ĵ Ŝ Ŭ
+	return word.replace(u'cx',u'ĉ').replace(u'gx',u'ĝ').replace(u'hx',
+		u'ĥ').replace(u'jx',u'ĵ').replace(u'sx',u'ŝ').replace(u'ux',u'ŭ')
 
 if 'sent' in form:
-	sent = form['sent'].split()
+	sent = chapelitoj(form['sent']).split()
 	req.write("Tokenized: <tt>%s</tt><br>\n" % repr(sent))
 	segmentd = load(open('segmentd.pickle', 'rb'))
 	segment = segmentor(segmentd)
@@ -114,7 +114,7 @@ if 'sent' in form:
 #end
 
 if 'word' in form:
-	word = form['word']
+	word = chapelitoj(form['word'])
 	req.write("Word: <tt>%s</tt><br>\n" % repr(str(word)))
 	segmentd = load(open('segmentd.pickle', 'rb'))
 	segment = segmentor(segmentd)
