@@ -1,0 +1,131 @@
+<html><head><title>
+DOP model of Esperanto morphology and syntax
+</title></head><body>
+<h1>
+DOP model of Esperanto morphology and syntax
+</h1>
+
+<p>
+<a href="report.pdf">Research report (PDF)</a>
+</p>
+
+<script type="text/javascript">
+function toggle(id) {
+        var el = document.getElementById(id);
+        if (el.style.display == 'none')
+                el.style.display = 'block';
+        else
+                el.style.display = 'none';
+}
+</script>
+
+<p>
+<strong>Abstract:</strong> <a href="javascript:toggle('abstract');">show</a>
+<div id="abstract" style="display: none;">
+<p>Esperanto is a constructed language with a rich and regular morphology.  It
+seems likely that taking its morphology into account when parsing syntax will
+improve accuracy. I will investigate the effects of considering morphological
+and phrase structure analysis as separate, autonomous steps, versus combining
+them into a single DOP model. I will assume a hierarchical representation for
+both syntax and morphology.
+</p>
+
+<p>
+We describe a formal grammar that enumerates the word forms of
+Esperanto. Using a DOP model sequences of morphemes and tags can be analysed
+and assigned a hierarchical structure. The resulting DOP model can either be
+merged with a syntactic treebank into a combined DOP model, or mapped to the
+leaves of the parse trees produced by a syntactic model, to obtain tree
+structures with both phrasal and morphological constituents. 
+</p>
+
+<p>
+The resulting system will be applied to a small corpus of morphology and
+syntax. Evaluation with a larger syntactic treebank, as well as the induction
+of morphology tags from dictionaries remains to be done.
+</p>
+</div></p>
+
+<form action="index.psp" method=get>
+Word:
+<input type=text name=word size=60>
+<br>
+<input type=submit>
+</form>
+
+<form action="index.psp" method=get>
+Sentence:
+<br>
+<textarea name=sent rows=4 cols=80>
+</textarea>
+<br>
+<input type=submit>
+</form>
+
+<p>
+<%
+# use precomputed bitpar grammar, modify bitpar to allow passing of existing grammar files
+# but: pickle segmentation dictionary, paste most probable parse code from dopg.py
+
+from cPickle import load
+# is this really the way to import local modules??
+import os, sys
+os.chdir("/var/www/https/andreas/eodop")
+sys.path.append(".")
+from itertools import chain
+from morph import segmentor, morphmerge
+from bitpar import BitParChartParser as bitpar
+from nltk import Tree
+
+def removeids(tree):
+	""" remove unique IDs introduced by the Goodman reduction """
+	for a in tree.treepositions():
+		if '@' in str(tree[a]):
+			tree[a].node = tree[a].node.split('@')[0]
+	return tree
+
+def lower(word):
+	return word.lower().replace(u'Ĉ',u'ĉ').replace(u'Ĝ',u'ĝ').replace(u'Ĥ',
+		u'ĥ').replace(u'Ĵ',u'ĵ').replace(u'Ŝ',u'ŝ').replace(u'Ŭ',u'ŭ')
+
+def chapelitoj(word):
+	return word.replace(u'Ĉ',u'ĉ').replace(u'Ĝ',u'ĝ').replace(u'Ĥ',
+		u'ĥ').replace(u'Ĵ',u'ĵ').replace(u'Ŝ',u'ŝ').replace(u'Ŭ',u'ŭ')
+
+if 'sent' in form:
+	sent = form['sent'].split()
+	req.write("Tokenized: <tt>%s</tt><br>\n" % repr(sent))
+	segmentd = load(open('segmentd.pickle', 'rb'))
+	segment = segmentor(segmentd)
+	#d = bitpar(name='gsyntax', n=10, unknownwords='unknownwords', openclassdfsa='pos.dfsa', rootsymbol='S')
+	d = bitpar(name='gsyntax', n=10, unknownwords='unknownwords', rootsymbol='S')
+	md = bitpar(name='gmorphology', n=100, unknownwords='unknownmorph', rootsymbol='W')
+	msd = bitpar(name='gmorphsyntax', n=100, unknownwords='unknownmorph', rootsymbol='S')
+	s = [segment(word) for word in sent]
+	req.write("Segmented: <tt>%s</tt><br>\n" % " ".join(map(str, s)))
+	com = removeids(msd.parse(reduce(chain, s)))
+	req.write("<p>Morphology & syntax combined:\n <pre>%s</pre>\n" % com._pprint_flat('','()',''))
+	req.write("<img src=\"/phpsyntaxtree/pngtree.php?data=%s\"></p>\n" % com._pprint_flat('','[]',''))
+	#sep = morphmerge(removeids(d.parse(sent)), md, s)
+	#sep = d.parse(sent)
+	sep = Tree("(S (RB not) (VB working))")
+	req.write("<p>Morphology & syntax separate:\n <pre>%s</pre>\n" % sep._pprint_flat('','()',''))
+	req.write("<img src=\"/phpsyntaxtree/pngtree.php?data=%s\"></p>\n" % sep._pprint_flat('','[]',''))
+#end
+
+if 'word' in form:
+	word = form['word']
+	req.write("Word: <tt>%s</tt><br>\n" % repr(str(word)))
+	segmentd = load(open('segmentd.pickle', 'rb'))
+	segment = segmentor(segmentd)
+	md = bitpar(name='gmorphology', n=100, unknownwords='unknownmorph', rootsymbol = 'W')
+	w = segment(word)
+	req.write("Segmented: <tt>%s</tt>\n" % " ".join(w))
+	parsetree = removeids(md.parse(w))
+	#remove goodman IDs
+	req.write("<p>Parsed:\n <pre>%s</pre>\n" % parsetree._pprint_flat('','()',''))
+	req.write("<img src=\"/phpsyntaxtree/pngtree.php?data=%s\"></p>\n" % parsetree._pprint_flat('','[]',''))
+#end
+
+%>
+</p></body></html>
