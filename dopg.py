@@ -45,7 +45,7 @@ def productions(tree):
 	return prods
 
 class GoodmanDOP:
-	def __init__(self, treebank, rootsymbol='S', wrap=False, cleanup=True, parser=InsideChartParser, **parseroptions):
+	def __init__(self, treebank, rootsymbol='S', wrap=False, cnf=True, cleanup=True, parser=InsideChartParser, **parseroptions):
 		""" initialize a DOP model given a treebank. uses the Goodman
 		reduction of a STSG to a PCFG.  after initialization,
 		self.parser will contain an InsideChartParser.
@@ -88,6 +88,9 @@ class GoodmanDOP:
 		if wrap:
 			# wrap trees in a common root symbol (eg. for morphology)
 			treebank = [Tree(rootsymbol, [a]) for a in treebank]
+		if cnf:
+			for a in treebank:
+				a.chomsky_normal_form() #todo: sibling annotation necessary?
 		# add unique IDs to nodes
 		utreebank = list((tree, self.decorate_with_ids(tree, ids)) for tree in treebank)
 		lexicon = set(reduce(chain, (a.leaves() for a,b in utreebank)))
@@ -111,8 +114,7 @@ class GoodmanDOP:
 		else:
 			cfg = FreqDist(reduce(chain, (self.goodman(tree, utree, False) for tree, utree in utreebank)))
 			probs = self.probabilities(cfg, nonterminalfd) # DELETE ME
-			#print cfg
-			#print probs
+			#for a in probs: print a
 			self.grammar = WeightedGrammar(Nonterminal(rootsymbol), probs)
 				#self.probabilities(cfg, nonterminalfd)
 			self.parser = InsideChartParser(self.grammar)
@@ -241,7 +243,8 @@ class GoodmanDOP:
 
 		# merge identical rules:
 		#return [WeightedProduction(rule[0], rule[1:], prob=freq*prob(rule[0], rule[1:])) for rule, freq in ((rule.split('\t'), freq) for rule,freq in cfg.items())]
-		return [WeightedProduction(l, r, prob=prob(l, r)/freq) for (l,r),freq in cfg.items()]
+		
+		return [WeightedProduction(l, r, prob=freq*prob(l, r)) for (l,r),freq in cfg.items()]
 		# do not merge identical rules
 		#return [WeightedProduction(l, r, prob=prob(l, r)) for l, r in cfg]
 	
@@ -339,10 +342,15 @@ def main():
 (S (NP Hermione) (VP (V eats)))""".splitlines()
 	corpus ="""(S (NP (DT The) (NN cat)) (VP (VBP saw) (NP (DT the) (JJ hungry) (NN dog))))
 (S (NP (DT The) (JJ little) (NN mouse)) (VP (VBP ate) (NP (DT the) (NN cat))))""".splitlines()
+	#corpus = """(S (NP mary) (VP walks) (AP quickly))""".splitlines()
 	#(S (NP Harry) (VP (V likes) (NP Susan) (ADVP (RB very) (RB much))))
 	corpus = [Tree(a) for a in corpus]
+	for a in corpus:
+		#continue
+		a.chomsky_normal_form()
 	#d = GoodmanDOP(corpus, rootsymbol='S')
 	d = GoodmanDOP(corpus, rootsymbol='TOP', wrap='TOP', parser=BitParChartParser)
+	#d = GoodmanDOP(corpus, rootsymbol='TOP', wrap='TOP')
 	#print d.grammar
 	from nltk import ImmutableTree
 	print "corpus"
@@ -357,8 +365,10 @@ def main():
 			for a in d.parser.nbest_parse(w):
 				print a
 				p.inc(ImmutableTree.convert(d.removeids(a)), a.prob())
-			for a,b in p.items():
-				print a, b
+			#for b, a in sorted((b,a) for (a,b) in p.items()):
+			#	print a, b
+			print
+			print 'best', p.max()
 			#print d.parse(w)
 		except Exception as e:
 			print "error", e
