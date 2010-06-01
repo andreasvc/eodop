@@ -198,15 +198,14 @@ class GoodmanDOP:
 		for p, up in zip(tree.productions(), utree.productions()):
 			# THIS SHOULD NOT HAPPEN:
 			if len(p.rhs()) == 0: raise ValueError
-			if len(p.rhs()) == 1: rhs = set((p.rhs(), up.rhs()))
+			if len(p.rhs()) == 1: 
+				if not isinstance(p.rhs()[0], Nonterminal): rhs = (p.rhs(), )
+				else: rhs = (p.rhs(), up.rhs())
 			#else: rhs = cartprod(*zip(p.rhs(), up.rhs()))
 			else: 
-				#if terminal ..:
-				#	rhs = (p.rhs(), )
-				#else:
-				#	rhs = cartpi(zip(p.rhs(), up.rhs()))
-				rhs = set(cartpi(zip(p.rhs(), up.rhs())))
-			#print "yahoo", p, up, rhs
+				if all(isinstance(a, Nonterminal) for a in up.rhs()): 
+					rhs = set(cartpi(zip(p.rhs(), up.rhs())))
+				else: rhs = cartpi(zip(p.rhs(), up.rhs()))
 
 			# constant factor: 8
 			#for l, r in cartpi(((p.lhs(), up.lhs()), rhs)):
