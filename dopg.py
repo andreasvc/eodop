@@ -53,17 +53,21 @@ class GoodmanDOP:
 		>>> tree = Tree("(S (NP mary) (VP walks))")
 		>>> d = GoodmanDOP([tree])
 		>>> print d.grammar
-			Grammar with 8 productions (start state = S)
+			Grammar with 12 productions (start state = S)
 				NP -> 'mary' [1.0]
 				NP@1 -> 'mary' [1.0]
+				S -> NP VP [0.25]
+				S -> NP VP@2 [0.25]
+				S -> NP@1 VP [0.25]
+				S -> NP@1 VP@2 [0.25]
+				S@0 -> NP VP [0.25]
+				S@0 -> NP VP@2 [0.25]
+				S@0 -> NP@1 VP [0.25]
+				S@0 -> NP@1 VP@2 [0.25]
 				VP -> 'walks' [1.0]
 				VP@2 -> 'walks' [1.0]
-				S -> NP VP [0.111111111111]
-				S -> NP VP@2 [0.222222222222]
-				S -> NP@1 VP [0.222222222222]
-				S -> NP@1 VP@2 [0.444444444444]	
 		>>> print d.parser.parse("mary walks".split())
-		(S (NP@1 mary) (VP@2 walks)) (p=0.444444444444)		
+		(S (NP mary) (VP@2 walks)) (p=0.25)		
 		
 		@param treebank: a list of Tree objects. Caveat lector:
 			terminals may not have (non-terminals as) siblings.
@@ -106,8 +110,11 @@ class GoodmanDOP:
 			self.parser = BitParChartParser(self.fcfg, lexicon, rootsymbol, cleanup=False, **parseroptions)
 		else:
 			cfg = FreqDist(reduce(chain, (self.goodman(tree, utree, False) for tree, utree in utreebank)))
-			self.grammar = WeightedGrammar(Nonterminal(rootsymbol),
-				self.probabilities(cfg, nonterminalfd))
+			probs = self.probabilities(cfg, nonterminalfd) # DELETE ME
+			#print cfg
+			#print probs
+			self.grammar = WeightedGrammar(Nonterminal(rootsymbol), probs)
+				#self.probabilities(cfg, nonterminalfd)
 			self.parser = InsideChartParser(self.grammar)
 			
 		#stuff for self.mccparse
@@ -152,19 +159,24 @@ class GoodmanDOP:
 		>>> tree = Tree("(S (NP mary) (VP walks))")
 		>>> d = GoodmanDOP([tree])
 		>>> d.nodefreq(tree, fd)
-		9
+		4
 		>>> fd.items()
-		[('S', 9), ('NP', 2), ('VP', 2), ('mary', 1), ('walks', 1)]
+		[('S', 4), ('NP', 1), ('VP', 1)]
+
+		#[('S', 9), ('NP', 2), ('VP', 2), ('mary', 1), ('walks', 1)]
 
 			@param nonterminalfd: the FreqDist to store the counts in."""
-		if isinstance(tree, Tree) and len(tree) > 0:
+		if isinstance(tree, Tree) and len(tree) > 0 and tree.height() > 2:
 			n = reduce((lambda x,y: x*y), 
 				(self.nodefreq(x, nonterminalfd) + 1 for x in tree))
 			nonterminalfd.inc(tree.node, count=n)
+			#print n, tree, nonterminalfd
 			return n
-		else:
-			nonterminalfd.inc(str(tree), count=leaves)
-			return leaves
+		elif tree.height() == 2:
+			#nonterminalfd.inc(str(tree), count=leaves)
+			nonterminalfd.inc(tree.node, count=len(tree))
+			#print 1, tree, nonterminalfd
+			return 1
 
 	def goodman(self, tree, utree, bitparfmt=True):
 		""" given a parsetree from a treebank, yield a goodman
@@ -174,19 +186,25 @@ class GoodmanDOP:
 		>>> d = GoodmanDOP([tree])
 		>>> utree = d.decorate_with_ids(tree, count())
 		>>> sorted(d.goodman(tree, utree, False))
-		[(NP, ('mary',)), (NP, ('mary',)), (NP@1, ('mary',)), 
-		(NP@1, ('mary',)), (S, (NP, VP)), (S, (NP, VP@2)), (S, (NP@1, VP)), 
-		(S, (NP@1, VP@2)), (VP, ('walks',)), (VP, ('walks',)), 
-		(VP@2, ('walks',)), (VP@2, ('walks',))]
+		[(NP, ('mary',)), (NP@1, ('mary',)), (S, (NP, VP)), (S, (NP, VP@2)),
+		(S, (NP@1, VP)), (S, (NP@1, VP@2)), (S@0, (NP, VP)), 
+		(S@0, (NP, VP@2)), (S@0, (NP@1, VP)), (S@0, (NP@1, VP@2)), 
+		(VP, ('walks',)), (VP@2, ('walks',))]
 		"""
 		# linear: nr of nodes
 		sep = "\t"
-		for p, up in zip(tree.productions(), utree.productions()): 
+		for p, up in zip(tree.productions(), utree.productions()):
 			# THIS SHOULD NOT HAPPEN:
 			if len(p.rhs()) == 0: raise ValueError
-			if len(p.rhs()) == 1: rhs = (p.rhs(), up.rhs())
+			if len(p.rhs()) == 1: rhs = set((p.rhs(), up.rhs()))
 			#else: rhs = cartprod(*zip(p.rhs(), up.rhs()))
-			else: rhs = cartpi(zip(p.rhs(), up.rhs()))
+			else: 
+				#if terminal ..:
+				#	rhs = (p.rhs(), )
+				#else:
+				#	rhs = cartpi(zip(p.rhs(), up.rhs()))
+				rhs = set(cartpi(zip(p.rhs(), up.rhs())))
+			#print "yahoo", p, up, rhs
 
 			# constant factor: 8
 			#for l, r in cartpi(((p.lhs(), up.lhs()), rhs)):
@@ -211,6 +229,8 @@ class GoodmanDOP:
 			without IDs)""" 
 		#return [a(nonterminalfd) for a in cfg)
 		def prob(l, r):
+			#print l, '->', r, reduce((lambda x,y: x*y), map((lambda z: '@' in str(z) 
+			#	and fd[str(z)] or 1), r)), '/', float(fd[str(l)])
 			return reduce((lambda x,y: x*y), map((lambda z: '@' in str(z) 
 				and fd[str(z)] or 1), r)) / float(fd[str(l)])
 		# format expected by mccparse()
@@ -221,7 +241,7 @@ class GoodmanDOP:
 
 		# merge identical rules:
 		#return [WeightedProduction(rule[0], rule[1:], prob=freq*prob(rule[0], rule[1:])) for rule, freq in ((rule.split('\t'), freq) for rule,freq in cfg.items())]
-		return [WeightedProduction(l, r, prob=freq*prob(l, r)) for (l,r),freq in cfg.items()]
+		return [WeightedProduction(l, r, prob=prob(l, r)/freq) for (l,r),freq in cfg.items()]
 		# do not merge identical rules
 		#return [WeightedProduction(l, r, prob=prob(l, r)) for l, r in cfg]
 	
@@ -316,12 +336,13 @@ def main():
 	corpus = """(S (NP John) (VP (V likes) (NP Mary)))
 (S (NP Peter) (VP (V hates) (NP Susan)))
 (S (NP Harry) (VP (V eats) (NP pizza)))
-(S (NP Hermione) (VP (V eats)))""".split('\n')
+(S (NP Hermione) (VP (V eats)))""".splitlines()
+	corpus ="""(S (NP (DT The) (NN cat)) (VP (VBP saw) (NP (DT the) (JJ hungry) (NN dog))))
+(S (NP (DT The) (JJ little) (NN mouse)) (VP (VBP ate) (NP (DT the) (NN cat))))""".splitlines()
 	#(S (NP Harry) (VP (V likes) (NP Susan) (ADVP (RB very) (RB much))))
 	corpus = [Tree(a) for a in corpus]
 	#d = GoodmanDOP(corpus, rootsymbol='S')
-	#d = GoodmanDOP(corpus, rootsymbol='S', parser=BitParChartParser)
-	d = GoodmanDOP(corpus, rootsymbol='S')
+	d = GoodmanDOP(corpus, rootsymbol='TOP', wrap='TOP', parser=BitParChartParser)
 	#print d.grammar
 	from nltk import ImmutableTree
 	print "corpus"
