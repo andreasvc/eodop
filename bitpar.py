@@ -98,18 +98,18 @@ class BitParChartParser:
 
 	def start(self):
 		# quiet, yield best parse, show viterbi prob., use frequencies
-		options = "bitpar -q -b %d -vp -p " % (self.n)
+		self.cmd = "bitpar -q -b %d -vp -p " % (self.n)
 		# if no rootsymbol is given, 
 		# bitpar defaults to the first nonterminal in the rules
-		if self.rootsymbol: options += "-s %s " % self.rootsymbol
-		if self.unknownwords: options += "-u %s " % self.unknownwords
-		if self.openclassdfsa: options += "-w %s " % self.openclassdfsa
+		if self.rootsymbol: self.cmd += "-s %s " % self.rootsymbol
+		if self.unknownwords: self.cmd += "-u %s " % self.unknownwords
+		if self.openclassdfsa: self.cmd += "-w %s " % self.openclassdfsa
 		if self.name:
-			options += "%s.pcfg %s.lex" % (self.id, self.id)
+			self.cmd += "%s.pcfg %s.lex" % (self.id, self.id)
 		else:
-			options += "/tmp/g%s.pcfg /tmp/g%s.lex" % (self.id, self.id)
-		#if self.debug: print options.split()
-		self.bitpar = Popen(options.split(), stdin=PIPE, stdout=PIPE, stderr=PIPE)
+			self.cmd += "/tmp/g%s.pcfg /tmp/g%s.lex" % (self.id, self.id)
+		#if self.debug: print self.cmd.split()
+		self.bitpar = Popen(self.cmd.split(), stdin=PIPE, stdout=PIPE, stderr=PIPE)
 
 	def stop(self):
 		if not isinstance(self.bitpar.poll(), int):
@@ -117,10 +117,10 @@ class BitParChartParser:
 
 	def parse(self, sent):
 		if isinstance(self.bitpar.poll(), int): self.start()
-		result, stderr = self.bitpar.communicate("%s\n\n" % "\n".join(sent))
+		result, stderr = self.bitpar.communicate(u"%s\n\n" % "\n".join(sent))
 		if not "=" in result:
 			# bitpar returned some error or didn't produce output
-			raise ValueError("no output. stdout: \n%s\nstderr:\n%s " % (result.strip(), stderr.strip()))
+			raise ValueError(u"no output. stdout: \n%s\nstderr:\n%s " % (result.strip(), stderr.strip()))
 		prob, tree = result.split("\n", 1)[0], result.split("\n", 2)[1]
 		prob = float(prob.split("=")[1])
 		tree = Tree(tree)
@@ -131,8 +131,8 @@ class BitParChartParser:
 		as a command line parameter to bitpar, allowing it here would require
 		potentially expensive restarts of bitpar. """
 		if isinstance(self.bitpar.poll(), int): self.start()
-		result, stderr = self.bitpar.communicate("%s\n\n" % "\n".join(sent))
-		results = result.split("\n")[:-1] #strip trailing blank line
+		result, stderr = self.bitpar.communicate(u"%s\n\n" % "\n".join(sent))
+		results = result.splitlines()[:-1] #strip trailing blank line
 		probs = (float(a.split("=")[1]) for a in results[::2] if "=" in a)
 		trees = (Tree(a) for a in results[1::2])
 		return (ProbabilisticTree(b.node, b, prob=a) for a, b in zip(probs, trees))
@@ -156,7 +156,7 @@ class BitParChartParser:
 				else:
 					# prob^Wfrequency	lhs	rhs1	rhs2
 					#print "%s\t%s" % (repr(freq), rule)
-					yield "%s\t%s\n" % (repr(freq), rule)
+					yield u"%s\t%s\n" % (repr(freq), rule)
 					#yield "%s\t%s\t%s\n" % (repr(freq), str(lhs), 
 					#			"\t".join(str(x) for x in rhs))
 		#f.write(''.join(process()))
@@ -165,7 +165,7 @@ class BitParChartParser:
 			for word, tags in lex.items():
 				# word	POS1 prob^Wfrequency1	POS2 freq2 ...
 				#print "%s\t%s" % (word, "\t".join(' '.join(map(str, a)) for a in tags.items()))
-				yield "%s\t%s\n" % (word, "\t".join(' '.join(map(str, a)) for a in tags.items()))
+				yield u"%s\t%s\n" % (word, "\t".join(' '.join(map(str, a)) for a in tags.items()))
 		l.writelines(proc(lex))
 		f.close()
 		l.close()
