@@ -99,6 +99,7 @@ class GoodmanDOP:
 		# count node frequencies
 		for tree,utree in utreebank:
 			#self.exemplars[tuple(tree.leaves())] = tree
+			#print tree
 			self.nodefreq(tree, nonterminalfd)
 			self.nodefreq(utree, nonterminalfd)
 			#cfg.extend(self.goodman(tree, utree))
@@ -181,6 +182,10 @@ class GoodmanDOP:
 			nonterminalfd.inc(tree.node, count=len(tree))
 			#print 1, tree, nonterminalfd
 			return 1
+		else:
+			raise ValueError
+			#??!! FIXME FIXME
+			return 0
 
 	def goodman(self, tree, utree, bitparfmt=True):
 		""" given a parsetree from a treebank, yield a goodman

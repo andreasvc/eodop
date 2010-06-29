@@ -48,7 +48,7 @@ from sys import stdin, stdout, stderr
 import re
 from itertools import chain
 
-def cnf(tree):
+def forcepos(tree):
 	""" make sure all terminals have POS tags; 
 	invent one if necessary ("parent_word") """
 	result = tree.copy(True)
@@ -216,7 +216,7 @@ def main():
 			x = "(TOP %s%s)" % (reparse(tree).replace('()',''), period)
 
 			try:
-				xx = cnf(Tree(x))
+				xx = forcepos(Tree(x))
 			except ValueError:
 				# this only happens when our output failes to parse (malformed s-expression -- eg. unbalanced parens):
 				stderr.write("""failed to parse:

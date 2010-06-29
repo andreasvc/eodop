@@ -17,7 +17,7 @@ def malchapelitoj(word): #todo: replace capitals as well Ĉ Ĝ Ĥ Ĵ Ŝ Ŭ
 	return unicode(word).replace(u'ĉ', u'cx').replace(u'ĝ', u'gx').replace(u'ĥ', 
 		u'hx').replace(u'ĵ', u'jx').replace(u'ŝ', u'sx').replace(u'ŭ', u'ux')
 
-def cnf(tree):
+def forcepos(tree):
 	""" make sure all terminals have POS tags; 
 	invent one if necessary ("parent_word") """
 	result = tree.copy(True)
@@ -116,7 +116,7 @@ def morphology(train):
 	print "built syntax model"
 
 	mcorpus = map(malchapelitoj, open("morph.corp.txt").readlines())
-	md = GoodmanDOP((cnf(Tree(a)) for a in mcorpus), rootsymbol='W', wrap=True, parser=BitParChartParser, n=100, unknownwords='unknownmorph', name='morphology')
+	md = GoodmanDOP((forcepos(Tree(a)) for a in mcorpus), rootsymbol='W', wrap=True, parser=BitParChartParser, n=100, unknownwords='unknownmorph', name='morphology')
 	print "built morphology model"
 
 	segmentd = dict(("".join(a), tuple(a)) for a in (Tree(a).leaves() for a in mcorpus))
@@ -254,10 +254,10 @@ def interface():
 		#	print "error:", e
 
 def monato():
-	""" produce the goodman reduction of the full monato corpus """
+	""" produce the goodman reduction of the monato corpus """
 	# turn cleanup off so that the grammar will not be removed
-	d = GoodmanDOP((stripfunc(cnf(Tree(a.lower()))) for a in open("arbobanko.train")), rootsymbol='TOP', parser=BitParChartParser, name='syntax', cleanup=False)
-	test = ("%s\n" % "\n".join(Tree(a.lower()).leaves()) for a in open("arbobanko.gold"))
+	d = GoodmanDOP((stripfunc(forcepos(Tree(a.lower()))) for a in open("arbobanko.train")), rootsymbol='TOP', parser=BitParChartParser, name='syntax', cleanup=False)
+	test = ("%s\n\n" % "\n".join(Tree(a.lower()).leaves()) for a in open("arbobanko.gold"))
 	open("arbobanko.test", "w").writelines(test)
 	#d = GoodmanDOP((Tree(a) for a in corpus), rootsymbol='S', wrap=True)
 
