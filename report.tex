@@ -1,5 +1,10 @@
 \documentclass[10pt,a4paper]{article}
 %\usepackage{linguex}
+\usepackage{multicol}
+%\usepackage{fullpage}
+\usepackage{microtype}
+\usepackage{natbib}
+\setlength{\bibsep}{0.0pt}
 \usepackage{verbatim}
 \usepackage{amsmath}
 \usepackage[pdftex]{graphicx}
@@ -59,21 +64,23 @@ Master of Logic, University of Amsterdam
 \abstract{
 Esperanto is a constructed language with a rich and regular morphology.  It
 seems likely that taking its morphology into account when parsing syntax will
-improve accuracy. I will investigate the effects of considering morphological
+improve accuracy. We propose a way of investigating the effects of considering morphological
 and phrase structure analysis as separate, autonomous steps, versus combining
-them into a single DOP model. I will assume a hierarchical representation for
+them into a single DOP model. We will assume a hierarchical representation for
 both syntax and morphology.
 
-We describe a formal grammar that enumerates the word forms of
-Esperanto. Using a DOP model sequences of morphemes and tags can be analysed
-and assigned a hierarchical structure. The resulting DOP model can either be
-merged with a syntactic treebank into a combined DOP model, or mapped to the
-leaves of the parse trees produced by a syntactic model, to obtain tree
-structures with both phrasal and morphological constituents. 
-
-The resulting system will be applied to a small corpus of morphology and
-syntax. Evaluation with a larger syntactic treebank, as well as the induction
-of morphology tags from dictionaries remains to be done.}\footnote{{\bf
+To this end, we describe a formal grammar that enumerates the word forms of
+Esperanto. Using a DOP model words that have been segmented into sequences of
+morphemes and tags can be analysed and assigned a hierarchical structure. The
+resulting DOP model can either be merged with a syntactic treebank into a
+combined DOP model, or mapped to the leaves of the parse trees produced by a
+syntactic model, to obtain tree structures with both phrasal and morphological
+constituents. 
+%
+%The resulting system will be applied to a small corpus of morphology and
+%syntax. Evaluation with a larger syntactic treebank, as well as the induction
+%of morphology tags from dictionaries remains to be done.
+}\footnote{{\bf
 Acknowledgements}: I wish to thank the following people (in reverse
 chronological order): Federico Sangati for practical advice on DOP, Ken Miner
 for advice on morphology and suggesting the application of DOP to Esperanto,
@@ -84,21 +91,28 @@ Parsing, and last but not least Wim Jansen for teaching me Esperanto.}
 
 \tableofcontents
 
+%\begin{multicols}{2}
+
 \section{Introduction}
 \subsection{Research questions}
 
-\begin{quote}
+%\begin{quote}
+\emph{
 Does integrating morphology with syntax improve parsing results for
-syntax?
+syntax?}
 
+\emph{
 Are morphology and syntax autonomous? ie., is morphology opaque or
-transparent to syntax? 
-\end{quote}
+transparent to syntax?
+}
+%\end{quote}
 
-These possibilities correspond to a modularist (cf.  Pinker 1994, Jackendoff
-2003) vs. an interactionist approach (cf.  MacWhinney 1987). Here modularism
-refers to the functionalist hypothesis of the autonomy of syntax from other
-levels, both the stronger claim of processing autonomy (full modularity,
+These possibilities correspond to a modularist (cf., Pinker 1994, Jackendoff
+2003) vs. an interactionist approach (cf., MacWhinney 1987). Here modularism
+refers to the functionalist\footnote{Functionalism refers here to the position
+in the philosophy of mind positing encapsulated mental modules; not to be confused with the
+Functionalist school of linguistics.} hypothesis of the autonomy of syntax from
+other levels, both the stronger claim of processing autonomy (full modularity,
 encapsulation), and its weaker form of representational autonomy. In effect the
 issue at stake here is the nature of the morphology-syntax interface. On the
 one hand there is the extreme of syntax seeing only a Part-of-Speech tag (and
@@ -110,11 +124,16 @@ suggest a compromise (at least for generativists) where interfaces of different
 autonomous levels are possible (e.g., phonology-semantics to deal with focus
 effects).
 
-\begin{quote}
+%\begin{quote}
+\emph{
 Are words the smallest units of syntax, or is it perhaps morphemes? A
 fully transparent morphology could imply that morphemes are the smallest units
 of syntax, rather than words as is customarily assumed.
-\end{quote}
+}
+%\end{quote}
+
+%Naturally considering morphemes as units of syntax is most relevant in radically agglutinative and polysynthetic languages,
+%and irrelevant for isolating languages.
 
 Because this is a pilot project, I shall only attempt to answer the first
 question, but this may provide a hint as to the other questions. In addition
@@ -123,7 +142,8 @@ chosen for its rich and regular morphology. Recent work by Tsarfaty (2010)
 underscores the need for adapting formalisms to morphologically rich and
 relatively free word-order languages such as Hebrew and Arabic, but also
 Esperanto. Without morphology-aware parsers it does not seem possible to attain
-the current parse accuracy of languages such as English and Chinese.
+the current parse accuracy of languages such as English and Chinese, which is 
+dependent on their analyticity.
 
 \subsection{Approach}
 
@@ -178,7 +198,7 @@ its artificial design is only a point in time of its century long continuous
 usage and evolution. It is a spoken language with its own literature and
 culture, so while it may not  be a ``natural language" strictly speaking (Gobbo
 (2009) uses the term Quasi-Natural Language), it is certainly a human language
-that performs all the communicative and expressive functions of Ethnic
+that performs all the communicative and expressive functions of ethnic
 languages, albeit mostly as a second language used by a diverse and scattered
 speech community. When Esperanto is referred to in the popular press as a
 ``failed project'' this refers to the ambitious pacifistic ideals of the
@@ -198,8 +218,8 @@ relatively universal features found in natural languages (Jansen 2007). Cases
 are marked, viz. through a null-marking for the nominative and indirect object,
 an inflection in case of the accusative, and through a set of prepositions
 initially intended to be unambiguous (e.g., the English preposition ``with"
-translates in two ways in Esperanto, through the instrumentalis "per" or with
-"kun," meaning together). 
+translates in two ways in Esperanto, through the instrumentalis ``per" or with
+``kun," meaning together). 
 
 The qualification ``relatively'' is a commonly made one for the freeness of
 word-order. To be specific, it refers here to the fact that within
@@ -224,7 +244,7 @@ aforementioned underspecification.
 Concerning prepositions, the initial intention was to express some rather vague
 relations such as ``believing {\em in} God" (which is neither spatial nor
 temporal, it would appear) with a semantically neutral preposition for an
-unspecified relation, the preposition "je"; however, this seems to have fallen
+unspecified relation, the preposition ``je"; however, this seems to have fallen
 in disuse, probably through interference from Ethnic languages. However, an
 interesting hypothesis could be that this reflects an evolutionary pressure for
 distinctions and ambiguities to correspond with the meanings that are actually
@@ -241,8 +261,8 @@ denoted by a whole phrase in other languages, and grammatical roles are not
 marked, nor is the nature of the relation between elements that make up a word
 specified. It also does not feature incorporation such as in Catalan.
 Concerning the underspecification of relations between morphemes, consider the
-Dutch word "zoektechnieken", which could translated as "techniques for search,"
-though "for" is not specified in the Dutch word. In an agglutinative language
+Dutch word ``zoektechnieken", which could translated as ``techniques for search,"
+though ``for" is not specified in the Dutch word. In an agglutinative language
 invariant morphemes that express only a single grammatical meaning are
 concatenated unmodified, such that identifying the elements that make up a word
 is relatively easy\footnote{ambiguities may arise through overlap; ie., when
@@ -290,7 +310,7 @@ root := akv | far | ...
 
 In these rules, ``prefix" and ``suffix" refers to a closed class of affixes;
 ``(verb-)ending" refers to a one or two-character ending marking the
-Part-of-Speech; "declension" refers to either a null marking (nominative,
+Part-of-Speech; ``declension" refers to either a null marking (nominative,
 singular) or the accusative and/or plurality marking. Furthermore,
 ``\texttt{*}" is the Kleene star, ``\texttt{|}" is the alternation operator,
 and lastly concatenation is implied. This grammar incorporates three processes
@@ -303,7 +323,7 @@ While this grammar should in all likelihood exhaust Esperanto's morphology,
 it is of little use for computational linguistics because of its ambiguity
 and flat structure.  Whereas POS-tagging can be done practically error-free
 using a rule-based algorithm (save for proper names and foreign words), deeper
-morphological structure will depend on the morphemes in question, and possibly
+morphological structure will depend on the morphemes in question, and probably
 their semantics as well. However, in this project it is assumed that the latter
 does not play a major role as doing semantics is infeasible\footnote{it is my
 contention that semantics relies on extensive extra-linguistic world
@@ -319,10 +339,10 @@ universally accepted in Esperantology. In effect this entails that roots in
 Esperanto belong to a prototypical semantic class (sometimes several).  These
 classes are verbal, adjectival and noun-like; adverbs are part of the
 adjectival roots, arguably making up a ``qualities" class. The
-typical example is "MARTEL" and "TOND", roots for hammer and cutting,
-respectively. The category of the former is a noun and thus "martelo" means a
-hammer, and the derived "marteli" means to hammer. The latter is a verbal root, 
-with "tondi" meaning to cut, and the derivation "tondilo" meaning a
+typical example is ``\textsc{martel}" and ``\textsc{tond},'' roots for hammer and cutting,
+respectively. The category of the former is a noun and thus ``martelo" means a
+hammer, and the derived ``marteli" means to hammer. The latter is a verbal root, 
+with "tondi" meaning to cut, and the derivation ``tondilo" meaning a
 tool to cut or a scissor, requiring an affix to denote a tool derived from a
 verb (directly affixing a noun ending to the root would mean ``a cut"). Without
 recording the grammatical category of roots, a model of Esperanto morphology
@@ -348,7 +368,7 @@ affixed verbs with a different subcategorization frame. This feature of
 Esperanto has been critized as being a needless distinction (common sense
 usually yields the correct meaning, as for example English demonstrates),
 as well as the rather arbitrary choices that have been made as to the
-transitivity, requiring a language user to memorize them by
+transitivity of certain verbs, requiring a language user to memorize them by
 rote. It has also resulted in confusing paronyms such as ``pesi'' (to weigh
 something) and ``pezi'' (to weigh $X$ kilos, to be heavy). It is however an
 unchangeable part of the language.
@@ -389,11 +409,11 @@ with phrase-structures trees; this project will follow the same approach with
 the addition of morphological structure. Various methods for selecting the best
 parse tree exist for DOP; the best performing methods combine a notion of
 simplicity (the derivation requiring the least amount of fragments) with
-likelihood (estimated probability); e.g., the most likely from the n shorted
+likelihood (estimated probability); e.g., the most likely from the {\em n} shortest
 derivations.
 
 It should be noted that Esperanto, as a free word-order language, is more
-suitably described using depedency structures. However, given extent of
+suitably described using depedency structures. However, given the extent of
 previous work on DOP with phrase-structure trees, I have opted to assume such
 hierarchical representantions instead. This is merely a pragmatically motivated
 assumption. 
@@ -407,7 +427,7 @@ Probabilitistic Context-Free Grammars (PCFG) derive abstract rules from a
 treebank, throwing away valuable contextual information, DOP retains all
 exemplars and their fragments (modulo some potential pruning method
 corresponding to memory decay depending on usage and age etc.). This allows for
-the recognition of long-range dependencies such as in the construction "more X
+the recognition of long-range dependencies such as in the construction ``more X
 than Y." Also, compared to a PCFG, the statistical independence assumptions of
 DOP are weaker, because they can be spread over different derivations
 resulting in the same parse tree (ie., the assumptions made by each of the
@@ -453,7 +473,7 @@ system:
 
 This general theory that is hinted at here is Edelman's Neural Darwinism,
 a theory of competition describing the development of the human brain and
-the development of consciousness. The "species" selected for might be mental
+the development of consciousness. The ``species" selected for might be mental
 categories, conceptualizations, linguistic exemplars, etc. 
 
 DOP's notion of {\em spurious ambiguities} (different ways of deriving the same
@@ -469,16 +489,16 @@ biased to computation over memory).
 \subsection{DOP and Esperanto}
 
 I attribute the idea of applying Data-Oriented Parsing to Esperanto to
-Ken Miner (2006a):
+Ken Miner:
 
 \begin{quote}
-	``E\^c se ni disvolvus stokastajn alirojn bazitajn sur Datum-Orientita
+	``\emph{E\^c se ni disvolvus stokastajn alirojn bazitajn sur Datum-Orientita
 	Pritraktado (DOP), ankorau necesus denaskaj parolantoj por validumi
 	tiajn modelojn. Kiam temas pri la normala lingvistiko, ne eblas eskapi
-	la neceson de denaskaj parolantoj kiel fina kontrolo.''
+	la neceson de denaskaj parolantoj kiel fina kontrolo.}'' -- Miner (2006a)
 
 	Even if we develop stochastic approaches based on Data-Oriented
-	Parsing (DOP), native speakers would still be necessary for evaluating
+	Parsing (DOP), native speakers would still be necessary for validating
 	such models. When we speak of normal linguistics, it is impossible
 	to escape the necessity of native speakers as the ultimate arbiters.
 \end{quote}
@@ -560,9 +580,9 @@ exemplar-based model, not only pragmatically because of DOP's success, but
 historically as well, since it accords with Esperanto's emergence. An
 interesting sidenote is that in the years after its publication, Esperanto's
 word formation processes appear to have regularized (Schubert 1989), favoring
-new coinings such as "aspekti" (to appear) over semantically opaque Germanisms
-such as "elrigardi" (Wennergren 2005) (literally to look out) in the sense of
-to appear (Dutch "er uitzien", German "aussehen"), naturally the literal sense
+new coinings such as ``aspekti" (to appear) over semantically opaque Germanisms
+such as ``elrigardi" (Wennergren 2005) (literally to look out) in the sense of
+to appear (Dutch ``er uitzien", German ``aussehen"), naturally the literal sense
 of looking out e.g. a window remains. While such systematization may be reminiscent of
 creolization where a pidgin acquires a relatively complex rule system, it should be
 noted that Esperanto is neither a pidgin (since it has a grammar) nor a creole; an
@@ -638,7 +658,7 @@ Figure \ref{s1} and \ref{s2} shows some annotated example sentences.
 %\synttree [S [S [NP [DT la] [N' [JJ venontajn] [N' [JJ apartajn] [NN pecojn]]]] [VP [NP [PRP mi]] [VP [VBP donas]]]] [S' [IN ke] [S [NP [DT la] [NN lernantoj]] [VP [VB povu] [VP [VP [VP [VB ripeti] [RB praktike]] [NP [NP [DT la] [NN regulojn]] [PP [IN de] [NP [DT l'] [N' [NN gramatiko] [JJ internacia]]]]]] [VPC [CC kaj] [VP [VP [VB kompreni] [RB bone]] [NP [NP [NP [DT la] [NN signifon]] [NPC [CC kaj] [NP [DT la] [NN uzon]]]] [PP [IN de] [NP [DT l'] [N' [NN sufiksoj] [NC [CC kaj] [NN prefiksoj]]]]]]]]]]]]]
 \begin{figure}
 \centering
-\includegraphics[scale=0.4, angle=90]{eoimg/tree2}
+\includegraphics[width=1.6\textwidth, angle=90]{eoimg/tree2}
 %\includegraphics[width=17cm]{eoimg/tree2}
 \caption{Translation: the following separate pieces I give so that the students
 will be able to rehearse practically the rules of the international grammar and understand properly the meaning and usage of the suffixes and affixes}
@@ -769,7 +789,7 @@ the pointwise cartesian product of all words with $n$ morphemes; ie.,
 
 \end{enumerate}
 
-This still overgenerates, though less so (eg., word class, plural and
+This still overgenerates, though less so (e.g., word class, plural and
 accusative endings in the wrong order; it may be necessary to treat endings
 separately). A third way would be to use a bigram model and produce every
 possible sequence up till a certain length, which avoids such issues.
@@ -853,8 +873,8 @@ Note that this procedure assumes that disambiguation of morphology is both
 context- and error-free; the most probable parse is used for decorating the
 syntax treebank\footnote{Because of technical limitations I have employed the
 $n$ best parse trees to approximate the most probable parse}. This assumption
-should be empirically verified. Miner gives the example of a "fibestejo", which
-could be either a "fi(bestej)o" (a filthy place for animals), or a "fi(best)ejo"
+should be empirically verified. Miner gives the example of a ``fibestejo", which
+could be either a ``fi(bestej)o" (a filthy place for animals), or a ``fi(best)ejo"
 (a place for filthy animals).  Another example he cites shows that some
 ambiguities can be semantically ruled out: an ``eksklubano" is an ex-member of
 a club, not a member of an ex-club (because an ex-club cannot have members).
@@ -1033,6 +1053,7 @@ Vortoj kunmetitaj estas kreataj per simpla kunligado de simplaj vortoj
 %{i(https://unstable.nl/phpsyntaxtree/pngtree.php?data=[S [NP[NN [NN [N Vort] [NN_o o]] [NN_j j]][JJ [J [V kunmetit] [J_a a]] [JJ_j j]]] [VP[VP [VB [V est] [VB_as as]] [NP [JJ [J [V kreat] [J_a a]] [JJ_j j]] [IN per]]][NP [NP [JJ [J simpl] [JJ_a a]] [NN [J kunligad] [NN_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J_a a]] [JJ_j j]] [NN [NN [N vort] [NN_o o]] [NN_j j]]]]]]])}
 %\synttree [S [NP[NN [NN [N Vort] [NN\_o o]] [NN\_j j]][JJ [J [V kunmetit] [J\_a a]] [JJ\_j j]]] [VP[VP [VB [V est] [VB\_as as]] [NP [JJ [J [V kreat] [J\_a a]] [JJ\_j j]] [IN per]]][NP [NP [JJ [J simpl] [JJ\_a a]] [NN [J kunligad] [NN\_o o]]] [PP[IN de][N' [JJ [J [V simpl] [J\_a a]] [JJ\_j j]] [NN [NN [N vort] [NN\_o o]] [NN\_j j]]]]]]]
 \begin{figure}
+\centering
 \includegraphics[scale=0.5,angle=90]{eoimg/tree11}
 \caption{Derivation using the modularist approach, same sentence.}
 \label{s4}
@@ -1103,7 +1124,6 @@ have been enough).
 	DLT: ?? (Schubert (et al?))
 	other work? describe Miner? structuralist representation, hierarchical, unlabeled, implicit (trace?) endings for every morpheme.
 	
-\end{comment}
 
 
 \subsection{Evaluation}
@@ -1116,6 +1136,7 @@ too much for bitpar, as it fails with a memory allocation error before
 producing any results. Alternatives would be to sample from the subtrees (ie.,
 sample from the rules containing IDs plus all the rules without IDs), or using
 a different parser, one optimised more for memory usage.
+\end{comment}
 
 \subsection{Future work}
 
@@ -1149,7 +1170,7 @@ correct, but in practice the latter is only used for phonological reasons relati
 prosody etc.} Such an analysis introduces additional ambiguity and departs from
 the empirical evidence, but it may be necessary for linguistic reasons.  I have
 not considered it because I do not consider it realistic to assume such trace
-constituents, but there is no evidence against them other than their absence in
+elements, but there is no evidence against them other than their absence in
 most surface forms. On the other hand, the morphological structures that Miner
 presents are unlabeled, which makes it harder to generalize over multiple
 exemplars as categories are only represented in terminals. The choice to label
@@ -1189,6 +1210,8 @@ and highly structured.
 \begin{center}
 $\infty$
 \end{center}
+
+%\end{multicols}
 
 \section{References}
 
@@ -1291,7 +1314,7 @@ Proceedings of the IVth International Conference on Language Resources and
 Evaluation (LREC 2004), p. 1263-1266, Lisbon, Portugal.
 \url{http://www.ims.uni-stuttgart.de/www/projekte/gramotron/PAPERS/LREC04/smor.pdf}
 
-\item[Schubert,] Klaus, 1989. "An unplanned development in planned languages",
+\item[Schubert,] Klaus, 1989. ``An unplanned development in planned languages",
 en Klaus Schubert, red., Interlinguistics: Aspects of the Science of Planned
 Languages [ = Trends in Linguistics: Studies and Monographs 42], Mouton de
 Gruyter.
