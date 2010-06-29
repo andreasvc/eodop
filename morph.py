@@ -256,7 +256,7 @@ def interface():
 def monato():
 	""" produce the goodman reduction of the full monato corpus """
 	# turn cleanup off so that the grammar will not be removed
-	d = GoodmanDOP((stripfunc(cnf(Tree(a.lower()))) for a in open("arbobanko.train")), rootsymbol='top', parser=BitParChartParser, name='syntax', cleanup=False)
+	d = GoodmanDOP((stripfunc(cnf(Tree(a.lower()))) for a in open("arbobanko.train")), rootsymbol='TOP', parser=BitParChartParser, name='syntax', cleanup=False)
 	test = ("%s\n" % "\n".join(Tree(a.lower()).leaves()) for a in open("arbobanko.gold"))
 	open("arbobanko.test", "w").writelines(test)
 	#d = GoodmanDOP((Tree(a) for a in corpus), rootsymbol='S', wrap=True)
@@ -269,6 +269,6 @@ if __name__ == '__main__':
 	optionflags=doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS)
 	if attempted and not fail:
 		print "%d doctests succeeded!" % attempted
-	interface()	#interactive demo with toy corpus
+	#interface()	#interactive demo with toy corpus
 	#toy()		#get toy corpus DOP reduction
-	#monato()	#get monato DOP reduction
+	monato()	#get monato DOP reduction

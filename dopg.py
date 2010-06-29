@@ -89,6 +89,8 @@ class GoodmanDOP:
 			# wrap trees in a common root symbol (eg. for morphology)
 			treebank = [Tree(rootsymbol, [a]) for a in treebank]
 		if cnf:
+			#CNF conversion is destructive
+			treebank = list(treebank)
 			for a in treebank:
 				a.chomsky_normal_form() #todo: sibling annotation necessary?
 		# add unique IDs to nodes
