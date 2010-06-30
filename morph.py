@@ -257,36 +257,47 @@ def interface():
 def monato():
 	""" produce the goodman reduction of the monato corpus """
 	#splitting has already been done. TODO: split here.
-	train = (stripfunc(forcepos(Tree(a.lower()))) for a in open("arbobanko.train"))
+	train = [stripfunc(forcepos(Tree(a.lower()))) for a in open("arbobanko.train")]
 	
 	# PCFG baseline
-	pcfg = induce_pcfg(Nonterminal("TOP"), chain(a.productions() for a in train))
+	print "inducing PCFG . . .",
+	pcfg = induce_pcfg(Nonterminal("top"), reduce(chain, (a.productions() for a in train)))
 	p = InsideChartParser(pcfg)
+	print "done"
 
+	print "inducing DOP reduction . . .",
 	# turn cleanup off so that the grammar will not be removed
-	d = GoodmanDOP(train, rootsymbol='TOP', parser=BitParChartParser, name='syntax', cleanup=False)
+	d = GoodmanDOP(train, rootsymbol='top', parser=BitParChartParser, name='syntax', 
+			cleanup=False, n=100, unknownwords='unknownwordsm', openclassdfsa='pos.dfsa')
 
 	# surface forms:
 	test = ["%s\n\n" % "\n".join(Tree(a.lower()).leaves()) for a in open("arbobanko.gold")]
 	open("arbobanko.test", "w").writelines(test)
+	test = [Tree(a.lower()).leaves() for a in open("arbobanko.gold")]
 
 	gold = [stripfunc(forcepos(Tree(a.lower()))) for a in open("arbobanko.gold")]
-	print "parsing . . .",
-	print "PCFG",
-	pcfgresults = [p.parse(a) for a in test]
-	print "DOP",
-	results = [d.parse(a) for a in test]
-	print "done."
-	print
-	print "PCFG baseline:"
-	print "precision", precision(gold, pcfgresults)
-	print "recall", recall(gold, pcfgresults)
-	print "f-measure", f_measure(gold, pcfgresults)
-	print
-	print "DOP:"
+	print "parsing DOP"
+	results = []
+	from itertools import count
+	cnt = count()
+	for a in test:
+		try:
+			results.append(d.parse(a).freeze())
+		except:
+			results.append(cnt.next())
+		print results[-1]
+	gold = set(a.freeze() for a in gold)
+	results = set(results)
+	#results = [d.parse(a) for a in test]
 	print "precision", precision(gold, results)
 	print "recall", recall(gold, results)
 	print "f-measure", f_measure(gold, results)
+	print
+	print "parsing PCFG"
+	pcfgresults = [p.parse(a) for a in test]
+	print "precision", precision(gold, pcfgresults)
+	print "recall", recall(gold, pcfgresults)
+	print "f-measure", f_measure(gold, pcfgresults)
 	# morphology, combined & separate.
 
 if __name__ == '__main__':

@@ -105,7 +105,8 @@ class BitParChartParser:
 		if self.unknownwords: self.cmd += "-u %s " % self.unknownwords
 		if self.openclassdfsa: self.cmd += "-w %s " % self.openclassdfsa
 		if self.name:
-			self.cmd += "%s.pcfg %s.lex" % (self.id, self.id)
+			# TODO ??
+			self.cmd += "/tmp/g%s.pcfg /tmp/g%s.lex" % (self.id, self.id)
 		else:
 			self.cmd += "/tmp/g%s.pcfg /tmp/g%s.lex" % (self.id, self.id)
 		#if self.debug: print self.cmd.split()
@@ -117,7 +118,14 @@ class BitParChartParser:
 
 	def parse(self, sent):
 		if isinstance(self.bitpar.poll(), int): self.start()
-		result, stderr = self.bitpar.communicate(u"%s\n\n" % "\n".join(sent))
+		try:
+			result, stderr = self.bitpar.communicate(u"%s\n\n" % "\n".join(sent))
+		except:
+			self.start()
+			print self.bitpar.stderr.read()
+			print self.bitpar.stdout.read()
+			result, stderr = self.bitpar.communicate(u"%s\n\n" % "\n".join(sent))
+
 		if not "=" in result:
 			# bitpar returned some error or didn't produce output
 			raise ValueError(u"no output. stdout: \n%s\nstderr:\n%s " % (result.strip(), stderr.strip()))
@@ -165,7 +173,7 @@ class BitParChartParser:
 			for word, tags in lex.items():
 				# word	POS1 prob^Wfrequency1	POS2 freq2 ...
 				#print "%s\t%s" % (word, "\t".join(' '.join(map(str, a)) for a in tags.items()))
-				yield u"%s\t%s\n" % (word, "\t".join(' '.join(map(str, a)) for a in tags.items()))
+				yield u"%s\t%s\n" % (word, "\t".join(' '.join(map(str, a)) for a in tags.items() if a[0].strip()))
 		l.writelines(proc(lex))
 		f.close()
 		l.close()
