@@ -4,7 +4,8 @@
 	Combines a syntax and a morphology corpus. """
 
 from dopg import *
-from nltk import UnsortedChartParser, NgramModel
+from nltk import UnsortedChartParser, InsideChartParser, NgramModel, Nonterminal, induce_pcfg
+from nltk.metrics.scores import precision, recall, f_measure
 from bitpar import BitParChartParser
 from random import sample,seed
 seed()
@@ -255,11 +256,38 @@ def interface():
 
 def monato():
 	""" produce the goodman reduction of the monato corpus """
+	#splitting has already been done. TODO: split here.
+	train = (stripfunc(forcepos(Tree(a.lower()))) for a in open("arbobanko.train"))
+	
+	# PCFG baseline
+	pcfg = induce_pcfg(Nonterminal("TOP"), chain(a.productions() for a in train))
+	p = InsideChartParser(pcfg)
+
 	# turn cleanup off so that the grammar will not be removed
-	d = GoodmanDOP((stripfunc(forcepos(Tree(a.lower()))) for a in open("arbobanko.train")), rootsymbol='TOP', parser=BitParChartParser, name='syntax', cleanup=False)
-	test = ("%s\n\n" % "\n".join(Tree(a.lower()).leaves()) for a in open("arbobanko.gold"))
+	d = GoodmanDOP(train, rootsymbol='TOP', parser=BitParChartParser, name='syntax', cleanup=False)
+
+	# surface forms:
+	test = ["%s\n\n" % "\n".join(Tree(a.lower()).leaves()) for a in open("arbobanko.gold")]
 	open("arbobanko.test", "w").writelines(test)
-	#d = GoodmanDOP((Tree(a) for a in corpus), rootsymbol='S', wrap=True)
+
+	gold = [stripfunc(forcepos(Tree(a.lower()))) for a in open("arbobanko.gold")]
+	print "parsing . . .",
+	print "PCFG",
+	pcfgresults = [p.parse(a) for a in test]
+	print "DOP",
+	results = [d.parse(a) for a in test]
+	print "done."
+	print
+	print "PCFG baseline:"
+	print "precision", precision(gold, pcfgresults)
+	print "recall", recall(gold, pcfgresults)
+	print "f-measure", f_measure(gold, pcfgresults)
+	print
+	print "DOP:"
+	print "precision", precision(gold, results)
+	print "recall", recall(gold, results)
+	print "f-measure", f_measure(gold, results)
+	# morphology, combined & separate.
 
 if __name__ == '__main__':
 	import doctest
