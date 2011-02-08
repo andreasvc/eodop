@@ -4,7 +4,8 @@
 	Combines a syntax and a morphology corpus. """
 
 from dopg import *
-from nltk import UnsortedChartParser, InsideChartParser, NgramModel, Nonterminal, induce_pcfg
+from evalb import evalb
+from nltk import UnsortedChartParser, InsideChartParser, NgramModel, Nonterminal, induce_pcfg, ProbabilisticTree
 from nltk.metrics.scores import precision, recall, f_measure
 from bitpar import BitParChartParser
 from random import sample,seed
@@ -15,8 +16,8 @@ def chapelitoj(word): #todo: replace capitals as well Ĉ Ĝ Ĥ Ĵ Ŝ Ŭ
 		u'ĥ').replace(u'jx',u'ĵ').replace(u'sx',u'ŝ').replace(u'ux',u'ŭ')
 
 def malchapelitoj(word): #todo: replace capitals as well Ĉ Ĝ Ĥ Ĵ Ŝ Ŭ
-	return unicode(word).replace(u'ĉ', u'cx').replace(u'ĝ', u'gx').replace(u'ĥ', 
-		u'hx').replace(u'ĵ', u'jx').replace(u'ŝ', u'sx').replace(u'ŭ', u'ux')
+	return word.replace('ĉ', 'cx').replace('ĝ', 'gx').replace('ĥ', 
+		'hx').replace('ĵ', 'jx').replace('ŝ', 'sx').replace('ŭ', 'ux')
 
 def forcepos(tree):
 	""" make sure all terminals have POS tags; 
@@ -31,7 +32,7 @@ def stripfunc(tree):
 	""" strip all function labels from a tree with labels of
 	the form "function:form", eg. S:np for subject, np. """
 	for a in tree.treepositions():
-		if isinstance(tree[a], Tree) and ':' in tree[a].node:
+		if isinstance(tree[a], Tree) and ':' in tree[a].node and len(tree[a].node.split(':')[1]) > 0:
 			tree[a].node = tree[a].node.split(':')[1]
 	return tree
 
@@ -111,40 +112,54 @@ def morphmerge(tree, md, segmented):
 			print "error:", e
 	return copy
 
-def morphology(train):
-	""" an interactive interface to the toy corpus """
-	d = GoodmanDOP((Tree(malchapelitoj(a)) for a in train), rootsymbol='S', parser=BitParChartParser, n=100, unknownwords='unknownwords', openclassdfsa='pos.dfsa', name='syntax')
+def morphology(train, top='S'):
+	""" generates three DOP models for a given list of phrase structure trees:
+	a syntax model, a morphology model, and a combined syntax and morphology
+	model """ 
+	from cPickle import dump, load
+	d = GoodmanDOP((Tree(malchapelitoj(a)) for a in train), rootsymbol=top,
+		parser=BitParChartParser, n=100, unknownwords='unknownwordsm',
+		openclassdfsa='pos.dfsa', name='syntax', cleanup=False)
 	print "built syntax model"
 
 	mcorpus = map(malchapelitoj, open("morph.corp.txt").readlines())
-	md = GoodmanDOP((forcepos(Tree(a)) for a in mcorpus), rootsymbol='W', wrap=True, parser=BitParChartParser, n=100, unknownwords='unknownmorph', name='morphology')
+	md = GoodmanDOP((forcepos(Tree(a)) for a in mcorpus), rootsymbol='W',
+		wrap=True, parser=BitParChartParser, n=100, 
+		unknownwords='unknownmorph', name='morphology')
 	print "built morphology model"
 
-	segmentd = dict(("".join(a), tuple(a)) for a in (Tree(a).leaves() for a in mcorpus))
-	print "morphology exemplars: ", " ".join(segmentd.keys())
-	print "segmentation dictionary size:", len(segmentd),
+	try:
+		segmentd = load(open("segmentd.pickle", "rb"), protocol=-1)
+	except:
+		segmentd = dict(("".join(a), tuple(a)) for a in (Tree(a).leaves() 
+			for a in mcorpus))
+		print "morphology exemplars: ", " ".join(segmentd.keys())
+		print "segmentation dictionary size:", len(segmentd),
 
-	mlexicon = set(reduce(chain, segmentd.values()))
-	segmentd = dos1(set(segmentd.values()))
-	#restore original original words in case they were overwritten
-	for a in (Tree(a).leaves() for a in mcorpus):
-		segmentd["".join(a)] = tuple(a)
+		mlexicon = set(reduce(chain, segmentd.values()))
+		segmentd = dos1(set(segmentd.values()))
+		#restore original original words in case they were overwritten
+		for a in (Tree(a).leaves() for a in mcorpus):
+			segmentd["".join(a)] = tuple(a)
+		print "extrapolated:", len(segmentd) #, " ".join(segmentd.keys())
+		dump(segmentd, open('segmentd.pickle', 'wb'), protocol=-1)
 	segment = segmentor(segmentd)
 	
-	print "extrapolated:", len(segmentd) #, " ".join(segmentd.keys())
-	from cPickle import dump
-        dump(segmentd, open('segmentd.pickle', 'wb'), protocol=-1)
-
-	print "analyzing morphology of treebank"
-	mtreebank = []
-	for n, a in enumerate(Tree(a) for a in train):
-		print '%d / %d:' % (n, len(train)-1),
-		mtreebank.append(morphmerge(a, md, map(segment, a.leaves())))
-		print
-
+	try:
+		mtreebank = map(Tree, open("arbobanko.train.morph").readlines())
+	except:
+		print "analyzing morphology of treebank"
+		mtreebank = []
+		for n, a in enumerate(Tree(a) for a in train):
+			print '%d / %d:' % (n, len(train)-1),
+			mtreebank.append(forcepos(morphmerge(a, md, map(segment, a.leaves()))))
+			print
+		open("arbobanko.train.morph", "w").writelines(a._pprint_flat("", "()", 
+			"") + "\n" for a in mtreebank)
 	#mtreebank = [m(Tree(a)) for a in train]
 	#for a in mtreebank: print a
-	msd = GoodmanDOP(mtreebank, rootsymbol='S', parser=BitParChartParser, n=100, unknownwords='unknownmorph', name='morphsyntax')
+	msd = GoodmanDOP(mtreebank, rootsymbol=top, parser=BitParChartParser, 
+		n=100, unknownwords='unknownmorph', name='morphsyntax', cleanup=False)
 	print "built combined morphology-syntax model"
 
 	return d, md, msd, segment, mlexicon
@@ -257,18 +272,7 @@ def interface():
 def monato():
 	""" produce the goodman reduction of the monato corpus """
 	#splitting has already been done. TODO: split here.
-	train = [stripfunc(forcepos(Tree(a.lower()))) for a in open("arbobanko.train")]
-	
-	# PCFG baseline
-	print "inducing PCFG . . .",
-	pcfg = induce_pcfg(Nonterminal("top"), reduce(chain, (a.productions() for a in train)))
-	p = InsideChartParser(pcfg)
-	print "done"
-
-	print "inducing DOP reduction . . .",
-	# turn cleanup off so that the grammar will not be removed
-	d = GoodmanDOP(train, rootsymbol='top', parser=BitParChartParser, name='syntax', 
-			cleanup=False, n=100, unknownwords='unknownwordsm', openclassdfsa='pos.dfsa')
+	train = [forcepos(stripfunc(Tree(a.lower()))) for a in open("arbobanko.train")]
 
 	# surface forms:
 	test = ["%s\n\n" % "\n".join(Tree(a.lower()).leaves()) for a in open("arbobanko.gold")]
@@ -276,29 +280,178 @@ def monato():
 	test = [Tree(a.lower()).leaves() for a in open("arbobanko.gold")]
 
 	gold = [stripfunc(forcepos(Tree(a.lower()))) for a in open("arbobanko.gold")]
-	print "parsing DOP"
-	results = []
-	from itertools import count
-	cnt = count()
-	for a in test:
+	# PCFG baseline
+	print "inducing PCFG . . .",
+	pcfg = induce_pcfg(Nonterminal("top"), reduce(chain, (a.productions() for a in train)))
+	p = InsideChartParser(pcfg)
+	def rule2str(a):
+		if isinstance(a.rhs(), tuple):
+			return "%s\t%s" % (str(a.lhs()), "\t".join(map(str, a.rhs())))
+		return "%s\t%s" % (str(a.lhs()), str(a.rhs()))
+	weightedrules = FreqDist(reduce(chain, (map(rule2str, a.productions()) for a in train))).items()
+	p = BitParChartParser(weightedrules, set(reduce(chain, (a.leaves() for a in train))), "top", name='pcfgsyntax', cleanup=False, n=100, unknownwords='unknownwordsm', openclassdfsa='pos.dfsa')
+
+	"""
+	results, eval = [], []
+	for n, (a,b) in enumerate(zip(test, gold)):
 		try:
-			results.append(d.parse(a).freeze())
+			results.append(p.parse(a))
+		except ValueError as e:
+			results.append(Tree("top", [Tree("nnp", [c]) for c in a]))
+			print e
+		try:
+			eval.append(evalb(b, results[-1], parameters="COLLINS.prm") + "\n")
 		except:
-			results.append(cnt.next())
-		print results[-1]
-	gold = set(a.freeze() for a in gold)
-	results = set(results)
-	#results = [d.parse(a) for a in test]
-	print "precision", precision(gold, results)
-	print "recall", recall(gold, results)
-	print "f-measure", f_measure(gold, results)
-	print
-	print "parsing PCFG"
-	pcfgresults = [p.parse(a) for a in test]
-	print "precision", precision(gold, pcfgresults)
-	print "recall", recall(gold, pcfgresults)
-	print "f-measure", f_measure(gold, pcfgresults)
-	# morphology, combined & separate.
+			eval.append("\n")
+		print n, "=", results[-1]
+		print eval[-1]
+		if str(results[-1]) == str(b): print "match!"
+	open("arbobanko.results.pcfg", "w").writelines(a._pprint_flat('', "()", "") + "\n" for a in results)
+	open("arbobanko.eval.pcfg", "w").writelines(eval)
+	print "done"
+	"""
+
+	print "inducing DOP reduction . . .",
+	# turn cleanup off so that the grammar will not be removed
+	#d = GoodmanDOP(train, rootsymbol='top', parser=BitParChartParser, name='syntax', cleanup=False, n=100, unknownwords='unknownwordsm', openclassdfsa='pos.dfsa')
+	train = [str(a._pprint_flat('', '()', '')) for a in train]
+	d, md, msd, segment, lexicon = morphology(train, "top")
+	try:
+		goldm = map(Tree, open("arbobanko.gold.morph").readlines())
+	except:
+		goldm = [morphmerge(a, md, map(segment, a.leaves())) for a in gold]
+		open("arbobanko.gold.morph", "w").writelines(a._pprint_flat("","()",
+			"") + "\n" for a in goldm)
+
+	testm = ["%s\n\n" % "\n".join(reduce(chain, map(segment, Tree(a.lower()).leaves()))) for a in open("arbobanko.gold")]
+	open("arbobanko.test.morph", "w").writelines(testm)
+
+	
+	"""
+	print "parsing DOP"
+	results, eval = [], []
+	for n, (a,b) in enumerate(zip(test, gold)):
+		try:
+			results.append(d.removeids(d.mostprobableparse(a)))
+		except ValueError as e:
+			results.append(Tree("top", [Tree("nnp", [c]) for c in a]))
+			print e
+		try:
+			eval.append(evalb(b, results[-1], parameters="COLLINS.prm") + "\n")
+		except:
+			eval.append("\n")
+		print n, "=", results[-1]
+		print eval[-1]
+		if str(results[-1]) == str(b): print "match!"
+	open("arbobanko.results", "w").writelines(a._pprint_flat('', "()", "") + "\n" for a in results)
+	open("arbobanko.eval", "w").writelines(eval)
+	
+	print "parsing DOP w/morphology combined"
+	results, eval = [], []
+	for n, (a,b) in enumerate(zip(test, goldm)):
+		sent = list(reduce(chain, map(segment, a)))
+		try:
+			results.append(msd.removeids(msd.mostprobableparse(sent)))
+		except ValueError as e:
+			results.append(Tree("top", [Tree("nnp", [c]) for c in sent]))
+			print e
+		try:
+			eval.append(evalb(b, results[-1], parameters="COLLINS.prm") + "\n")
+		except:
+			eval.append("\n")
+		print n, "=", results[-1]
+		print eval[-1]
+		if str(results[-1]) == str(b): print "match!"
+	open("arbobanko.results.msd", "w").writelines(a._pprint_flat('', "()", "") + "\n" for a in results)
+	open("arbobanko.eval.msd", "w").writelines(eval)
+	"""
+
+	import subprocess	
+	print "parsing pcfg baseline"
+	p1 = subprocess.Popen("bitpar -q -p -vp -b 100 -s top -u unknownwordsm -w pos.dfsa /tmp/gpcfgsyntax.pcfg /tmp/gpcfgsyntax.lex arbobanko.test arbobanko.results.pcfg".split())
+	print "parsing syntax"
+	p2 = subprocess.Popen("bitpar -q -p -vp -b 100 -s top -u unknownwordsm -w pos.dfsa /tmp/gsyntax.pcfg /tmp/gsyntax.lex arbobanko.test arbobanko.results".split())
+	print "parsing morphosyntax"
+	p3 = subprocess.Popen("bitpar -q -p -vp -b 100 -s top -u unknownmorph /tmp/gmorphsyntax.pcfg /tmp/gmorphsyntax.lex arbobanko.test.morph arbobanko.results.morph".split())
+
+	p1.wait()
+	print "processing results"
+	getbest("arbobanko.results.pcfg", "arbobanko.resproc.pcfg")
+	p2.wait()
+	getbest("arbobanko.results", "arbobanko.resproc")
+	p3.wait()
+	getbest("arbobanko.results.morph", "arbobanko.resproc.morph")
+	out = open("arbobanko.resproc.sepmorph", "w")
+	for a in open("arbobanko.resproc").readlines():
+		try:
+			t = Tree(a)
+		except:
+			t = None
+		if t:
+			out.write(forcepos(morphmerge(t, md, map(segment, t.leaves())))._pprint_flat("", "()", "") + "\n")
+		else:
+			out.write(a)
+	out.close()
+	
+	# add morphology to arbobanko.resproc
+
+	#gold = map(Tree, open("arbobanko.gold").readlines())
+	#goldm = map(Tree, open("arbobanko.gold.morph").readlines())
+	#geteval("arbobanko.resproc", "arbobanko.resselect", "arbobanko.eval", gold)
+	#geteval("arbobanko.resproc.morph", "arbobanko.resselect.morph", "arbobanko.eval.morph", goldm)
+
+def removeids(tree):
+	""" remove unique IDs introduced by the Goodman reduction """
+	result = Tree.convert(tree)
+	for a in tree.treepositions():
+		if '@' in str(tree[a]):
+			result[a].node = tree[a].node.split('@')[0]
+	return result
+
+def geteval(infile, outfile, evalfile, gold):
+	eval = []
+	ok = []
+	for a,b in zip(gold, map(Tree, open(infile).readlines())):
+		try:
+			#eval.append(evalb(a, b, parameters="COLLINS.prm") + "\n")
+			eval.append(evalb(a, b) + "\n")
+			ok.append(b)
+		except:
+			eval.append("\n")
+	open(outfile, "w").writelines(a._pprint_flat("","()","") + "\n" for a in ok)
+	open(evalfile, "w").writelines(eval)
+	
+def trymap(f, list):
+	for a in list:
+		try: yield f(a)
+		except: pass
+
+def getbest(infile, outfile):
+	""" process output of bitpar, remove ids from parse trees and choose
+	the ones with highest probability. """
+	import re
+	results = []
+	for result in open(infile).read().split("\n\n"):
+		result = result.splitlines()
+		probs = (float(a.split("=")[1]) for a in result[::2] if "=" in a)
+		trees = trymap(Tree, result[1::2])
+		p = FreqDist()
+		for a in (ProbabilisticTree(b.node, b, prob=a) for a,b in zip(probs, trees)):
+			p.inc(ImmutableTree.convert(removeids(a)), a.prob())
+		if p.max():
+	                results.append(p.max())
+		else:
+			results.append(None)
+	def rep(a):
+		if a: 
+			foo = a._pprint_flat("","()","") + "\n"
+			# remove CNF-conversion information
+			foo = re.sub(r"\|\\<.*?\\>","", foo)
+			# remove bitpar's escaping of certain chars
+			return re.sub(r"\\([{}\[\]<>])",r"\1", foo)
+		return "\n"
+	open(outfile, "w").writelines(map(rep, results))
+
 
 if __name__ == '__main__':
 	import doctest
