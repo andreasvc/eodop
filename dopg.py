@@ -183,9 +183,9 @@ class GoodmanDOP:
 			#print 1, tree, nonterminalfd
 			return 1
 		else:
-			raise ValueError
 			#??!! FIXME FIXME
 			return 0
+			raise ValueError
 
 	def goodman(self, tree, utree, bitparfmt=True):
 		""" given a parsetree from a treebank, yield a goodman
@@ -276,10 +276,11 @@ class GoodmanDOP:
 
 	def removeids(self, tree):
 		""" remove unique IDs introduced by the Goodman reduction """
+		result = Tree.convert(tree)
 		for a in tree.treepositions():
 			if '@' in str(tree[a]):
-				tree[a].node = tree[a].node.split('@')[0]
-		return tree
+				result[a].node = tree[a].node.split('@')[0]
+		return result
 
 	def parse(self, sent):
 		""" memoize parse trees. TODO: maybe add option to add every
