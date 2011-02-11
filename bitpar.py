@@ -11,7 +11,7 @@ from commands import getoutput
 from time import sleep
 from uuid import uuid1
 from nltk import Tree, ProbabilisticTree, FreqDist, InsideChartParser
-import threading, fcntl, os
+import threading, fcntl, os, re
 
 class BitParChartParser:
 	def __init__(self, weightedrules=None, lexicon=None, rootsymbol=None, unknownwords=None, openclassdfsa=None, cleanup=True, n=10, name=''):
@@ -62,7 +62,6 @@ class BitParChartParser:
 			ProbabilisticTree('VP', ['walks']) (p=1.0)]) (p=0.111111111111)]
 
 		>>> d = GoodmanDOP([tree], parser=BitParChartParser)
-		    writing grammar
 		>>> d.parser.parse("mary walks".split())
 		ProbabilisticTree('S', [Tree('NP@1', ['mary']), Tree('VP@2', ['walks'])]) (p=0.444444)
 		>>> list(d.parser.nbest_parse("mary walks".split()))
@@ -96,7 +95,7 @@ class BitParChartParser:
 
 	def __del__(self):
 		cmd = "rm /tmp/g%s.pcfg /tmp/g%s.lex" % (self.id, self.id)
-		if self.cleanup: Popen(cmd.split())
+		if self.cleanup or not self.name: Popen(cmd.split())
 		#self.stop()
 
 	def start(self):
@@ -129,13 +128,11 @@ class BitParChartParser:
 		if isinstance(self.bitpar.poll(), int): self.start()
 		try:
 			result, stderr = self.bitpar.communicate(u"%s\n\n" % "\n".join(sent))
-		#result, stderr = mycommunicate(self.bitpar, u"%s\n\n" % "\n".join(sent))
 		except:
 			self.start()
 			print self.bitpar.stderr.read()
 			print self.bitpar.stdout.read()
 			result, stderr = self.bitpar.communicate(u"%s\n\n" % "\n".join(sent))
-		#	result, stderr = mycommunicate(self.bitpar, u"%s\n\n" % "\n".join(sent))
 
 		if not "=" in result:
 			# bitpar returned some error or didn't produce output
@@ -149,17 +146,20 @@ class BitParChartParser:
 		""" n has to be specified in the constructor because it is specified
 		as a command line parameter to bitpar, allowing it here would require
 		potentially expensive restarts of bitpar. """
+
 		f = "/tmp/%s" % uuid1()
 		open(f, "w").write("%s\n\n" % "\n".join(sent))
 		bitpar = Popen((self.cmd + " " + f).split(), stdin=PIPE, stdout=PIPE, stderr=PIPE)
-		result = bitpar.stdout.read()
+		#strip trailing blank line
+		results = bitpar.stdout.read().splitlines()[:-1]
+
 		#if isinstance(self.bitpar.poll(), int): self.start()
 		#result, stderr = self.bitpar.communicate(u"%s\n\n" % "\n".join(sent))
-		#result, stderr = mycommunicate(self.bitpar, u"%s\n\n" % "\n".join(sent))
-		results = result.splitlines()[:-1] #strip trailing blank line
+		#results = result.splitlines()
 		probs = (float(a.split("=")[1]) for a in results[::2] if "=" in a)
-		trees = (Tree(a) for a in results[1::2])
-		self.stop()
+		# remove bitpar's escaping (why does it do that?)
+		trees = (Tree(re.sub(r"\\([{}\[\]<>'])", r"\1", a)) for a in results[1::2])
+		Popen(("rm %s" % f).split())
 		return (ProbabilisticTree(b.node, b, prob=a) for a, b in zip(probs, trees))
 
 	def writegrammar(self, f, l):
@@ -172,24 +172,26 @@ class BitParChartParser:
 			for rule, freq in self.grammar:
 				lhs, rhs = rule.split('\t',1)[0], rule.split('\t')[1:]
 				#if len(rhs) == 1 and not isinstance(rhs[0], Nonterminal):
-				if rhs[0] in self.lexicon:
+				if len(rhs) == 1 and rhs[0] in self.lexicon:
 					#lex[rhs[0]].append(" ".join(map(repr, (lhs, freq))))
 					lex[rhs[0]].inc(lhs, count=freq)
 				# this should NOT happen: (drop it like it's hot)
-				elif len(rhs) == 0 or '' in (str(a).strip() for a in rhs): continue #raise ValueError
+				elif len(rhs) == 0 or '' in (str(a).strip() for a in rhs):
+					print 'empty', rule, freq 
+					raise ValueError
+					continue 
 				else:
 					# prob^Wfrequency	lhs	rhs1	rhs2
 					#print "%s\t%s" % (repr(freq), rule)
 					yield u"%s\t%s\n" % (repr(freq), rule)
 					#yield "%s\t%s\t%s\n" % (repr(freq), str(lhs), 
 					#			"\t".join(str(x) for x in rhs))
-		#f.write(''.join(process()))
-		f.writelines(process())
 		def proc(lex):
 			for word, tags in lex.items():
 				# word	POS1 prob^Wfrequency1	POS2 freq2 ...
 				#print "%s\t%s" % (word, "\t".join(' '.join(map(str, a)) for a in tags.items()))
 				yield u"%s\t%s\n" % (word, "\t".join(' '.join(map(str, a)) for a in tags.items() if a[0].strip()))
+		f.writelines(process())
 		l.writelines(proc(lex))
 		f.close()
 		l.close()

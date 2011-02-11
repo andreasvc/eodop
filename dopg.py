@@ -34,11 +34,19 @@ def productions(tree):
 	form P -> C1 C2 ... Cn.
 		@rtype: list of C{Production}s
 	"""
+	def _child_names(tree):
+		names = []
+		for child in tree:
+			if isinstance(child, Tree):
+				names.append(Nonterminal(child.node))
+			else:
+				names.append(child)
+		return names
 
 	if not (isinstance(tree.node, str) or isinstance(tree.node, unicode)):
 		raise TypeError, 'Productions can only be generated from trees having node labels that are strings'
 
-	prods = [Production(Nonterminal(tree.node), tree._child_names())]
+	prods = [Production(Nonterminal(tree.node), _child_names(tree))]
 	for child in tree:
 		if isinstance(child, Tree):
 			prods += productions(child)
@@ -53,19 +61,15 @@ class GoodmanDOP:
 		>>> tree = Tree("(S (NP mary) (VP walks))")
 		>>> d = GoodmanDOP([tree])
 		>>> print d.grammar
-			Grammar with 12 productions (start state = S)
-				NP -> 'mary' [1.0]
-				NP@1 -> 'mary' [1.0]
-				S -> NP VP [0.25]
-				S -> NP VP@2 [0.25]
-				S -> NP@1 VP [0.25]
-				S -> NP@1 VP@2 [0.25]
-				S@0 -> NP VP [0.25]
-				S@0 -> NP VP@2 [0.25]
-				S@0 -> NP@1 VP [0.25]
-				S@0 -> NP@1 VP@2 [0.25]
-				VP -> 'walks' [1.0]
-				VP@2 -> 'walks' [1.0]
+		    Grammar with 8 productions (start state = S)
+			NP -> 'mary' [1.0]
+			NP@1 -> 'mary' [1.0]
+			S -> NP VP [0.25]
+			S -> NP VP@2 [0.25]
+			S -> NP@1 VP [0.25]
+			S -> NP@1 VP@2 [0.25]
+			VP -> 'walks' [1.0]
+			VP@2 -> 'walks' [1.0]
 		>>> print d.parser.parse("mary walks".split())
 		(S (NP mary) (VP@2 walks)) (p=0.25)		
 		
@@ -82,7 +86,7 @@ class GoodmanDOP:
 		  with frequencies instead of probabilities
 		- self.parser an InsideChartParser object
 		- self.exemplars dictionary of known parse trees (memoization)"""
-		nonterminalfd, ids = FreqDist(), count()
+		nonterminalfd, ids = FreqDist(), count(1)
 		cfg = FreqDist()
 		self.exemplars = {}
 		if wrap:
@@ -93,33 +97,27 @@ class GoodmanDOP:
 			treebank = list(treebank)
 			for a in treebank:
 				a.chomsky_normal_form() #todo: sibling annotation necessary?
+
 		# add unique IDs to nodes
 		utreebank = list((tree, self.decorate_with_ids(tree, ids)) for tree in treebank)
 		lexicon = set(reduce(chain, (a.leaves() for a,b in utreebank)))
+
 		# count node frequencies
 		for tree,utree in utreebank:
 			#self.exemplars[tuple(tree.leaves())] = tree
-			#print tree
-			self.nodefreq(tree, nonterminalfd)
-			self.nodefreq(utree, nonterminalfd)
-			#cfg.extend(self.goodman(tree, utree))
-			#cfg.update(zip(self.goodmanfd(tree, ids, nonterminalfd), ones))
-			#cfg.extend(self.goodmanfd(tree, ids, nonterminalfd))
-		#print type(parser) == type(InsideChartParser)
-		#print type(parser) is type(InsideChartParser)
+			self.nodefreq(tree, utree, nonterminalfd)
+
 		if type(parser) == type(BitParChartParser):
 			# this takes the most time, produce CFG rules:
 			cfg = FreqDist(reduce(chain, (self.goodman(tree, utree) for tree, utree in utreebank)))
 			# annotate rules with frequencies
 			self.fcfg = self.frequencies(cfg, nonterminalfd)
-			print "writing grammar"
-			self.parser = BitParChartParser(self.fcfg, lexicon, rootsymbol, cleanup=False, **parseroptions)
+			self.parser = BitParChartParser(self.fcfg, lexicon, rootsymbol, cleanup=cleanup, **parseroptions)
 		else:
 			cfg = FreqDist(reduce(chain, (self.goodman(tree, utree, False) for tree, utree in utreebank)))
-			probs = self.probabilities(cfg, nonterminalfd) # DELETE ME
+			probs = self.probabilities(cfg, nonterminalfd)
 			#for a in probs: print a
 			self.grammar = WeightedGrammar(Nonterminal(rootsymbol), probs)
-				#self.probabilities(cfg, nonterminalfd)
 			self.parser = InsideChartParser(self.grammar)
 			
 		#stuff for self.mccparse
@@ -135,57 +133,60 @@ class GoodmanDOP:
 		#clean up
 		del cfg, nonterminalfd
 
-	def goodmanfd(self, tree, ids, nonterminalfd):
-		utree = self.decorate_with_ids(tree, ids)
-		self.nodefreq(tree, nonterminalfd)
-		self.nodefreq(utree, nonterminalfd)
-		return self.goodman(tree, utree)
-	
 	def decorate_with_ids(self, tree, ids):
-		""" add unique identifiers to each non-terminal of a tree.
+		""" add unique identifiers to each internal non-terminal of a tree.
 
-		>>> tree = Tree("(S (NP mary) (VP walks))")
+		>>> tree = Tree("(S (NP (DT the) (N dog)) (VP walks))")
 		>>> d = GoodmanDOP([tree])
-		>>> d.decorate_with_ids(tree, count())
-		Tree('S@0', [Tree('NP@1', ['mary']), Tree('VP@2', ['walks'])])
+		>>> d.decorate_with_ids(tree, count(1))
+		Tree('S', [Tree('NP@1', [Tree('DT', ['the']), Tree('N', ['dog'])]), 
+				Tree('VP', ['walks'])])
 
 			@param ids: an iterator yielding a stream of IDs"""
 		utree = tree.copy(True)
-		for a in utree.subtrees():
-			a.node = "%s@%d" % (a.node, ids.next())
+		#skip root node and pre-terminals
+		if utree.height() > 2:
+			for a in reduce(chain, (a.subtrees() for a in utree)):
+				if a.height() > 2:
+					a.node = "%s@%d" % (a.node, ids.next())
 		return utree
 	
-	def nodefreq(self, tree, nonterminalfd, leaves=1):
+	def nodefreq(self, tree, utree, nonterminalfd):
 		"""count frequencies of nodes by calculating the number of
 		subtrees headed by each node. updates "nonterminalfd" as 
-		a side effect
+		a side effect. Expects a normal tree and a tree with IDs.
 
 		>>> fd = FreqDist()
 		>>> tree = Tree("(S (NP mary) (VP walks))")
 		>>> d = GoodmanDOP([tree])
-		>>> d.nodefreq(tree, fd)
+		>>> utree = d.decorate_with_ids(tree, count(1))
+		>>> d.nodefreq(tree, utree, fd)
 		4
 		>>> fd.items()
-		[('S', 4), ('NP', 1), ('VP', 1)]
-
-		#[('S', 9), ('NP', 2), ('VP', 2), ('mary', 1), ('walks', 1)]
+		[('S', 4), ('NP', 1), ('NP@1', 1), ('VP', 1), ('VP@2', 1)]
 
 			@param nonterminalfd: the FreqDist to store the counts in."""
-		if isinstance(tree, Tree) and len(tree) > 0 and tree.height() > 2:
+		if not isinstance(tree, Tree):
+			print "moo!", tree
+			return 0
+		if len(tree) > 0 and tree.height() > 2:
 			n = reduce((lambda x,y: x*y), 
-				(self.nodefreq(x, nonterminalfd) + 1 for x in tree))
+				(self.nodefreq(x, ux, nonterminalfd) + 1 for x, ux 
+				in zip(tree, utree)))
 			nonterminalfd.inc(tree.node, count=n)
-			#print n, tree, nonterminalfd
+			if utree.node != tree.node:	#root node receives no ID
+				nonterminalfd.inc(utree.node, count=n)
 			return n
 		elif tree.height() == 2:
-			#nonterminalfd.inc(str(tree), count=leaves)
 			nonterminalfd.inc(tree.node, count=len(tree))
-			#print 1, tree, nonterminalfd
-			return 1
+			if utree.node != tree.node:
+				nonterminalfd.inc(utree.node, count=len(utree))
+			return len(tree)
 		else:
-			#??!! FIXME FIXME
-			return 0
+			# this error occurs when a node has zero children,
+			# e.g., (TOP (wrong))
 			raise ValueError
+			return 0
 
 	def goodman(self, tree, utree, bitparfmt=True):
 		""" given a parsetree from a treebank, yield a goodman
@@ -193,12 +194,10 @@ class GoodmanDOP:
 
 		>>> tree = Tree("(S (NP mary) (VP walks))")
 		>>> d = GoodmanDOP([tree])
-		>>> utree = d.decorate_with_ids(tree, count())
+		>>> utree = d.decorate_with_ids(tree, count(1))
 		>>> sorted(d.goodman(tree, utree, False))
 		[(NP, ('mary',)), (NP@1, ('mary',)), (S, (NP, VP)), (S, (NP, VP@2)),
-		(S, (NP@1, VP)), (S, (NP@1, VP@2)), (S@0, (NP, VP)), 
-		(S@0, (NP, VP@2)), (S@0, (NP@1, VP)), (S@0, (NP@1, VP@2)), 
-		(VP, ('walks',)), (VP@2, ('walks',))]
+		(S, (NP@1, VP)), (S, (NP@1, VP@2)), (VP, ('walks',)), (VP@2, ('walks',))]
 		"""
 		# linear: nr of nodes
 		sep = "\t"
@@ -216,7 +215,7 @@ class GoodmanDOP:
 
 			# constant factor: 8
 			#for l, r in cartpi(((p.lhs(), up.lhs()), rhs)):
-			for l, r in cartprod((p.lhs(), up.lhs()), rhs):
+			for l, r in cartprod(set((p.lhs(), up.lhs())), rhs):
 				#yield Production(l, r)
 				if bitparfmt:
 					yield sep.join((str(l), sep.join(map(str, r))))
@@ -270,7 +269,7 @@ class GoodmanDOP:
 		#for rule,cnt in cfgfd.items():
 		#	cfgfd.inc(rule, count=(cnt-1) * prob(*rule))
 		#return cfgfd
-		return ((rule, freq * reduce((lambda x,y: x*y), map((lambda z: '@' in str(z) and fd[str(z)] or 1), rule.split('\t')[1:]), 1)) for rule, freq in cfg.items())
+		return ((rule, freq * reduce((lambda x,y: x*y), map((lambda z: '@' in str(z) and fd[str(z)] or 1), rule.split('\t')[1:]))) for rule, freq in cfg.items())
 			#rule.append(prob(*rule))
 		#return [(rule, prob(rule[1])) for rule in cfg]
 
@@ -283,27 +282,25 @@ class GoodmanDOP:
 		return result
 
 	def parse(self, sent):
-		""" memoize parse trees. TODO: maybe add option to add every
-		parse tree to the set of exemplars, ie., incremental learning. 
-		this uses the most probable derivation (not very good)."""
-		try:
-			return self.exemplars[tuple(sent)]
-		except KeyError:
-			self.exemplars[tuple(sent)] = self.parser.parse(sent)
-			return self.exemplars[tuple(sent)]
+		"""most probable derivation (not very good)."""
+		return self.parser.parse(sent)
 
 	def mostprobableparse(self, sent, sample=None):
-		""" warning: this problem is NP-complete. using an unsorted
+		""" memoize parse trees. TODO: maybe add option to add every
+		parse tree to the set of exemplars, ie., incremental learning. 
+		warning: this problem is NP-complete. using an unsorted
 		chart parser avoids unnecessary sorting (since we need all
 		derivations anyway).
 		
 		@param sent: a sequence of terminals
 		@param sample: None or int; if int then sample that many parses"""
-		p = FreqDist()
-		for a in self.parser.nbest_parse(sent, sample):
-			p.inc(ImmutableTree.convert(self.removeids(a)), a.prob())
-		if p.max(): return p.max()
-		else: raise ValueError("no parse")
+		if tuple(sent) not in self.exemplars:
+			p = FreqDist()
+			for a in self.parser.nbest_parse(sent, sample):
+				p.inc(self.removeids(a).freeze(), a.prob())
+			if p.max(): self.exemplars[tuple(sent)] = p.max()
+			else: raise ValueError("no parse")
+		return self.exemplars[tuple(sent)]
 
 	def mostconstituentscorrect(self, sent):
 		""" not working yet. almost verbatim translation of Goodman's (1996)
@@ -352,9 +349,6 @@ def main():
 	#corpus = """(S (NP mary) (VP walks) (AP quickly))""".splitlines()
 	#(S (NP Harry) (VP (V likes) (NP Susan) (ADVP (RB very) (RB much))))
 	corpus = [Tree(a) for a in corpus]
-	for a in corpus:
-		#continue
-		a.chomsky_normal_form()
 	#d = GoodmanDOP(corpus, rootsymbol='S')
 	d = GoodmanDOP(corpus, rootsymbol='TOP', wrap='TOP', parser=BitParChartParser)
 	#d = GoodmanDOP(corpus, rootsymbol='TOP', wrap='TOP')
@@ -366,16 +360,16 @@ def main():
 	while w:
 		print "sentence:",
 		w = raw_input().split()
-		#print d.parser.prob_parse(w)
 		try:
 			p = FreqDist()
-			for a in d.parser.nbest_parse(w):
+			for n, a in enumerate(d.parser.nbest_parse(w)):
+				if n > 10: break
 				print a
 				p.inc(ImmutableTree.convert(d.removeids(a)), a.prob())
 			#for b, a in sorted((b,a) for (a,b) in p.items()):
 			#	print a, b
 			print
-			print 'best', p.max()
+			print 'best', p.max(), p[p.max()]
 			#print d.parse(w)
 		except Exception as e:
 			print "error", e
