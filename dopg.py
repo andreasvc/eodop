@@ -53,7 +53,7 @@ def productions(tree):
 	return prods
 
 class GoodmanDOP:
-	def __init__(self, treebank, rootsymbol='S', wrap=False, cnf=True, cleanup=True, parser=InsideChartParser, **parseroptions):
+	def __init__(self, treebank, rootsymbol='S', wrap=False, cnf=True, cleanup=True, normalize=False, parser=InsideChartParser, **parseroptions):
 		""" initialize a DOP model given a treebank. uses the Goodman
 		reduction of a STSG to a PCFG.  after initialization,
 		self.parser will contain an InsideChartParser.
@@ -77,6 +77,7 @@ class GoodmanDOP:
 			terminals may not have (non-terminals as) siblings.
 		@param wrap: boolean specifying whether to add the start symbol
 			to each tree
+		@param normalize: whether to normalize frequencies
 		@param parser: a class which will be instantiated with the DOP 
 			model as its grammar. Support BitParChartParser.
 		
@@ -86,8 +87,8 @@ class GoodmanDOP:
 		  with frequencies instead of probabilities
 		- self.parser an InsideChartParser object
 		- self.exemplars dictionary of known parse trees (memoization)"""
-		nonterminalfd, ids = FreqDist(), count(1)
-		cfg = FreqDist()
+		nonterminalfd, subtreefd, cfg = FreqDist(), FreqDist(), FreqDist()
+		ids = count(1)
 		self.exemplars = {}
 		if wrap:
 			# wrap trees in a common root symbol (eg. for morphology)
@@ -104,18 +105,17 @@ class GoodmanDOP:
 
 		# count node frequencies
 		for tree,utree in utreebank:
-			#self.exemplars[tuple(tree.leaves())] = tree
-			self.nodefreq(tree, utree, nonterminalfd)
+			self.nodefreq(tree, utree, subtreefd, nonterminalfd)
 
 		if type(parser) == type(BitParChartParser):
 			# this takes the most time, produce CFG rules:
 			cfg = FreqDist(reduce(chain, (self.goodman(tree, utree) for tree, utree in utreebank)))
 			# annotate rules with frequencies
-			self.fcfg = self.frequencies(cfg, nonterminalfd)
+			self.fcfg = self.frequencies(cfg, subtreefd, nonterminalfd, normalize)
 			self.parser = BitParChartParser(self.fcfg, lexicon, rootsymbol, cleanup=cleanup, **parseroptions)
 		else:
 			cfg = FreqDist(reduce(chain, (self.goodman(tree, utree, False) for tree, utree in utreebank)))
-			probs = self.probabilities(cfg, nonterminalfd)
+			probs = self.probabilities(cfg, subtreefd, nonterminalfd)
 			#for a in probs: print a
 			self.grammar = WeightedGrammar(Nonterminal(rootsymbol), probs)
 			self.parser = InsideChartParser(self.grammar)
@@ -139,28 +139,29 @@ class GoodmanDOP:
 		>>> tree = Tree("(S (NP (DT the) (N dog)) (VP walks))")
 		>>> d = GoodmanDOP([tree])
 		>>> d.decorate_with_ids(tree, count(1))
-		Tree('S', [Tree('NP@1', [Tree('DT', ['the']), Tree('N', ['dog'])]), 
-				Tree('VP', ['walks'])])
+		Tree('S', [Tree('NP@1', [Tree('DT@2', ['the']), Tree('N@3', ['dog'])]), 
+				Tree('VP@4', ['walks'])])
 
 			@param ids: an iterator yielding a stream of IDs"""
 		utree = tree.copy(True)
 		#skip root node and pre-terminals
 		if utree.height() > 2:
 			for a in reduce(chain, (a.subtrees() for a in utree)):
-				if a.height() > 2:
-					a.node = "%s@%d" % (a.node, ids.next())
+				#if a.height() > 2:
+				if a.node == "_": continue	#skip word boundary markers
+				a.node = "%s@%d" % (a.node, ids.next())
 		return utree
 	
-	def nodefreq(self, tree, utree, nonterminalfd):
-		"""count frequencies of nodes by calculating the number of
-		subtrees headed by each node. updates "nonterminalfd" as 
-		a side effect. Expects a normal tree and a tree with IDs.
+	def nodefreq(self, tree, utree, subtreefd, nonterminalfd):
+		"""count frequencies of nodes and calculate the number of
+		subtrees headed by each node. updates "subtreefd" and "nonterminalfd"
+		as a side effect. Expects a normal tree and a tree with IDs.
 
 		>>> fd = FreqDist()
 		>>> tree = Tree("(S (NP mary) (VP walks))")
 		>>> d = GoodmanDOP([tree])
 		>>> utree = d.decorate_with_ids(tree, count(1))
-		>>> d.nodefreq(tree, utree, fd)
+		>>> d.nodefreq(tree, utree, fd, FreqDist())
 		4
 		>>> fd.items()
 		[('S', 4), ('NP', 1), ('NP@1', 1), ('VP', 1), ('VP@2', 1)]
@@ -171,17 +172,19 @@ class GoodmanDOP:
 			return 0
 		if len(tree) > 0 and tree.height() > 2:
 			n = reduce((lambda x,y: x*y), 
-				(self.nodefreq(x, ux, nonterminalfd) + 1 for x, ux 
+				(self.nodefreq(x, ux, subtreefd, nonterminalfd) + 1 for x, ux 
 				in zip(tree, utree)))
-			nonterminalfd.inc(tree.node, count=n)
+			subtreefd.inc(tree.node, count=n)
+			nonterminalfd.inc(tree.node, count=1)
 			if utree.node != tree.node:	#root node receives no ID
-				nonterminalfd.inc(utree.node, count=n)
+				subtreefd.inc(utree.node, count=n)
 			return n
 		elif tree.height() == 2:
-			nonterminalfd.inc(tree.node, count=len(tree))
+			subtreefd.inc(tree.node, count=1)
+			nonterminalfd.inc(tree.node, count=1)
 			if utree.node != tree.node:
-				nonterminalfd.inc(utree.node, count=len(utree))
-			return len(tree)
+				subtreefd.inc(utree.node, count=1)
+			return 1
 		else:
 			# this error occurs when a node has zero children,
 			# e.g., (TOP (wrong))
@@ -227,11 +230,12 @@ class GoodmanDOP:
 				#	reduce(lambda x,y: x*y, map(lambda z: '@' in z and 
 				#	fd[z] or 1, r)) / float(fd[l])))
 	
-	def probabilities(self, cfg, fd):
+	def probabilities(self, cfg, fd, nonterminalfd):
 		"""merge cfg and frequency distribution into a pcfg with the right
 		probabilities.
 
 			@param cfg: a list of Productions
+			@param fd: number of subtrees headed by each node
 			@param nonterminalfd: a FreqDist of (non)terminals (with and
 			without IDs)""" 
 		#return [a(nonterminalfd) for a in cfg)
@@ -253,25 +257,25 @@ class GoodmanDOP:
 		# do not merge identical rules
 		#return [WeightedProduction(l, r, prob=prob(l, r)) for l, r in cfg]
 	
-	def frequencies(self, cfg, fd):
+	def frequencies(self, cfg, fd, nonterminalfd, normalize=False):
 		"""merge cfg and frequency distribution into a list of weighted 
 		productions with frequencies as weights (as expected by bitpar).
 
 			@param cfg: a list of Productions
+			@param fd: number of subtrees headed by each node
 			@param nonterminalfd: a FreqDist of (non)terminals (with and
 			without IDs)""" 
-		def prob(r):
-			return reduce((lambda x,y: x*y), map((lambda z: '@' in str(z) 
-				and fd[str(z)] or 1), r), 1)
-
-		# merge identical rules:
-		#cfgfd = FreqDist(cfg)
-		#for rule,cnt in cfgfd.items():
-		#	cfgfd.inc(rule, count=(cnt-1) * prob(*rule))
-		#return cfgfd
-		return ((rule, freq * reduce((lambda x,y: x*y), map((lambda z: '@' in str(z) and fd[str(z)] or 1), rule.split('\t')[1:]))) for rule, freq in cfg.items())
-			#rule.append(prob(*rule))
-		#return [(rule, prob(rule[1])) for rule in cfg]
+		if normalize:
+			# normalize by assigning equal weight to each node
+			return ((rule, freq * reduce((lambda x,y: x*y), 
+				map((lambda z: '@' in str(z) and fd[str(z)] or 1), 
+				rule.split('\t')[1:])) 
+	 			/ ('@' in rule.split('\t')[0] and 1 or float(nonterminalfd[rule.split('\t')[0]])))
+			for rule, freq in cfg.items())
+		return ((rule, freq * reduce((lambda x,y: x*y), 
+			map((lambda z: '@' in str(z) and fd[str(z)] or 1), 
+			rule.split('\t')[1:]))) 
+			for rule, freq in cfg.items())
 
 	def removeids(self, tree):
 		""" remove unique IDs introduced by the Goodman reduction """

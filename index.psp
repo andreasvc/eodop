@@ -68,15 +68,16 @@ Sentence:
 # but: pickle segmentation dictionary, paste most probable parse code from dopg.py
 
 from cPickle import load
+from itertools import chain
+from nltk import Tree
 # is this really the way to import local modules??
 import os, sys
 os.chdir("/var/www/https/andreas/eodop")
 sys.path.append(".")
-from itertools import chain
 from morph import segmentor, morphmerge, chapelitoj, malchapelitoj
 from bitpar import BitParChartParser as bitpar
-from nltk import Tree
 
+noparse = Tree("(top (N no) (N parse))")
 def removeids(tree):
 	""" remove unique IDs introduced by the Goodman reduction """
 	for a in tree.treepositions():
@@ -93,18 +94,21 @@ if 'sent' in form:
 	req.write("Tokenized: <tt>%s</tt><br>\n" % repr(sent))
 	segmentd = load(open('segmentd.pickle', 'rb'))
 	segment = segmentor(segmentd)
-	#d = bitpar(name='gsyntax', n=10, unknownwords='unknownwords', openclassdfsa='pos.dfsa', rootsymbol='S')
-	d = bitpar(name='gsyntax', n=10, unknownwords='unknownwords', rootsymbol='S')
-	md = bitpar(name='gmorphology', n=100, unknownwords='unknownmorph', rootsymbol='W')
-	msd = bitpar(name='gmorphsyntax', n=100, unknownwords='unknownmorph', rootsymbol='S')
-	s = [segment(word) for word in sent]
+	d = bitpar(name='gsyntax', n=10, unknownwords='unknownwordsm', openclassdfsa='pos.dfsa', rootsymbol='top')
+	md = bitpar(name='gmorphology', n=10, unknownwords='unknownmorph', rootsymbol='W')
+	msd = bitpar(name='gmorphsyntax', n=10, unknownwords='unknownmorph', rootsymbol='top')
+	s = [segment(word) + ('_',) for word in sent]
 	req.write("Segmented: <tt>%s</tt><br>\n" % " ".join(map(str, s)))
-	com = removeids(msd.parse(reduce(chain, s)))
+	try:
+		com = removeids(msd.mostprobableparse(reduce(chain, s)))
+	except:
+		com = noparse
 	req.write("<p>Morphology & syntax combined:\n <pre>%s</pre>\n" % com._pprint_flat('','()',''))
 	req.write("<img src=\"/phpsyntaxtree/pngtree.php?data=%s\"></p>\n" % com._pprint_flat('','[]',''))
-	#sep = morphmerge(removeids(d.parse(sent)), md, s)
-	#sep = d.parse(sent)
-	sep = Tree("(S (RB not) (VB working))")
+	try: sep = d.parse(sent)
+	except: sep = noparse
+	try: sep = morphmerge(removeids(sep), md, s)
+	except: pass
 	req.write("<p>Morphology & syntax separate:\n <pre>%s</pre>\n" % sep._pprint_flat('','()',''))
 	req.write("<img src=\"/phpsyntaxtree/pngtree.php?data=%s\"></p>\n" % sep._pprint_flat('','[]',''))
 #end
