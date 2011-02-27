@@ -7,6 +7,7 @@ Todo:
  - parse chart output"""
 from collections import defaultdict
 from subprocess import Popen, PIPE
+from pexpect import spawn
 from commands import getoutput
 from time import sleep
 from uuid import uuid1
@@ -48,31 +49,31 @@ class BitParChartParser:
 		>>> from dopg import GoodmanDOP
 		>>> d = GoodmanDOP([tree], parser=InsideChartParser)
 		>>> d.parser.parse("mary walks".split())
-		ProbabilisticTree('S', [ProbabilisticTree('NP@1', ['mary'])
-		(p=1.0), ProbabilisticTree('VP@2', ['walks']) (p=1.0)])
-		(p=0.444444444444)
+		ProbabilisticTree('S', [ProbabilisticTree('NP', ['mary'])
+		(p=1.0), ProbabilisticTree('VP@2', ['walks']) (p=1.0)])	(p=0.25)
 		>>> d.parser.nbest_parse("mary walks".split(), 10)
-		[ProbabilisticTree('S', [ProbabilisticTree('NP@1', ['mary']) (p=1.0),
-			ProbabilisticTree('VP@2', ['walks']) (p=1.0)]) (p=0.444444444444),
+		[ProbabilisticTree('S', [ProbabilisticTree('NP', ['mary']) (p=1.0),
+			ProbabilisticTree('VP@2', ['walks']) (p=1.0)]) (p=0.25),
 		ProbabilisticTree('S', [ProbabilisticTree('NP', ['mary']) (p=1.0),
-			ProbabilisticTree('VP@2', ['walks']) (p=1.0)]) (p=0.222222222222),
+			ProbabilisticTree('VP', ['walks']) (p=1.0)]) (p=0.25),
 		ProbabilisticTree('S', [ProbabilisticTree('NP@1', ['mary']) (p=1.0),
-			ProbabilisticTree('VP', ['walks']) (p=1.0)]) (p=0.222222222222),
-		ProbabilisticTree('S', [ProbabilisticTree('NP', ['mary']) (p=1.0),
-			ProbabilisticTree('VP', ['walks']) (p=1.0)]) (p=0.111111111111)]
+			ProbabilisticTree('VP@2', ['walks']) (p=1.0)]) (p=0.25),
+		ProbabilisticTree('S', [ProbabilisticTree('NP@1', ['mary']) (p=1.0),
+			ProbabilisticTree('VP', ['walks']) (p=1.0)]) (p=0.25)]
 
 		>>> d = GoodmanDOP([tree], parser=BitParChartParser)
 		>>> d.parser.parse("mary walks".split())
-		ProbabilisticTree('S', [Tree('NP@1', ['mary']), Tree('VP@2', ['walks'])]) (p=0.444444)
+		ProbabilisticTree('S', [Tree('NP', ['mary']), Tree('VP', ['walks'])]) (p=0.25)
 		>>> list(d.parser.nbest_parse("mary walks".split()))
-		[ProbabilisticTree('S', [Tree('NP@1', ['mary']), Tree('VP@2', ['walks'])]) 
-		(p=0.444444),
-		ProbabilisticTree('S', [Tree('NP', ['mary']), Tree('VP@2', ['walks'])])
-		(p=0.222222),
-		ProbabilisticTree('S', [Tree('NP@1', ['mary']), Tree('VP', ['walks'])])
-		(p=0.222222), 
-		ProbabilisticTree('S', [Tree('NP', ['mary']), Tree('VP', ['walks'])])
-		(p=0.111111)]
+		[ProbabilisticTree('S', [Tree('NP', ['mary']), Tree('VP', ['walks'])]) (p=0.25), 
+		ProbabilisticTree('S', [Tree('NP', ['mary']), Tree('VP@2', ['walks'])]) (p=0.25), 
+		ProbabilisticTree('S', [Tree('NP@1', ['mary']), Tree('VP', ['walks'])]) (p=0.25), 
+		ProbabilisticTree('S', [Tree('NP@1', ['mary']), Tree('VP@2', ['walks'])]) (p=0.25)]
+		>>> list(d.parser.batch_parse(["mary walks".split()], n=10))
+		[[ProbabilisticTree('S', [Tree('NP', ['mary']), Tree('VP', ['walks'])]) (p=0.25), 
+		ProbabilisticTree('S', [Tree('NP', ['mary']), Tree('VP@2', ['walks'])]) (p=0.25), 
+		ProbabilisticTree('S', [Tree('NP@1', ['mary']), Tree('VP', ['walks'])]) (p=0.25), 
+		ProbabilisticTree('S', [Tree('NP@1', ['mary']), Tree('VP@2', ['walks'])]) (p=0.25)]]
 
 		TODO: parse bitpar's chart output / parse forest
 		"""
@@ -96,7 +97,7 @@ class BitParChartParser:
 	def __del__(self):
 		cmd = "rm /tmp/g%s.pcfg /tmp/g%s.lex" % (self.id, self.id)
 		if self.cleanup or not self.name: Popen(cmd.split())
-		#self.stop()
+		self.stop()
 
 	def start(self):
 		# quiet, yield best parse, show viterbi prob., use frequencies
@@ -112,20 +113,20 @@ class BitParChartParser:
 		else:
 			self.cmd += "/tmp/g%s.pcfg /tmp/g%s.lex" % (self.id, self.id)
 		#if self.debug: print self.cmd.split()
-		self.bitpar = Popen(self.cmd.split(), stdin=PIPE, stdout=PIPE, stderr=PIPE)
-		# make std* a non-blocking file
-		#for a in (self.bitpar.stdin, self.bitpar.stdout, self.bitpar.stderr):
-		#	fd = a.fileno()
-		#	fl = fcntl.fcntl(a.fileno(), fcntl.F_GETFL)
-		#	fcntl.fcntl(a.fileno(), fcntl.F_SETFL, fl | os.O_NONBLOCK)
-		#sleep(3)
-
+		#self.bitpar = Popen(self.cmd.split(), stdin=PIPE, stdout=PIPE, stderr=PIPE)
+		self.bitpar = spawn(self.cmd)
+		self.bitpar.setecho(False)
+		# allow bitpar to initialize; just to be sure
+		sleep(1)
+		try: self.bitpar.read_nonblocking(size=1024, timeout=0)
+		except: pass
 	def stop(self):
-		if not isinstance(self.bitpar.poll(), int):
-			self.bitpar.terminate()
+		if not self.bitpar.terminated: self.bitpar.terminate()
 
 	def parse(self, sent):
-		if isinstance(self.bitpar.poll(), int): self.start()
+		return self.nbest_parse(sent).next()
+		"""
+		if self.bitpar.terminated: self.start()
 		try:
 			result, stderr = self.bitpar.communicate(u"%s\n\n" % "\n".join(sent))
 		except:
@@ -137,31 +138,56 @@ class BitParChartParser:
 		if not "=" in result:
 			# bitpar returned some error or didn't produce output
 			raise ValueError(u"no output. stdout: \n%s\nstderr:\n%s " % (result.strip(), stderr.strip()))
-		prob, tree = result.split("\n", 1)[0], result.split("\n", 2)[1]
+		prob, tree = result.split("\n", 1)[0], result.split("\n", 2)[1].replace('\\','')
 		prob = float(prob.split("=")[1])
 		tree = Tree(tree)
 		return ProbabilisticTree(tree.node, tree, prob=prob)
+		"""
 
 	def nbest_parse(self, sent, n_will_be_ignored=None):
 		""" n has to be specified in the constructor because it is specified
 		as a command line parameter to bitpar, allowing it here would require
 		potentially expensive restarts of bitpar. """
-
-		f = "/tmp/%s" % uuid1()
+		"""f = "/tmp/%s" % uuid1()
 		open(f, "w").write("%s\n\n" % "\n".join(sent))
 		bitpar = Popen((self.cmd + " " + f).split(), stdin=PIPE, stdout=PIPE, stderr=PIPE)
-		#strip trailing blank line
-		results = bitpar.stdout.read().splitlines()[:-1]
-
-		#if isinstance(self.bitpar.poll(), int): self.start()
-		#result, stderr = self.bitpar.communicate(u"%s\n\n" % "\n".join(sent))
-		#results = result.splitlines()
+		output = bitpar.stdout.read().splitlines() """
+		if self.bitpar.terminated: self.start()
+		self.bitpar.send("\n".join(sent) + "\n\n")
+		output = ""
+		while not output.endswith("\r\n\r\n"):
+			output += self.bitpar.read_nonblocking(size=32767, timeout=30)
+		# remove bitpar's escaping (why does it do that?), strip trailing blank line
+		results = re.sub(r"\\([/{}\[\]<>'\$])", r"\1", output).splitlines()[:-1]
 		probs = (float(a.split("=")[1]) for a in results[::2] if "=" in a)
-		# remove bitpar's escaping (why does it do that?)
-		trees = (Tree(re.sub(r"\\([{}\[\]<>'])", r"\1", a)) for a in results[1::2])
-		Popen(("rm %s" % f).split())
+		trees = (Tree(a) for a in results[1::2])
+		#Popen(("rm %s" % f).split())
 		return (ProbabilisticTree(b.node, b, prob=a) for a, b in zip(probs, trees))
 
+	def batch_parse(self, sents, n=1):
+		"""Batch parse a series of sentences. Expects a lists of
+		sentences in the form of lists of words.  Returns a list of lists, each being
+		up to n resulting trees.
+		Caveat: if you haven't supplied an unknown words file, bitpar
+		will stop parsing after the first unknown word; if a sentence cannot
+		be parsed for another reason, bitpar will continue. """
+		f = "/tmp/%s" % uuid1()
+		open(f, "w").writelines("%s\n\n" % "\n".join(sent) for sent in sents)
+		bitpar = Popen((self.cmd + " " + f).split(), stdout=PIPE, stderr=PIPE)
+		output = bitpar.stdout.read()
+		output = re.sub(r"\\([/{}\[\]<>'\$])", r"\1", output).split("\n\n")[:-1]
+		result = []
+		for a in output:
+			results = a.splitlines()
+			if "No parse" in results[0]:
+				result.append(( (), () ))
+				continue
+			probs = (float(a.split("=")[1]) for a in results[::2] if "=" in a)
+			trees = (Tree(a) for a in results[1::2])
+			result.append((probs, trees))
+		Popen(("rm %s" % f).split())
+		return ([ProbabilisticTree(b.node, b, prob=a) for a, b in zip(probs, trees)] for probs, trees in result)
+		
 	def writegrammar(self, f, l):
 		""" write a grammar to files f and l in a format that bitpar 
 		understands. f will contain the grammar rules, l the lexicon 
