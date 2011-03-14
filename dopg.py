@@ -5,52 +5,11 @@ TODOs: unicode support (replace str and repr calls)"""
 #psyco.full()
 
 from collections import defaultdict
-from itertools import chain, count
+from itertools import chain, count, product
 #from math import log #do something with logprobs instead?
 from nltk import Production, WeightedProduction, WeightedGrammar, FreqDist
-from nltk import Tree, ImmutableTree, Nonterminal, InsideChartParser, UnsortedChartParser
+from nltk import Tree, ImmutableTree, Nonterminal, InsideChartParser, UnsortedChartParser, ProbabilisticTree
 from bitpar import BitParChartParser
-
-def cartprod(a, b):
-	""" cartesian product of two sequences """
-	for x in a:
-		for y in b:
-			yield x, y
-
-def cartpi(seq):
-	""" produce a flattened fold using cartesian product as operator
-
-	>>> list(cartpi( ( (1,2), (3,4), (5,6) ) ) )
-	[(1, 3, 5), (2, 3, 5), (1, 4, 5), (2, 4, 5), (1, 3, 6), (2, 3, 6), 
-	(1, 4, 6), (2, 4, 6)] """
-	if len(seq) == 0: return ((), )
-	else: return ((a,) + b for b in cartpi(seq[1:]) for a in seq[0])
-
-#NB: the following code is equivalent to nltk.Tree.productions, except for accepting unicode
-def productions(tree):
-	"""
-	Generate the productions that correspond to the non-terminal nodes of the tree.
-	For each subtree of the form (P: C1 C2 ... Cn) this produces a production of the
-	form P -> C1 C2 ... Cn.
-		@rtype: list of C{Production}s
-	"""
-	def _child_names(tree):
-		names = []
-		for child in tree:
-			if isinstance(child, Tree):
-				names.append(Nonterminal(child.node))
-			else:
-				names.append(child)
-		return names
-
-	if not (isinstance(tree.node, str) or isinstance(tree.node, unicode)):
-		raise TypeError, 'Productions can only be generated from trees having node labels that are strings'
-
-	prods = [Production(Nonterminal(tree.node), _child_names(tree))]
-	for child in tree:
-		if isinstance(child, Tree):
-			prods += productions(child)
-	return prods
 
 class GoodmanDOP:
 	def __init__(self, treebank, rootsymbol='S', wrap=False, cnf=True, cleanup=True, normalize=False, parser=InsideChartParser, **parseroptions):
@@ -101,7 +60,7 @@ class GoodmanDOP:
 
 		# add unique IDs to nodes
 		utreebank = list((tree, self.decorate_with_ids(tree, ids)) for tree in treebank)
-		lexicon = set(reduce(chain, (a.leaves() for a,b in utreebank)))
+		lexicon = set(chain(*(a.leaves() for a,b in utreebank)))
 
 		# count node frequencies
 		for tree,utree in utreebank:
@@ -109,12 +68,12 @@ class GoodmanDOP:
 
 		if type(parser) == type(BitParChartParser):
 			# this takes the most time, produce CFG rules:
-			cfg = FreqDist(reduce(chain, (self.goodman(tree, utree) for tree, utree in utreebank)))
+			cfg = FreqDist(chain(*(self.goodman(tree, utree) for tree, utree in utreebank)))
 			# annotate rules with frequencies
 			self.fcfg = self.frequencies(cfg, subtreefd, nonterminalfd, normalize)
 			self.parser = BitParChartParser(self.fcfg, lexicon, rootsymbol, cleanup=cleanup, **parseroptions)
 		else:
-			cfg = FreqDist(reduce(chain, (self.goodman(tree, utree, False) for tree, utree in utreebank)))
+			cfg = FreqDist(chain(*(self.goodman(tree, utree, False) for tree, utree in utreebank)))
 			probs = self.probabilities(cfg, subtreefd, nonterminalfd)
 			#for a in probs: print a
 			self.grammar = WeightedGrammar(Nonterminal(rootsymbol), probs)
@@ -144,11 +103,10 @@ class GoodmanDOP:
 
 			@param ids: an iterator yielding a stream of IDs"""
 		utree = tree.copy(True)
-		#skip root node and pre-terminals
+		#skip root node
 		if utree.height() > 2:
-			for a in reduce(chain, (a.subtrees() for a in utree)):
-				#if a.height() > 2:
-				if a.node == "_": continue	#skip word boundary markers
+			#skip word boundary markers
+			for a in chain(*(a.subtrees(lambda a: a.node != "_") for a in utree)):
 				a.node = "%s@%d" % (a.node, ids.next())
 		return utree
 	
@@ -210,15 +168,15 @@ class GoodmanDOP:
 			if len(p.rhs()) == 1: 
 				if not isinstance(p.rhs()[0], Nonterminal): rhs = (p.rhs(), )
 				else: rhs = (p.rhs(), up.rhs())
-			#else: rhs = cartprod(*zip(p.rhs(), up.rhs()))
+			#else: rhs = product(*zip(p.rhs(), up.rhs()))
 			else: 
 				if all(isinstance(a, Nonterminal) for a in up.rhs()): 
-					rhs = set(cartpi(zip(p.rhs(), up.rhs())))
-				else: rhs = cartpi(zip(p.rhs(), up.rhs()))
+					rhs = set(product(*zip(p.rhs(), up.rhs())))
+				else: rhs = product(*zip(p.rhs(), up.rhs()))
 
 			# constant factor: 8
-			#for l, r in cartpi(((p.lhs(), up.lhs()), rhs)):
-			for l, r in cartprod(set((p.lhs(), up.lhs())), rhs):
+			#for l, r in product(*((p.lhs(), up.lhs()), rhs)):
+			for l, r in product(set((p.lhs(), up.lhs())), rhs):
 				#yield Production(l, r)
 				if bitparfmt:
 					yield sep.join((str(l), sep.join(map(str, r))))
@@ -302,7 +260,8 @@ class GoodmanDOP:
 			p = FreqDist()
 			for a in self.parser.nbest_parse(sent, sample):
 				p.inc(self.removeids(a).freeze(), a.prob())
-			if p.max(): self.exemplars[tuple(sent)] = p.max()
+			if p.max(): 
+				self.exemplars[tuple(sent)] = ProbabilisticTree(p.max().node, p.max(), prob=p[p.max()])
 			else: raise ValueError("no parse")
 		return self.exemplars[tuple(sent)]
 
@@ -341,6 +300,32 @@ class GoodmanDOP:
 				maxc[(s,t)] = sumx(max_x) + best_split
 		
 		return maxc[(1, len(sent) + 1)]
+
+#NB: the following code is equivalent to nltk.Tree.productions, except for accepting unicode
+def productions(tree):
+	"""
+	Generate the productions that correspond to the non-terminal nodes of the tree.
+	For each subtree of the form (P: C1 C2 ... Cn) this produces a production of the
+	form P -> C1 C2 ... Cn.
+		@rtype: list of C{Production}s
+	"""
+	def _child_names(tree):
+		names = []
+		for child in tree:
+			if isinstance(child, Tree):
+				names.append(Nonterminal(child.node))
+			else:
+				names.append(child)
+		return names
+
+	if not (isinstance(tree.node, str) or isinstance(tree.node, unicode)):
+		raise TypeError, 'Productions can only be generated from trees having node labels that are strings'
+
+	prods = [Production(Nonterminal(tree.node), _child_names(tree))]
+	for child in tree:
+		if isinstance(child, Tree):
+			prods += productions(child)
+	return prods
 				
 def main():
 	""" a basic REPL for testing """
@@ -367,7 +352,7 @@ def main():
 		try:
 			p = FreqDist()
 			for n, a in enumerate(d.parser.nbest_parse(w)):
-				if n > 10: break
+				if n > 1000: break
 				print a
 				p.inc(ImmutableTree.convert(d.removeids(a)), a.prob())
 			#for b, a in sorted((b,a) for (a,b) in p.items()):
