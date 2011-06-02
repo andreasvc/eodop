@@ -1,17 +1,23 @@
-# -*- coding: utf-8 -*-
 """DOP1 implementation. Andreas van Cranenburgh <andreas@unstable.nl>
-TODOs: unicode support (replace str and repr calls)"""
-#import psyco
-#psyco.full()
-
+"""
+from nltk import Production, WeightedProduction, WeightedGrammar, FreqDist, \
+		Tree, ImmutableTree, Nonterminal, InsideChartParser, ProbabilisticTree
 from collections import defaultdict
-from itertools import chain, count, product
+from itertools import chain, count
+from operator import mul
 #from math import log #do something with logprobs instead?
-from nltk import Production, WeightedProduction, WeightedGrammar, FreqDist
-from nltk import Tree, ImmutableTree, Nonterminal, InsideChartParser, UnsortedChartParser, ProbabilisticTree
+try:
+	from itertools import product
+except ImportError:
+	# for pre 2.7 versions
+	def product(*seq):
+		if seq: return (b + (a,) for b in product(*seq[:-1]) for a in seq[-1])
+		return ((), )
 
 class GoodmanDOP:
-	def __init__(self, treebank, rootsymbol='S', wrap=False, cnf=True, cleanup=True, normalize=False, parser=InsideChartParser, **parseroptions):
+	def __init__(self, treebank, rootsymbol='S', wrap=False, cnf=True,
+				cleanup=True, normalize=False, extratags=(),
+				parser=InsideChartParser, **parseroptions):
 		""" initialize a DOP model given a treebank. uses the Goodman
 		reduction of a STSG to a PCFG.  after initialization,
 		self.parser will contain an InsideChartParser.
@@ -59,21 +65,27 @@ class GoodmanDOP:
 				a.chomsky_normal_form() #todo: sibling annotation necessary?
 
 		# add unique IDs to nodes
-		utreebank = list((tree, decorate_with_ids(tree, ids)) for tree in treebank)
-		lexicon = set(chain(*(a.leaves() for a,b in utreebank)))
+		utreebank = [(tree, decorate_with_ids(tree, ids)) for tree in treebank]
 
 		# count node frequencies
-		for tree,utree in utreebank:
+		for tree, utree in utreebank:
 			nodefreq(tree, utree, subtreefd, nonterminalfd)
 
-		if type(parser) == type(BitParChartParser):
+		if isinstance(parser, BitParChartParser):
+			lexicon = set(x for a, b in utreebank for x in a.pos() + b.pos())
 			# this takes the most time, produce CFG rules:
-			cfg = FreqDist(chain(*(self.goodman(tree, utree) for tree, utree in utreebank)))
+			cfg = FreqDist(chain(*(self.goodman(tree, utree)
+								for tree, utree in utreebank)))
+			cfg.update("%s\t%s" % (t, w) for w, t in extratags
+								if w not in lexicon)
+			lexicon.update(a for a in extratags if a not in lexicon)
 			# annotate rules with frequencies
 			self.fcfg = frequencies(cfg, subtreefd, nonterminalfd, normalize)
-			self.parser = BitParChartParser(self.fcfg, lexicon, rootsymbol, cleanup=cleanup, **parseroptions)
+			self.parser = BitParChartParser(self.fcfg, lexicon, rootsymbol,
+									cleanup=cleanup, **parseroptions)
 		else:
-			cfg = FreqDist(chain(*(self.goodman(tree, utree, False) for tree, utree in utreebank)))
+			cfg = FreqDist(chain(*(self.goodman(tree, utree, False)
+							for tree, utree in utreebank)))
 			probs = probabilities(cfg, subtreefd, nonterminalfd)
 			#for a in probs: print a
 			self.grammar = WeightedGrammar(Nonterminal(rootsymbol), probs)
@@ -101,19 +113,19 @@ class GoodmanDOP:
 		>>> utree = decorate_with_ids(tree, count(1))
 		>>> sorted(d.goodman(tree, utree, False))
 		[(NP, ('mary',)), (NP@1, ('mary',)), (S, (NP, VP)), (S, (NP, VP@2)),
-		(S, (NP@1, VP)), (S, (NP@1, VP@2)), (VP, ('walks',)), (VP@2, ('walks',))]
+		(S, (NP@1, VP)), (S, (NP@1, VP@2)), (VP, ('walks',)),
+		(VP@2, ('walks',))]
 		"""
 		# linear: nr of nodes
 		sep = "\t"
 		for p, up in zip(tree.productions(), utree.productions()):
-			# THIS SHOULD NOT HAPPEN:
 			if len(p.rhs()) == 0: raise ValueError
-			if len(p.rhs()) == 1: 
+			if len(p.rhs()) == 1:
 				if not isinstance(p.rhs()[0], Nonterminal): rhs = (p.rhs(), )
 				else: rhs = (p.rhs(), up.rhs())
 			#else: rhs = product(*zip(p.rhs(), up.rhs()))
-			else: 
-				if all(isinstance(a, Nonterminal) for a in up.rhs()): 
+			else:
+				if all(isinstance(a, Nonterminal) for a in up.rhs()):
 					rhs = set(product(*zip(p.rhs(), up.rhs())))
 				else: rhs = product(*zip(p.rhs(), up.rhs()))
 
@@ -122,44 +134,32 @@ class GoodmanDOP:
 			for l, r in product(set((p.lhs(), up.lhs())), rhs):
 				#yield Production(l, r)
 				if bitparfmt:
-					yield sep.join((str(l), sep.join(map(str, r))))
+					yield "%s%s%s" % (l, sep, sep.join(map(unicode, r)))
 				else:
 					yield l, r
 				# yield a delayed computation that also gives the frequencies
 				# given a distribution of nonterminals
 				#yield (lambda fd: WeightedProduction(l, r, prob= 
-				#	reduce(lambda x,y: x*y, map(lambda z: '@' in z and 
+				#	reduce(mul, map(lambda z: '@' in z and
 				#	fd[z] or 1, r)) / float(fd[l])))
 	
-	def removeids(self, tree):
-		""" remove unique IDs introduced by the Goodman reduction """
-		result = Tree.convert(tree)
-		for a in tree.treepositions():
-			if '@' in str(tree[a]):
-				result[a].node = tree[a].node.split('@')[0]
-		return result
-
 	def parse(self, sent):
 		"""most probable derivation (not very good)."""
 		return self.parser.parse(sent)
 
 	def mostprobableparse(self, sent, sample=None):
-		""" memoize parse trees. TODO: maybe add option to add every
-		parse tree to the set of exemplars, ie., incremental learning. 
-		warning: this problem is NP-complete. using an unsorted
+		"""warning: this problem is NP-complete. using an unsorted
 		chart parser avoids unnecessary sorting (since we need all
 		derivations anyway).
 		
 		@param sent: a sequence of terminals
 		@param sample: None or int; if int then sample that many parses"""
-		if tuple(sent) not in self.exemplars:
-			p = FreqDist()
-			for a in self.parser.nbest_parse(sent, sample):
-				p.inc(self.removeids(a).freeze(), a.prob())
-			if p.max(): 
-				self.exemplars[tuple(sent)] = ProbabilisticTree(p.max().node, p.max(), prob=p[p.max()])
-			else: raise ValueError("no parse")
-		return self.exemplars[tuple(sent)]
+		p = FreqDist()
+		for a in self.parser.nbest_parse(sent, sample):
+			p.inc(removeids(a).freeze(), a.prob())
+		if p.max():
+			return ProbabilisticTree(p.max().node, p.max(), prob=p[p.max()])
+		else: raise ValueError("no parse")
 
 	def mostconstituentscorrect(self, sent):
 		""" not working yet. almost verbatim translation of Goodman's (1996)
@@ -169,9 +169,9 @@ class GoodmanDOP:
 		probabilities """ 
 		def g(s, t, x):
 			def f(s, t, x):
-				return self.pcfg[Production(rootsymbol, 
+				return self.pcfg[Production(rootsymbol,
 					sent[1:s] + [x] + sent[s+1:])]
-			def e(s, t, x): 
+			def e(s, t, x):
 				return self.pcfg[Production(x, sent[s:t+1])]
 			return f(s, t, x) * e(s, t, x ) / e(1, n, rootsymbol)
 
@@ -189,15 +189,15 @@ class GoodmanDOP:
 				max_x = max(sumx[x] for x in self.nonterminals)
 				#for x in self.nonterminals:
 				#	max_x = argmax(sumx, x) #???
-				best_split = max(maxc[(s,r)] + maxc[(r+1,t)] 
+				best_split = max(maxc[(s,r)] + maxc[(r+1,t)]
 									for r in range(s, t))
 				#for r in range(s, t):
 				#	best_split = max(maxc[(s,r)] + maxc[(r+1,t)])
-				maxc[(s,t)] = sumx(max_x) + best_split
+				maxc[(s,t)] = sumx[max_x] + best_split
 		
 		return maxc[(1, len(sent) + 1)]
 
-def decorate_with_ids(tree, ids):
+def decorate_with_ids(tree, ids, include_preterminals=True):
 	""" add unique identifiers to each internal non-terminal of a tree.
 
 	>>> tree = Tree("(S (NP (DT the) (N dog)) (VP walks))")
@@ -208,10 +208,13 @@ def decorate_with_ids(tree, ids):
 		@param ids: an iterator yielding a stream of IDs"""
 	utree = tree.copy(True)
 	#skip root node
-	if utree.height() > 2:
-		#skip word boundary markers
-		for a in chain(*(a.subtrees(lambda a: a.node != "_") for a in utree)):
-			a.node = "%s@%d" % (a.node, ids.next())
+	for a in utree:
+		if not isinstance(a, Tree): continue
+		for b in a.subtrees():
+			#skip word boundary markers
+			if a.node == "_": continue
+			if include_preterminals or any(isinstance(c, Tree) for c in b):
+				b.node = "%s@%d" % (b.node, ids.next())
 	return utree
 
 def nodefreq(tree, utree, subtreefd, nonterminalfd):
@@ -230,28 +233,28 @@ def nodefreq(tree, utree, subtreefd, nonterminalfd):
 
 		@param nonterminalfd: the FreqDist to store the counts in."""
 	if not isinstance(tree, Tree):
-		print "moo!", tree
-		return 0
-	if len(tree) > 0 and tree.height() > 2:
-		n = reduce((lambda x,y: x*y), 
-			(nodefreq(x, ux, subtreefd, nonterminalfd) + 1 for x, ux 
+		raise ValueError
+	if len(tree) == 0:
+		# this error occurs when a node has zero children,
+		# e.g., (TOP (wrong))
+		raise ValueError
+	if any(isinstance(a, Tree) for a in tree):
+		n = reduce(mul,
+			(nodefreq(x, ux, subtreefd, nonterminalfd) + 1 for x, ux
 			in zip(tree, utree)))
 		subtreefd.inc(tree.node, count=n)
 		nonterminalfd.inc(tree.node, count=1)
-		if utree.node != tree.node:	#root node receives no ID
+		# only add counts when utree.node is actually an interior node,
+		# e.g., root node receives no ID so shouldn't be counted twice
+		if utree.node != tree.node:
 			subtreefd.inc(utree.node, count=n)
 		return n
-	elif tree.height() == 2:
+	else:
 		subtreefd.inc(tree.node, count=1)
 		nonterminalfd.inc(tree.node, count=1)
 		if utree.node != tree.node:
 			subtreefd.inc(utree.node, count=1)
 		return 1
-	else:
-		# this error occurs when a node has zero children,
-		# e.g., (TOP (wrong))
-		raise ValueError
-		return 0
 
 def probabilities(cfg, fd, nonterminalfd):
 	"""merge cfg and frequency distribution into a pcfg with the right
@@ -263,20 +266,19 @@ def probabilities(cfg, fd, nonterminalfd):
 		without IDs)""" 
 	#return [a(nonterminalfd) for a in cfg)
 	def prob(l, r):
-		#print l, '->', r, reduce((lambda x,y: x*y), map((lambda z: '@' in str(z) 
-		#	and fd[str(z)] or 1), r)), '/', float(fd[str(l)])
-		return reduce((lambda x,y: x*y), map((lambda z: '@' in str(z) 
-			and fd[str(z)] or 1), r)) / float(fd[str(l)])
+		return reduce(mul, map((lambda z: '@' in str(z)
+			and fd[unicode(z)] or 1), r)) / float(fd[unicode(l)])
 	# format expected by mccparse()
-	#self.pcfg = dict((Production(l, r), (reduce((lambda x,y: x*y), 
-	#	map((lambda z: '@' in (type(z) == Nonterminal and z.symbol() or z) 
+	#self.pcfg = dict((Production(l, r), (reduce(mul,
+	#	map((lambda z: '@' in (type(z) == Nonterminal and z.symbol() or z)
 	#	and nonterminalfd[z] or 1), r)) / nonterminalfd[l]))
 	#	for l, r in set(cfg))
 
 	# merge identical rules:
 	#return [WeightedProduction(rule[0], rule[1:], prob=freq*prob(rule[0], rule[1:])) for rule, freq in ((rule.split('\t'), freq) for rule,freq in cfg.items())]
 	
-	return [WeightedProduction(l, r, prob=freq*prob(l, r)) for (l,r),freq in cfg.items()]
+	return [WeightedProduction(l, r, prob=freq*prob(l, r))
+						for (l,r),freq in cfg.items()]
 	# do not merge identical rules
 	#return [WeightedProduction(l, r, prob=prob(l, r)) for l, r in cfg]
 
@@ -290,23 +292,30 @@ def frequencies(cfg, fd, nonterminalfd, normalize=False):
 		without IDs)""" 
 	if normalize:
 		# normalize by assigning equal weight to each node
-		return ((rule, freq * reduce((lambda x,y: x*y), 
-			map((lambda z: '@' in str(z) and fd[str(z)] or 1), 
-			rule.split('\t')[1:])) 
-			/ ('@' in rule.split('\t')[0] and 1 or float(nonterminalfd[rule.split('\t')[0]])))
+		return ((rule, freq * reduce(mul,
+			map((lambda z: fd[unicode(z)] if '@' in unicode(z) else 1),
+			rule.split('\t')[1:]))
+			/ (1 if '@' in rule.split('\t')[0]
+			else float(nonterminalfd[rule.split('\t')[0]])))
 		for rule, freq in cfg.items())
-	return ((rule, freq * reduce((lambda x,y: x*y), 
-		map((lambda z: '@' in str(z) and fd[str(z)] or 1), 
-		rule.split('\t')[1:]))) 
+	return ((rule, freq * reduce(mul,
+		map((lambda z: fd[unicode(z)] if '@' in unicode(z) else 1),
+		rule.split('\t')[1:])))
 		for rule, freq in cfg.items())
 
+def removeids(tree):
+	""" remove unique IDs introduced by the Goodman reduction """
+	for a in tree.subtrees(lambda t: '@' in t.node):
+		a.node = a.node.rsplit('@', 1)[0]
+	return tree
 
-#NB: the following code is equivalent to nltk.Tree.productions, except for accepting unicode
+#NB: the following code is equivalent to nltk.Tree.productions,
+# except for accepting unicode
 def productions(tree):
 	"""
-	Generate the productions that correspond to the non-terminal nodes of the tree.
-	For each subtree of the form (P: C1 C2 ... Cn) this produces a production of the
-	form P -> C1 C2 ... Cn.
+	Generate the productions that correspond to the non-terminal nodes of the
+	tree.  For each subtree of the form (P: C1 C2 ... Cn) this produces a
+	production of the form P -> C1 C2 ... Cn.
 		@rtype: list of C{Production}s
 	"""
 	def _child_names(tree):
@@ -318,8 +327,9 @@ def productions(tree):
 				names.append(child)
 		return names
 
-	if not (isinstance(tree.node, str) or isinstance(tree.node, unicode)):
-		raise TypeError, 'Productions can only be generated from trees having node labels that are strings'
+	if not isinstance(tree.node, basestring):
+		raise TypeError, 'Productions can only be generated from trees having \
+node labels that are strings'
 
 	prods = [Production(Nonterminal(tree.node), _child_names(tree))]
 	for child in tree:
@@ -333,17 +343,17 @@ def main():
 (S (NP Peter) (VP (V hates) (NP Susan)))
 (S (NP Harry) (VP (V eats) (NP pizza)))
 (S (NP Hermione) (VP (V eats)))""".splitlines()
-	corpus ="""(S (NP (DT The) (NN cat)) (VP (VBP saw) (NP (DT the) (JJ hungry) (NN dog))))
+	corpus = """(S (NP (DT The) (NN cat)) (VP (VBP saw) (NP (DT the) (JJ hungry) (NN dog))))
 (S (NP (DT The) (JJ little) (NN mouse)) (VP (VBP ate) (NP (DT the) (NN cat))))""".splitlines()
 	#corpus = """(S (NP mary) (VP walks) (AP quickly))""".splitlines()
 	#(S (NP Harry) (VP (V likes) (NP Susan) (ADVP (RB very) (RB much))))
 	corpus = [Tree(a) for a in corpus]
 	#d = GoodmanDOP(corpus, rootsymbol='S')
 	from bitpar import BitParChartParser
-	d = GoodmanDOP(corpus, rootsymbol='TOP', wrap='TOP', parser=BitParChartParser)
+	d = GoodmanDOP(corpus, rootsymbol='TOP', wrap='TOP',
+						parser=BitParChartParser)
 	#d = GoodmanDOP(corpus, rootsymbol='TOP', wrap='TOP')
 	#print d.grammar
-	from nltk import ImmutableTree
 	print "corpus"
 	for a in corpus: print a
 	w = "foo!"
@@ -355,16 +365,16 @@ def main():
 			for n, a in enumerate(d.parser.nbest_parse(w)):
 				if n > 1000: break
 				print a
-				p.inc(ImmutableTree.convert(d.removeids(a)), a.prob())
+				p.inc(ImmutableTree.convert(removeids(a)), a.prob())
 			#for b, a in sorted((b,a) for (a,b) in p.items()):
 			#	print a, b
 			print
 			print 'best', p.max(), p[p.max()]
 			#print d.parse(w)
-		except Exception as e:
-			print "error", e
+		except Exception: # as e:
+			print "error", #e
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
 	import doctest
 	# do doctests, but don't be pedantic about whitespace (I suspect it is the
 	# militant anti-tab faction who are behind this obnoxious default)
