@@ -3,7 +3,8 @@ Andreas van Cranenburgh <andreas@unstable.nl>
 Data-Oriented Parsing implementation for NLTK applied to Esperanto morphology
 and syntax.
 
-https://unstable.nl/proj/eodop
+Report: https://unstable.nl/andreas/ai/coglang/report.pdf
+Demo: https://unstable.nl/andreas/eodop/index.psp
 
 
 Requirements:
